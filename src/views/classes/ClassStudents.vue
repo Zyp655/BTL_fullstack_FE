@@ -1,0 +1,1189 @@
+<template>
+  <div class="space-y-stack-lg animate-fade-in">
+    <!-- Header & Back Button -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-gutter">
+      <div>
+        <div class="flex items-center gap-2 font-body-sm text-body-sm text-on-surface-variant">
+          <router-link to="/classes" class="text-on-tertiary-container hover:underline transition-colors">Quản lý lớp học</router-link>
+          <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+          <span class="text-on-surface">{{ currentClass?.className || 'Chi tiết lớp học' }}</span>
+        </div>
+        <h1 class="font-headline-lg text-headline-lg text-primary-container mt-1">Học viên & Học tập Lớp học</h1>
+        <p class="font-body-lg text-body-lg text-on-surface-variant mt-0.5">
+          Theo dõi danh sách học viên, thực hiện điểm danh và nhập điểm thi cho lớp.
+        </p>
+      </div>
+      <router-link
+        to="/classes"
+        class="bg-transparent border border-outline-variant text-on-surface-variant px-5 py-2.5 rounded-lg font-semibold text-body-sm shadow-sm hover:bg-surface-container-high transition-all flex items-center gap-1.5 active:scale-95 self-start md:self-auto"
+      >
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+        Quay lại
+      </router-link>
+    </div>
+
+    <!-- Class Detail Overview Panel -->
+    <div v-if="loadingClass" class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl p-gutter shadow-[0_12px_24px_rgba(0,0,0,0.05)] animate-pulse space-y-4">
+      <div class="h-6 bg-surface-container-high rounded w-1/4"></div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="h-10 bg-surface-container-high rounded" v-for="i in 4" :key="i"></div>
+      </div>
+    </div>
+    <div v-else-if="currentClass" class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl p-gutter shadow-[0_12px_24px_rgba(0,0,0,0.05)]">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/40 pb-4 mb-4">
+        <div>
+          <h2 class="font-headline-lg text-headline-lg text-primary-container">{{ currentClass.className }}</h2>
+          <p class="text-body-sm font-body-sm text-on-surface-variant mt-0.5">Khóa học: <span class="font-semibold text-primary-container">{{ currentClass.courseName }}</span></p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-body-sm text-on-surface-variant font-semibold">Trạng thái lớp:</span>
+          <span :class="['status-badge', getStatusBadgeClass(currentClass.status)]">
+            {{ getStatusLabel(currentClass.status) }}
+          </span>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-gutter text-body-sm text-on-surface-variant">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-on-tertiary-container/10 text-on-tertiary-container flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-[20px]">account_circle</span>
+          </div>
+          <div>
+            <div class="font-label-caps text-label-caps text-on-surface-variant/80">Giáo viên</div>
+            <div v-if="authStore.isAdmin" class="relative mt-0.5">
+              <select
+                v-model="currentClassTeacherId"
+                @change="assignTeacherFromDetail"
+                class="bg-transparent border border-outline-variant rounded px-2 py-0.5 text-body-xs font-semibold text-primary focus:outline-none cursor-pointer"
+              >
+                <option :value="null">Chưa phân công</option>
+                <option v-for="t in teachers" :key="t.userId" :value="t.userId">
+                  {{ t.fullName }}
+                </option>
+              </select>
+            </div>
+            <div v-else class="font-semibold text-primary-container">
+              {{ currentClass.teacherName || 'Chưa phân công' }}
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-[20px]">meeting_room</span>
+          </div>
+          <div>
+            <div class="font-label-caps text-label-caps text-on-surface-variant/80">Phòng học</div>
+            <div class="font-semibold text-primary-container">{{ currentClass.room || 'Chưa xếp phòng' }}</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-[20px]">group</span>
+          </div>
+          <div>
+            <div class="font-label-caps text-label-caps text-on-surface-variant/80">Sĩ số lớp</div>
+            <div class="font-semibold text-primary-container">{{ currentClass.currentStudents }} / {{ currentClass.maxStudents }} học viên</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-[20px]">calendar_month</span>
+          </div>
+          <div>
+            <div class="font-label-caps text-label-caps text-on-surface-variant/80">Thời gian học</div>
+            <div class="font-semibold text-primary-container" v-if="currentClass.startDate">
+              {{ formatDate(currentClass.startDate) }} - {{ formatDate(currentClass.endDate) }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex gap-2 overflow-x-auto whitespace-nowrap no-scrollbar bg-surface-container-high/50 p-1 rounded-xl">
+      <button
+        v-for="tab in tabs"
+        :key="tab.value"
+        @click="activeTab = tab.value"
+        :class="[
+          'px-4 py-2.5 font-title-md text-body-sm transition-all flex items-center gap-2 rounded-lg',
+          activeTab === tab.value
+            ? 'bg-primary-container text-white font-bold shadow-sm'
+            : 'text-on-surface-variant hover:bg-surface-container-high rounded-lg'
+        ]"
+      >
+        <span class="material-symbols-outlined text-[20px]">{{ tab.icon }}</span>
+        {{ tab.label }}
+      </button>
+    </div>
+
+    <!-- Active Tab Canvas Content -->
+    <div class="space-y-gutter">
+      <!-- TAB 1: DANH SÁCH HỌC VIÊN -->
+      <div v-if="activeTab === 'roster'" class="space-y-gutter">
+        <!-- Roster Actions & Filters -->
+        <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl p-gutter shadow-[0_12px_24px_rgba(0,0,0,0.05)] flex flex-col sm:flex-row gap-4 justify-between items-center">
+          <div class="relative w-full sm:flex-1">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+            <input
+              v-model="rosterSearch"
+              class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg pl-10 pr-4 py-2.5 text-body-sm font-body-sm text-on-surface"
+              placeholder="Tìm học viên trong lớp theo tên..."
+              type="text"
+            />
+          </div>
+          <button
+            v-if="authStore.isAdmin"
+            @click="openEnrollModal"
+            class="w-full sm:w-auto bg-primary-container text-white px-5 py-2.5 rounded-lg font-semibold text-body-sm shadow-sm hover:bg-primary transition-all flex items-center justify-center gap-1.5 active:scale-95"
+          >
+            <span class="material-symbols-outlined text-[18px]">person_add</span>
+            Xếp học viên vào lớp
+          </button>
+        </div>
+
+        <!-- Roster Ledger Data Table -->
+        <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl overflow-hidden shadow-[0_12px_24px_rgba(0,0,0,0.05)]">
+          <div v-if="loadingRoster" class="p-12 space-y-4 animate-pulse">
+            <div class="h-8 bg-surface-container-high rounded w-full"></div>
+            <div class="h-12 bg-surface-container-high rounded w-full" v-for="i in 3" :key="i"></div>
+          </div>
+
+          <div v-else-if="filteredRoster.length > 0" class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-surface-container-high text-on-surface-variant font-title-md text-body-sm">
+                  <th class="py-4 px-6 font-semibold whitespace-nowrap">Mã HV</th>
+                  <th class="py-4 px-6 font-semibold whitespace-nowrap">Họ và tên</th>
+                  <th class="py-4 px-6 font-semibold whitespace-nowrap">Số điện thoại</th>
+                  <th class="py-4 px-6 font-semibold whitespace-nowrap">Ngày đăng ký</th>
+                  <th class="py-4 px-6 font-semibold whitespace-nowrap">Trạng thái đăng ký</th>
+                  <th class="py-4 px-6 font-semibold whitespace-nowrap text-right">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody class="font-body-sm text-body-sm">
+                <tr
+                  v-for="en in filteredRoster"
+                  :key="en.enrollmentId"
+                  class="border-t border-white/40 hover:bg-white/30 transition-colors group"
+                >
+                  <td class="py-4 px-6 font-semibold text-primary-container">HV-{{ String(en.studentId).padStart(4, '0') }}</td>
+                  <td class="py-4 px-6 font-semibold text-on-surface">{{ en.studentName }}</td>
+                  <td class="py-4 px-6 text-on-surface-variant">{{ en.phone || '-' }}</td>
+                  <td class="py-4 px-6 text-on-surface-variant">{{ formatDate(en.enrolledAt) }}</td>
+                  <td class="py-4 px-6">
+                    <span :class="['status-badge', getEnrollmentStatusBadgeClass(en.status)]">
+                      {{ getEnrollmentStatusLabel(en.status) }}
+                    </span>
+                  </td>
+                  <td class="py-4 px-6 text-right relative">
+                    <div v-if="authStore.isAdmin" class="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        @click="toggleRosterDropdown(en.enrollmentId)"
+                        class="px-2.5 py-1.5 rounded-lg bg-transparent border border-outline-variant hover:bg-surface-container-high text-on-surface-variant font-semibold text-[11px] transition-colors flex items-center gap-1"
+                        title="Đổi trạng thái học"
+                      >
+                        Đổi trạng thái
+                        <span class="material-symbols-outlined text-[14px]">expand_more</span>
+                      </button>
+
+                      <!-- Dropdown menu -->
+                      <div v-if="activeRosterDropdownId === en.enrollmentId" class="absolute right-6 top-12 w-40 rounded-xl bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-2xl py-2 z-30 animate-scale-in text-left">
+                        <button
+                          v-for="opt in enrollmentStatusOptions"
+                          :key="opt.value"
+                          @click="changeEnrollmentStatus(en.enrollmentId, opt.value)"
+                          class="w-full text-left px-4 py-2 text-body-sm text-on-surface hover:bg-on-tertiary-container/10 transition-colors font-medium"
+                        >
+                          {{ opt.label }}
+                        </button>
+                      </div>
+
+                      <button
+                        @click="openAdminTransferModal(en)"
+                        class="px-2.5 py-1.5 rounded-lg bg-transparent border border-outline-variant hover:bg-surface-container-high text-on-surface-variant font-semibold text-[11px] transition-colors flex items-center gap-1 cursor-pointer"
+                        title="Chuyển học viên này sang lớp khác"
+                      >
+                        <span class="material-symbols-outlined text-[14px]">sync_alt</span>
+                        Chuyển lớp
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div v-else class="p-12 text-center flex flex-col items-center justify-center">
+            <span class="material-symbols-outlined text-outline/30 text-[64px] mb-3">group</span>
+            <p class="text-body-lg font-body-lg text-on-surface-variant">Chưa có học viên nào được xếp vào lớp học này</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: ĐIỂM DANH HÀNG LOẠT -->
+      <div v-if="activeTab === 'attendance'" class="space-y-gutter">
+        <!-- Date selector & Controls -->
+        <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl p-gutter shadow-[0_12px_24px_rgba(0,0,0,0.05)] flex flex-col sm:flex-row gap-4 items-center justify-between">
+          <div class="flex items-center gap-3 w-full sm:w-auto">
+            <span class="text-body-sm font-semibold text-on-surface shrink-0">Ngày điểm danh:</span>
+            <input
+              v-model="attendanceDate"
+              type="date"
+              @change="fetchAttendanceForDate"
+              class="bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm font-body-sm text-on-surface w-full sm:w-48"
+            />
+          </div>
+          <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <span class="text-body-sm text-on-surface-variant italic mr-2" v-if="attendanceLoaded">
+              {{ attendanceRecordExists ? 'Đã có dữ liệu điểm danh ngày này' : 'Chưa điểm danh cho ngày này' }}
+            </span>
+            <button
+              v-if="!authStore.isAdmin"
+              @click="setAllAttendanceStatus('CoMat')"
+              class="px-3 py-2 bg-transparent border border-outline-variant hover:bg-surface-container-high text-on-surface-variant rounded-lg font-semibold text-body-sm transition-colors"
+            >
+              Chọn Có mặt tất cả
+            </button>
+          </div>
+        </div>
+
+        <!-- Attendance Grid table -->
+        <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl overflow-hidden shadow-[0_12px_24px_rgba(0,0,0,0.05)]">
+          <div v-if="loadingAttendance" class="p-12 space-y-4 animate-pulse">
+            <div class="h-8 bg-surface-container-high rounded w-full"></div>
+            <div class="h-12 bg-surface-container-high rounded w-full" v-for="i in 3" :key="i"></div>
+          </div>
+
+          <div v-else-if="attendanceList.length > 0" class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-surface-container-high text-on-surface-variant font-title-md text-body-sm">
+                  <th class="py-4 px-6 font-semibold whitespace-nowrap">Mã HV</th>
+                  <th class="py-4 px-6 font-semibold whitespace-nowrap">Học viên</th>
+                  <th class="py-4 px-6 font-semibold whitespace-nowrap">Trạng thái điểm danh</th>
+                  <th class="py-4 px-6 font-semibold whitespace-nowrap">Ghi chú</th>
+                </tr>
+              </thead>
+              <tbody class="font-body-sm text-body-sm">
+                <tr
+                  v-for="att in attendanceList"
+                  :key="att.enrollmentId"
+                  class="border-t border-white/40 hover:bg-white/30 transition-colors"
+                >
+                  <td class="py-4 px-6 font-semibold text-primary-container">HV-{{ String(att.studentId).padStart(4, '0') }}</td>
+                  <td class="py-4 px-6 font-semibold text-on-surface">{{ att.studentName }}</td>
+                  <td class="py-4 px-6">
+                    <!-- Custom Segmented Buttons for Attendance Status -->
+                    <div class="flex items-center gap-1 bg-primary-container/[0.05] p-1 rounded-lg border border-primary-container/10 w-fit">
+                      <button
+                        v-for="statusOpt in attendanceStatusOptions"
+                        :key="statusOpt.value"
+                        :disabled="authStore.isAdmin"
+                        @click="att.status = statusOpt.value"
+                        :class="[
+                          'px-3 py-1.5 rounded-md text-[11px] font-semibold transition-all',
+                          att.status === statusOpt.value
+                            ? statusOpt.activeClass + ' shadow-sm'
+                            : 'text-on-surface-variant hover:text-on-surface hover:bg-white/20',
+                          authStore.isAdmin ? 'cursor-default pointer-events-none' : 'cursor-pointer'
+                        ]"
+                      >
+                        {{ statusOpt.label }}
+                      </button>
+                    </div>
+                  </td>
+                  <td class="py-4 px-6">
+                    <input
+                      v-model="att.note"
+                      type="text"
+                      :disabled="authStore.isAdmin"
+                      class="w-full max-w-xs bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-3 py-1.5 text-body-sm font-body-sm text-on-surface disabled:opacity-70 disabled:cursor-not-allowed"
+                      placeholder="Ghi chú (ốm nghỉ, lò muộn...)"
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <div v-else class="p-12 text-center flex flex-col items-center justify-center">
+            <span class="material-symbols-outlined text-outline/30 text-[64px] mb-3">fact_check</span>
+            <p class="text-body-lg font-body-lg text-on-surface-variant">Không có học viên nào trong lớp để điểm danh</p>
+          </div>
+        </div>
+
+        <!-- Save Button bar -->
+        <div v-if="attendanceList.length > 0 && !authStore.isAdmin" class="flex justify-end pt-2">
+          <button
+            @click="saveAttendance"
+            :disabled="savingAttendance"
+            class="bg-primary-container text-white px-6 py-3 rounded-lg font-semibold text-body-sm shadow-sm hover:bg-primary transition-all flex items-center gap-1.5 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span v-if="savingAttendance" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+            <span class="material-symbols-outlined text-[20px]" v-else>save</span>
+            Lưu bảng điểm danh
+          </button>
+        </div>
+      </div>
+
+      <!-- TAB 3: ĐIỂM SỐ HỌC TẬP -->
+      <div v-if="activeTab === 'grades'" class="space-y-gutter">
+        <!-- Roster grades report table -->
+        <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl overflow-hidden shadow-[0_12px_24px_rgba(0,0,0,0.05)]">
+          <div v-if="loadingGrades" class="p-12 space-y-4 animate-pulse">
+            <div class="h-8 bg-surface-container-high rounded w-full"></div>
+            <div class="h-12 bg-surface-container-high rounded w-full" v-for="i in 3" :key="i"></div>
+          </div>
+
+          <div v-else-if="gradesList.length > 0" class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-surface-container-high text-on-surface-variant font-title-md text-body-sm">
+                  <th class="py-4 px-6 font-semibold whitespace-nowrap">Mã HV</th>
+                  <th class="py-4 px-6 font-semibold whitespace-nowrap">Họ và tên</th>
+                  <th class="py-4 px-6 font-semibold whitespace-nowrap text-center">Kiểm tra</th>
+                  <th class="py-4 px-6 font-semibold whitespace-nowrap text-center">Giữa kỳ</th>
+                  <th class="py-4 px-6 font-semibold whitespace-nowrap text-center">Cuối kỳ</th>
+                  <th class="py-4 px-6 font-semibold whitespace-nowrap text-center">Điểm TB</th>
+                  <th class="py-4 px-6 font-semibold whitespace-nowrap text-right">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody class="font-body-sm text-body-sm">
+                <tr
+                  v-for="st in gradesList"
+                  :key="st.studentId"
+                  class="border-t border-white/40 hover:bg-white/30 transition-colors group"
+                >
+                  <td class="py-4 px-6 font-semibold text-primary-container">HV-{{ String(st.studentId).padStart(4, '0') }}</td>
+                  <td class="py-4 px-6 font-semibold text-on-surface">{{ st.studentName }}</td>
+                  <td class="py-4 px-6 text-center font-semibold text-on-surface">
+                    {{ getScoreVal(st.results, 'KiemTra') }}
+                  </td>
+                  <td class="py-4 px-6 text-center font-semibold text-on-surface">
+                    {{ getScoreVal(st.results, 'GiuaKy') }}
+                  </td>
+                  <td class="py-4 px-6 text-center font-semibold text-on-surface">
+                    {{ getScoreVal(st.results, 'CuoiKy') }}
+                  </td>
+                  <td class="py-4 px-6 text-center">
+                    <span
+                      v-if="st.averageScore !== null"
+                      :class="[
+                        st.averageScore >= 8.0 ? 'text-emerald-500 font-bold' :
+                        st.averageScore >= 5.0 ? 'text-primary-container font-bold' :
+                        'text-rose-500 font-bold',
+                        'px-2 py-0.5 rounded bg-white/40 border border-white/60 text-[12px]'
+                      ]"
+                    >
+                      {{ st.averageScore }}
+                    </span>
+                    <span v-else class="text-on-surface-variant">-</span>
+                  </td>
+                  <td class="py-4 px-6 text-right">
+                    <button
+                      v-if="!authStore.isAdmin"
+                      @click="openGradingDialog(st)"
+                      class="px-3.5 py-1.5 rounded-lg bg-on-tertiary-container/10 hover:bg-on-tertiary-container/20 text-on-tertiary-container font-semibold text-[11px] transition-colors inline-flex items-center gap-1 opacity-0 group-hover:opacity-100"
+                    >
+                      <span class="material-symbols-outlined text-[15px]">edit_note</span>
+                      Nhập/Sửa điểm
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div v-else class="p-12 text-center flex flex-col items-center justify-center">
+            <span class="material-symbols-outlined text-outline/30 text-[64px] mb-3">school</span>
+            <p class="text-body-lg font-body-lg text-on-surface-variant">Không tìm thấy dữ liệu học tập nào</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIALOG 1: XẾP HỌC VIÊN VÀO LỚP -->
+    <teleport to="body">
+      <div v-if="enrollModal" class="fixed inset-0 glass-backdrop z-[9999] flex items-center justify-center p-4">
+        <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-2xl max-w-lg w-full rounded-2xl overflow-hidden animate-scale-in flex flex-col">
+          <div class="px-6 py-4 border-b border-white/40 flex items-center justify-between">
+            <h3 class="font-title-md text-title-md font-bold text-primary-container flex items-center gap-2">
+              <span class="material-symbols-outlined text-on-tertiary-container">person_add</span>
+              Xếp học viên vào lớp
+            </h3>
+            <button @click="enrollModal = false" class="text-on-surface-variant hover:text-on-surface transition-colors">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <div class="p-6 space-y-4">
+            <!-- Search input -->
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+              <input
+                v-model="studentSearch"
+                class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg pl-10 pr-4 py-2 text-body-sm font-body-sm text-on-surface"
+                placeholder="Tìm kiếm học viên theo tên..."
+                type="text"
+              />
+            </div>
+
+            <!-- Select Student List box -->
+            <div class="border border-white/40 rounded-xl overflow-hidden max-h-60 overflow-y-auto bg-primary-container/[0.05]">
+              <div v-if="loadingStudents" class="p-4 text-center text-body-sm font-body-sm text-on-surface-variant">
+                Đang tải danh sách học viên...
+              </div>
+              <div v-else-if="unassignedStudents.length > 0">
+                <div
+                  v-for="st in unassignedStudents"
+                  :key="st.studentId"
+                  @click="selectedStudentForEnroll = st"
+                  :class="[
+                    'p-3 cursor-pointer border-b border-white/10 transition-colors flex justify-between items-center',
+                    selectedStudentForEnroll?.studentId === st.studentId
+                      ? 'bg-on-tertiary-container/15 border-l-4 border-l-on-tertiary-container'
+                      : 'hover:bg-white/10'
+                  ]"
+                >
+                  <div>
+                    <div class="font-semibold text-on-surface text-body-sm font-body-sm">{{ st.fullName }}</div>
+                    <div class="text-[11px] text-on-surface-variant">SĐT: {{ st.phone || '-' }} | Email: {{ st.email || '-' }}</div>
+                  </div>
+                  <span
+                    class="material-symbols-outlined text-on-tertiary-container"
+                    v-if="selectedStudentForEnroll?.studentId === st.studentId"
+                  >
+                    check_circle
+                  </span>
+                </div>
+              </div>
+              <div v-else class="p-6 text-center text-body-sm font-body-sm text-on-surface-variant">
+                Không tìm thấy học viên mới nào để xếp lớp
+              </div>
+            </div>
+          </div>
+
+          <div class="px-6 py-4 border-t border-white/40 flex justify-end gap-3 bg-white/20">
+            <button
+              @click="enrollModal = false"
+              class="px-5 py-2.5 rounded-lg bg-transparent border border-outline-variant text-on-surface-variant font-semibold text-body-sm hover:bg-surface-container-high transition-colors"
+            >
+              Hủy bỏ
+            </button>
+            <button
+              @click="submitEnrollment"
+              :disabled="!selectedStudentForEnroll || enrolling"
+              class="px-5 py-2.5 rounded-lg bg-primary-container text-white font-semibold text-body-sm hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+            >
+              <span v-if="enrolling" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+              Xếp vào lớp
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
+
+    <!-- DIALOG 2: NHẬP ĐIỂM SỐ -->
+    <teleport to="body">
+      <div v-if="gradingModal" class="fixed inset-0 glass-backdrop z-[9999] flex items-center justify-center p-4">
+        <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-2xl max-w-md w-full rounded-2xl overflow-hidden animate-scale-in flex flex-col">
+          <div class="px-6 py-4 border-b border-white/40 flex items-center justify-between">
+            <h3 class="font-title-md text-title-md font-bold text-primary-container flex items-center gap-2">
+              <span class="material-symbols-outlined text-on-tertiary-container">edit_note</span>
+              Nhập/Sửa điểm: {{ selectedStudentForGrading?.studentName }}
+            </h3>
+            <button @click="gradingModal = false" class="text-on-surface-variant hover:text-on-surface transition-colors">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <div class="p-6 space-y-4">
+            <!-- Score input box for each exam type -->
+            <div v-for="type in ['KiemTra', 'GiuaKy', 'CuoiKy']" :key="type" class="space-y-1 bg-primary-container/[0.05] p-3.5 rounded-xl border border-primary-container/10">
+              <div class="flex justify-between items-center mb-1.5">
+                <label class="text-body-sm font-body-sm font-semibold text-on-surface">{{ getExamTypeLabel(type) }} *</label>
+                <span class="text-[11px] text-on-surface-variant" v-if="gradingForm[type].resultId">
+                  Đã có điểm (ID: {{ gradingForm[type].resultId }})
+                </span>
+              </div>
+              
+              <div class="flex gap-3 items-center">
+                <input
+                  v-model.number="gradingForm[type].score"
+                  type="number"
+                  min="0"
+                  max="10"
+                  step="0.1"
+                  class="w-24 bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-3 py-2 text-body-sm font-body-sm text-on-surface text-center font-bold"
+                  placeholder="Điểm"
+                />
+                <input
+                  v-model="gradingForm[type].note"
+                  type="text"
+                  class="flex-1 bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-3 py-2 text-body-sm font-body-sm text-on-surface"
+                  placeholder="Ghi chú (VD: Điểm kiểm tra đợt 1)"
+                />
+              </div>
+            </div>
+            <p class="text-[11px] text-on-surface-variant/80 italic">Chú ý: Điểm số bắt buộc từ 0 đến 10. Điểm để trống hoặc không nhập sẽ không ghi nhận.</p>
+          </div>
+
+          <div class="px-6 py-4 border-t border-white/40 flex justify-end gap-3 bg-white/20">
+            <button
+              @click="gradingModal = false"
+              class="px-5 py-2.5 rounded-lg bg-transparent border border-outline-variant text-on-surface-variant font-semibold text-body-sm hover:bg-surface-container-high transition-colors"
+            >
+              Hủy
+            </button>
+            <button
+              @click="submitGrades"
+              :disabled="savingGrades"
+              class="px-5 py-2.5 rounded-lg bg-primary-container text-white font-semibold text-body-sm hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+            >
+              <span v-if="savingGrades" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+              Lưu điểm số
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
+
+    <!-- Dialog: Admin chuyển lớp học cho học viên -->
+    <teleport to="body">
+      <div v-if="transferDialog" class="fixed inset-0 glass-backdrop z-[9999] flex items-center justify-center p-4">
+        <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-2xl max-w-md w-full rounded-2xl overflow-hidden animate-scale-in flex flex-col">
+          <div class="px-6 py-4 border-b border-white/40 flex items-center justify-between">
+            <h3 class="font-title-md text-title-md font-bold text-primary-container flex items-center gap-2">
+              <span class="material-symbols-outlined text-on-tertiary-container">sync_alt</span>
+              Chuyển lớp cho học viên
+            </h3>
+            <button @click="transferDialog = false" class="text-on-surface-variant hover:text-on-surface transition-colors">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <div class="p-6 space-y-4">
+            <div class="bg-primary-container/5 p-4 rounded-xl border border-primary-container/10 text-body-sm space-y-1">
+              <div>Học viên: <span class="font-bold text-primary-container">{{ transferEnrollmentTarget?.studentName }}</span></div>
+              <div>Khóa học: <span class="font-semibold text-primary-container">{{ currentClass?.courseName }}</span></div>
+              <div>Lớp hiện tại: <strong class="text-primary-container">{{ currentClass?.className }}</strong></div>
+            </div>
+
+            <div class="space-y-1">
+              <label class="text-body-sm font-semibold text-on-surface">Chọn lớp học thay thế *</label>
+              <div v-if="loadingAlternativeClasses" class="flex items-center justify-center py-4 gap-2">
+                <span class="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full"></span>
+                <span class="text-body-xs text-on-surface-variant">Đang tìm lớp học...</span>
+              </div>
+              <div v-else-if="alternativeClasses.length === 0" class="text-error text-body-sm font-semibold py-2">
+                Không tìm thấy lớp học khác nào hoạt động cho khóa này.
+              </div>
+              <div v-else class="relative">
+                <select
+                  v-model="selectedAlternativeClassId"
+                  class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-on-surface bg-transparent cursor-pointer focus:outline-none"
+                >
+                  <option :value="null" disabled>-- Chọn lớp học mới --</option>
+                  <option v-for="c in alternativeClasses" :key="c.classId" :value="c.classId">
+                    {{ c.className }} (Sĩ số: {{ c.currentStudents }}/{{ c.maxStudents }} - Phòng: {{ c.room || 'N/A' }})
+                  </option>
+                </select>
+                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+              </div>
+            </div>
+
+            <!-- Schedule info of the selected target class to check for conflicts -->
+            <div v-if="selectedAlternativeClassSchedules.length > 0" class="bg-on-tertiary-container/5 p-4 rounded-xl border border-on-tertiary-container/10">
+              <div class="text-[11px] font-bold text-on-tertiary-container uppercase tracking-wide mb-1.5">Lịch học lớp mới:</div>
+              <div class="space-y-1 text-body-xs font-semibold text-primary-container">
+                <div v-for="s in selectedAlternativeClassSchedules" :key="s.scheduleId">
+                  • Thứ {{ formatDayOfWeek(s.dayOfWeek) }} ({{ s.startTime.substring(0,5) }} - {{ s.endTime.substring(0,5) }})
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-6 py-4 border-t border-white/40 flex justify-end gap-3 bg-white/20">
+            <button
+              @click="transferDialog = false"
+              class="px-5 py-2.5 rounded-lg bg-transparent border border-outline-variant text-on-surface-variant font-semibold text-body-sm hover:bg-surface-container-high transition-colors"
+            >
+              Hủy
+            </button>
+            <button
+              @click="submitTransfer"
+              :disabled="submittingTransfer || !selectedAlternativeClassId"
+              class="px-5 py-2.5 rounded-lg bg-primary-container text-white font-semibold text-body-sm hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer active:scale-95"
+            >
+              <span v-if="submittingTransfer" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
+              Xác nhận chuyển
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted, inject, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useClassStore, useStudentStore, useAuthStore } from '../../stores'
+import api from '../../services/api'
+
+const router = useRouter()
+const authStore = useAuthStore()
+
+const route = useRoute()
+const classId = Number(route.params.id)
+const classStore = useClassStore()
+const studentStore = useStudentStore()
+const showSnackbar = inject('showSnackbar')
+
+const teachers = ref([])
+const currentClassTeacherId = ref(null)
+
+async function fetchTeachers() {
+  try {
+    const { data } = await api.get('/api/v1/users/teachers')
+    teachers.value = data || []
+  } catch (error) {
+    console.error('Error fetching teachers:', error)
+  }
+}
+
+async function assignTeacherFromDetail() {
+  try {
+    const selected = teachers.value.find(t => t.userId === currentClassTeacherId.value)
+    const teacherName = selected ? selected.fullName : ''
+    
+    await classStore.updateClass(classId, {
+      ...currentClass.value,
+      teacherId: currentClassTeacherId.value,
+      teacherName: teacherName
+    })
+    showSnackbar('Cập nhật giáo viên phụ trách thành công', 'success')
+    await fetchClassDetails()
+  } catch (e) {
+    showSnackbar('Lỗi cập nhật giáo viên', 'error')
+  }
+}
+
+watch(() => classStore.currentClass, (newClass) => {
+  if (newClass) {
+    currentClassTeacherId.value = newClass.teacherId || null
+  }
+}, { immediate: true })
+
+// Tabs definition
+const activeTab = ref('roster')
+const tabs = [
+  { label: 'Học viên lớp học', value: 'roster', icon: 'group' },
+  { label: 'Điểm danh hàng loạt', value: 'attendance', icon: 'fact_check' },
+  { label: 'Bảng điểm lớp học', value: 'grades', icon: 'assignment' }
+]
+
+// Fetch class details
+const loadingClass = ref(false)
+const currentClass = computed(() => classStore.currentClass)
+
+async function fetchClassDetails() {
+  loadingClass.value = true
+  try {
+    const cls = await classStore.getClass(classId)
+    // Check if the user is a Teacher and they are not assigned to this class
+    if (authStore.currentUser?.role === 'GiaoVien' && cls.teacherId !== authStore.currentUser.userId) {
+      showSnackbar('Bạn không có quyền truy cập thông tin lớp học này', 'error')
+      router.push('/classes')
+    }
+  } catch (e) {
+    showSnackbar('Không thể tải thông tin chi tiết lớp học', 'error')
+  } finally {
+    loadingClass.value = false
+  }
+}
+
+// ----------------------------------------------------
+// TAB 1: ROSTER (DANH SÁCH HỌC VIÊN)
+// ----------------------------------------------------
+const loadingRoster = ref(false)
+const roster = ref([])
+const rosterSearch = ref('')
+const activeRosterDropdownId = ref(null)
+
+const filteredRoster = computed(() => {
+  if (!rosterSearch.value.trim()) return roster.value
+  return roster.value.filter(en =>
+    en.studentName?.toLowerCase().includes(rosterSearch.value.toLowerCase())
+  )
+})
+
+async function fetchRoster() {
+  loadingRoster.value = true
+  try {
+    const { data } = await api.get('/api/v1/enrollments', {
+      params: { classId, page: 1, pageSize: 100 }
+    })
+    roster.value = data.items || []
+  } catch (e) {
+    showSnackbar('Lỗi tải danh sách học viên lớp học', 'error')
+  } finally {
+    loadingRoster.value = false
+  }
+}
+
+function toggleRosterDropdown(id) {
+  activeRosterDropdownId.value = activeRosterDropdownId.value === id ? null : id
+}
+
+async function changeEnrollmentStatus(enrollmentId, status) {
+  activeRosterDropdownId.value = null
+  try {
+    await api.put(`/api/v1/enrollments/${enrollmentId}/status`, {
+      id: enrollmentId,
+      status: status
+    })
+    showSnackbar('Cập nhật trạng thái đăng ký thành công', 'success')
+    fetchRoster()
+    fetchClassDetails() // Update fills count
+  } catch (e) {
+    showSnackbar(e.response?.data?.message || 'Lỗi cập nhật trạng thái', 'error')
+  }
+}
+
+const enrollmentStatusOptions = [
+  { label: 'Đang học', value: 'Active' },
+  { label: 'Hoàn thành', value: 'Completed' },
+  { label: 'Đã hủy', value: 'Cancelled' },
+  { label: 'Chờ duyệt', value: 'Pending' }
+]
+
+// Enrollment Modal Actions
+const enrollModal = ref(false)
+const loadingStudents = ref(false)
+const studentSearch = ref('')
+const selectedStudentForEnroll = ref(null)
+const enrolling = ref(false)
+
+const unassignedStudents = computed(() => {
+  // Filter out students already in class roster and apply search filter
+  const enrolledStudentIds = roster.value.map(r => r.studentId)
+  let list = studentStore.students.filter(s => !enrolledStudentIds.includes(s.studentId))
+  
+  if (studentSearch.value.trim()) {
+    list = list.filter(s =>
+      s.fullName?.toLowerCase().includes(studentSearch.value.toLowerCase())
+    )
+  }
+  return list
+})
+
+async function openEnrollModal() {
+  selectedStudentForEnroll.value = null
+  studentSearch.value = ''
+  enrollModal.value = true
+  loadingStudents.value = true
+  try {
+    await studentStore.fetchStudents({ page: 1, pageSize: 150 })
+  } catch (e) {
+    showSnackbar('Lỗi tải danh sách học viên hệ thống', 'error')
+  } finally {
+    loadingStudents.value = false
+  }
+}
+
+async function submitEnrollment() {
+  if (!selectedStudentForEnroll.value) return
+  enrolling.value = true
+  try {
+    await api.post('/api/v1/enrollments', {
+      studentId: selectedStudentForEnroll.value.studentId,
+      classId: classId
+    })
+    showSnackbar('Xếp học viên vào lớp thành công', 'success')
+    enrollModal.value = false
+    fetchRoster()
+    fetchClassDetails()
+  } catch (e) {
+    showSnackbar(e.response?.data?.message || 'Không thể xếp lớp cho học viên này', 'error')
+  } finally {
+    enrolling.value = false
+  }
+}
+
+// ----------------------------------------------------
+// TAB 2: ATTENDANCE (ĐIỂM DANH)
+// ----------------------------------------------------
+const attendanceDate = ref(new Date().toLocaleDateString('en-CA')) // Local YYYY-MM-DD
+const loadingAttendance = ref(false)
+const savingAttendance = ref(false)
+const attendanceList = ref([])
+const attendanceRecordExists = ref(false)
+const attendanceLoaded = ref(false)
+
+const attendanceStatusOptions = [
+  { label: 'Có mặt', value: 'CoMat', activeClass: 'bg-emerald-500 text-white' },
+  { label: 'Vắng mặt', value: 'Vang', activeClass: 'bg-rose-500 text-white' },
+  { label: 'Có phép', value: 'CoPhep', activeClass: 'bg-amber-500 text-white' },
+  { label: 'Đi muộn', value: 'DiTre', activeClass: 'bg-sky-500 text-white' }
+]
+
+async function fetchAttendanceForDate() {
+  if (!attendanceDate.value) return
+  loadingAttendance.value = true
+  attendanceLoaded.value = false
+  try {
+    // 1. Get existing records for date
+    const { data: existingRecords } = await api.get(`/api/v1/attendances/class/${classId}/date/${attendanceDate.value}`)
+    
+    // Map roster students
+    if (existingRecords && existingRecords.length > 0) {
+      attendanceRecordExists.value = true
+      const activeRoster = roster.value.filter(r => r.status === 'DangHoc')
+      // Map roster to include attendance details
+      attendanceList.value = activeRoster.map(r => {
+        const found = existingRecords.find(x => x.enrollmentId === r.enrollmentId)
+        return {
+          enrollmentId: r.enrollmentId,
+          studentId: r.studentId,
+          studentName: r.studentName,
+          status: found ? found.status : 'CoMat',
+          note: found ? found.note : '',
+          attendanceId: found ? found.attendanceId : null
+        }
+      })
+    } else {
+      attendanceRecordExists.value = false
+      const activeRoster = roster.value.filter(r => r.status === 'DangHoc')
+      // Default to "CoMat" for all roster students
+      attendanceList.value = activeRoster.map(r => ({
+        enrollmentId: r.enrollmentId,
+        studentId: r.studentId,
+        studentName: r.studentName,
+        status: 'CoMat',
+        note: '',
+        attendanceId: null
+      }))
+    }
+    attendanceLoaded.value = true
+  } catch (e) {
+    showSnackbar('Lỗi tải dữ liệu điểm danh', 'error')
+  } finally {
+    loadingAttendance.value = false
+  }
+}
+
+function setAllAttendanceStatus(status) {
+  attendanceList.value.forEach(x => {
+    x.status = status
+  })
+}
+
+async function saveAttendance() {
+  savingAttendance.value = true
+  try {
+    const listToSave = attendanceList.value.map(x => ({
+      enrollmentId: x.enrollmentId,
+      status: x.status,
+      note: x.note || null
+    }))
+    
+    // API: Batch attendance
+    await api.post('/api/v1/attendances', {
+      classId: classId,
+      sessionDate: new Date(attendanceDate.value).toISOString(),
+      attendances: listToSave
+    })
+    
+    showSnackbar('Lưu bảng điểm danh thành công', 'success')
+    fetchAttendanceForDate()
+  } catch (e) {
+    showSnackbar('Lỗi khi lưu bảng điểm danh', 'error')
+  } finally {
+    savingAttendance.value = false
+  }
+}
+
+// ----------------------------------------------------
+// TAB 3: GRADES (ĐIỂM SỐ HỌC TẬP)
+// ----------------------------------------------------
+const loadingGrades = ref(false)
+const gradesList = ref([])
+const gradingModal = ref(false)
+const selectedStudentForGrading = ref(null)
+const savingGrades = ref(false)
+
+const gradingForm = ref({
+  KiemTra: { resultId: null, score: '', note: '' },
+  GiuaKy: { resultId: null, score: '', note: '' },
+  CuoiKy: { resultId: null, score: '', note: '' }
+})
+
+async function fetchGrades() {
+  loadingGrades.value = true
+  try {
+    const { data } = await api.get(`/api/v1/results/class/${classId}/summary`)
+    gradesList.value = data.students || []
+  } catch (e) {
+    showSnackbar('Lỗi tải bảng điểm số', 'error')
+  } finally {
+    loadingGrades.value = false
+  }
+}
+
+function getScoreVal(results, type) {
+  const r = results?.find(x => x.examType === type)
+  return r ? r.score : '-'
+}
+
+function openGradingDialog(student) {
+  selectedStudentForGrading.value = student
+  
+  // Reset form
+  gradingForm.value = {
+    KiemTra: { resultId: null, score: '', note: '' },
+    GiuaKy: { resultId: null, score: '', note: '' },
+    CuoiKy: { resultId: null, score: '', note: '' }
+  }
+  
+  // Prefill with existing scores
+  if (student.results && student.results.length > 0) {
+    student.results.forEach(r => {
+      if (gradingForm.value[r.examType]) {
+        gradingForm.value[r.examType] = {
+          resultId: r.resultId,
+          score: r.score,
+          note: r.note || ''
+        }
+      }
+    })
+  }
+  
+  gradingModal.value = true
+}
+
+async function submitGrades() {
+  savingGrades.value = true
+  try {
+    // Collect and run requests
+    const promises = []
+    
+    // Find matching enrollment
+    const enrollment = roster.value.find(r => r.studentId === selectedStudentForGrading.value.studentId)
+    if (!enrollment) {
+      showSnackbar('Không tìm thấy bản ghi đăng ký học viên', 'error')
+      return
+    }
+    
+    for (const type of ['KiemTra', 'GiuaKy', 'CuoiKy']) {
+      const f = gradingForm.value[type]
+      if (f.score !== '' && f.score !== null) {
+        // Validation check
+        if (f.score < 0 || f.score > 10) {
+          showSnackbar(`Điểm số ${getExamTypeLabel(type)} phải từ 0 đến 10`, 'error')
+          return
+        }
+        
+        if (f.resultId) {
+          // Update
+          promises.push(api.put(`/api/v1/results/${f.resultId}`, {
+            id: f.resultId,
+            score: Number(f.score),
+            note: f.note || null
+          }))
+        } else {
+          // Create
+          promises.push(api.post('/api/v1/results', {
+            enrollmentId: enrollment.enrollmentId,
+            examType: type,
+            score: Number(f.score),
+            note: f.note || null,
+            examDate: new Date().toISOString()
+          }))
+        }
+      }
+    }
+    
+    if (promises.length === 0) {
+      gradingModal.value = false
+      return
+    }
+    
+    await Promise.all(promises)
+    showSnackbar('Cập nhật điểm số thành công', 'success')
+    gradingModal.value = false
+    fetchGrades()
+  } catch (e) {
+    showSnackbar(e.response?.data?.message || 'Có lỗi xảy ra khi lưu điểm', 'error')
+  } finally {
+    savingGrades.value = false
+  }
+}
+
+function getExamTypeLabel(type) {
+  const map = { GiuaKy: 'Giữa kỳ', CuoiKy: 'Cuối kỳ', KiemTra: 'Kiểm tra' }
+  return map[type] || type
+}
+
+// ----------------------------------------------------
+// UTILS
+// ----------------------------------------------------
+function formatDate(date) {
+  if (!date) return ''
+  return new Date(date).toLocaleDateString('vi-VN')
+}
+
+function getStatusLabel(status) {
+  const map = { Opened: 'Mở lớp', InProgress: 'Đang dạy', Completed: 'Kết thúc', Cancelled: 'Đã hủy' }
+  return map[status] || status
+}
+
+function getStatusBadgeClass(status) {
+  const map = {
+    Opened: 'status-opened',
+    InProgress: 'status-inprogress',
+    Completed: 'status-completed',
+    Cancelled: 'status-cancelled'
+  }
+  return map[status] || 'bg-slate-500/10 text-slate-600 border-slate-500/20'
+}
+
+function getEnrollmentStatusLabel(status) {
+  const map = { 
+    Active: 'Đang học', 
+    DangHoc: 'Đang học',
+    Completed: 'Hoàn thành', 
+    HoanThanh: 'Hoàn thành',
+    Cancelled: 'Đã hủy', 
+    HuyBo: 'Đã hủy',
+    Pending: 'Chờ duyệt' 
+  }
+  return map[status] || status
+}
+
+function getEnrollmentStatusBadgeClass(status) {
+  const map = {
+    Active: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20',
+    DangHoc: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20',
+    Completed: 'bg-purple-500/10 text-purple-700 border-purple-500/20',
+    HoanThanh: 'bg-purple-500/10 text-purple-700 border-purple-500/20',
+    Cancelled: 'bg-rose-500/10 text-rose-700 border-rose-500/20',
+    HuyBo: 'bg-rose-500/10 text-rose-700 border-rose-500/20',
+    Pending: 'bg-amber-500/10 text-amber-700 border-amber-500/20',
+  }
+  return map[status] || 'bg-slate-500/10 text-slate-700 border-slate-500/20'
+}
+
+// Admin Transfer Class State & Logic
+const transferDialog = ref(false)
+const transferEnrollmentTarget = ref(null)
+const alternativeClasses = ref([])
+const loadingAlternativeClasses = ref(false)
+const selectedAlternativeClassId = ref(null)
+const selectedAlternativeClassSchedules = ref([])
+const submittingTransfer = ref(false)
+
+async function openAdminTransferModal(en) {
+  transferEnrollmentTarget.value = en
+  selectedAlternativeClassId.value = null
+  selectedAlternativeClassSchedules.value = []
+  alternativeClasses.value = []
+  transferDialog.value = true
+  loadingAlternativeClasses.value = true
+
+  try {
+    // Fetch classes of the same course
+    const res = await api.get('/api/v1/classes', {
+      params: { courseId: currentClass.value.courseId, pageSize: 100 }
+    })
+    alternativeClasses.value = (res.data?.items || []).filter(
+      c => c.classId !== currentClass.value.classId && (c.status === 'Opened' || c.status === 'InProgress')
+    )
+  } catch (e) {
+    showSnackbar('Lỗi tải danh sách lớp học thay thế', 'error')
+  } finally {
+    loadingAlternativeClasses.value = false
+  }
+}
+
+// Watch selectedAlternativeClassId to load its schedules
+watch(selectedAlternativeClassId, async (newClassId) => {
+  if (!newClassId) {
+    selectedAlternativeClassSchedules.value = []
+    return
+  }
+  try {
+    const res = await api.get(`/api/v1/classes/${newClassId}/schedules`)
+    selectedAlternativeClassSchedules.value = res.data || []
+  } catch (e) {
+    console.error('Error fetching schedules:', e)
+    selectedAlternativeClassSchedules.value = []
+  }
+})
+
+async function submitTransfer() {
+  if (!selectedAlternativeClassId.value || !transferEnrollmentTarget.value) return
+  submittingTransfer.value = true
+  try {
+    await api.post('/api/v1/enrollments/transfer', {
+      studentId: transferEnrollmentTarget.value.studentId,
+      fromClassId: classId, // route classId from params
+      toClassId: selectedAlternativeClassId.value
+    })
+    showSnackbar('Chuyển lớp học thành công cho học viên!', 'success')
+    transferDialog.value = false
+    
+    // Reload roster and class details
+    await fetchRoster()
+    await fetchClassDetails()
+  } catch (e) {
+    showSnackbar(e.response?.data?.message || 'Lỗi khi chuyển lớp học', 'error')
+  } finally {
+    submittingTransfer.value = false
+  }
+}
+
+function formatDayOfWeek(day) {
+  const map = { 1: 'Hai', 2: 'Ba', 3: 'Tư', 4: 'Năm', 5: 'Sáu', 6: 'Bảy', 0: 'Chủ Nhật' }
+  return map[day] || day
+}
+
+// Watch active tabs to load respective data
+watch(activeTab, (tab) => {
+  if (tab === 'roster') {
+    fetchRoster()
+  } else if (tab === 'attendance') {
+    fetchAttendanceForDate()
+  } else if (tab === 'grades') {
+    fetchGrades()
+  }
+})
+
+onMounted(async () => {
+  await fetchClassDetails()
+  await fetchRoster()
+  if (authStore.isAdmin) {
+    await fetchTeachers()
+  }
+  if (route.query.tab && ['roster', 'attendance', 'grades'].includes(route.query.tab)) {
+    activeTab.value = route.query.tab
+  }
+})
+</script>
+
+<style scoped>
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+.animate-scale-in {
+  animation: scaleIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+</style>
