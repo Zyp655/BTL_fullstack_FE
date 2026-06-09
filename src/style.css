@@ -1,0 +1,137 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
+@config "../tailwind.config.js";
+
+@layer base {
+  body {
+    background-color: #f8f9fa;
+    background-image: 
+        radial-gradient(at 0% 0%, hsla(213, 100%, 89%, 0.4) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, hsla(145, 100%, 93%, 0.3) 0px, transparent 50%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    margin: 0;
+    overflow-x: hidden;
+    color: #191c1d;
+    font-family: 'Inter', sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0px 12px 24px rgba(0, 0, 0, 0.05);
+}
+
+.glass-input {
+  background-color: rgba(0, 31, 63, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  color: #191c1d;
+  transition: all 0.2s ease;
+}
+
+.glass-input:focus {
+  outline: none;
+  border-color: #2b83ff;
+  box-shadow: 0 0 0 3px rgba(43, 131, 255, 0.1);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(135deg, #001f3f, #2b83ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glow effects */
+.glow-primary {
+  box-shadow: 0 0 20px rgba(43, 131, 255, 0.2);
+}
+
+/* Status badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.status-opened {
+  background-color: rgba(232, 245, 233, 0.8);
+  border: 1px solid #c8e6c9;
+  color: #2e7d32;
+}
+
+.status-inprogress {
+  background-color: rgba(227, 242, 253, 0.8);
+  border: 1px solid #bbdefb;
+  color: #1565c0;
+}
+
+.status-completed {
+  background-color: rgba(243, 244, 245, 0.8);
+  border: 1px solid #e1e3e4;
+  color: #5d5f5f;
+}
+
+.status-cancelled {
+  background-color: rgba(255, 234, 230, 0.8);
+  border: 1px solid #ffdad6;
+  color: #ba1a1a;
+}
+
+/* Fade transition */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Glassmorphism Backdrop Overlay */
+.glass-backdrop {
+  background-color: rgba(15, 23, 42, 0.25);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
