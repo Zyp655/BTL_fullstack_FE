@@ -887,8 +887,11 @@ function setupSignalR() {
   const token = authStore.token || authStore.currentUser?.token
   if (!token) return
   
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+  const hubUrl = baseUrl.endsWith('/') ? `${baseUrl}hubs/support` : `${baseUrl}/hubs/support`;
+
   signalrConnection = new HubConnectionBuilder()
-    .withUrl('/hubs/support', {
+    .withUrl(hubUrl, {
       accessTokenFactory: () => token
     })
     .withAutomaticReconnect()
