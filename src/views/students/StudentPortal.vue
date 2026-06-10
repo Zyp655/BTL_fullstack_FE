@@ -473,45 +473,58 @@ async function loadPortalData() {
       // Load class schedules and scores which depend on enrolled classes
       if (enrolledClasses.value.length > 0) {
         selectedClass.value = enrolledClasses.value[0]
-        if (!isClassUnpaid(selectedClass.value.classId)) {
-          await fetchClassSchedules(selectedClass.value.classId)
-        } else {
-          schedules.value = []
-        }
         
+        const schedulesPromise = !isClassUnpaid(selectedClass.value.classId)
+          ? fetchClassSchedules(selectedClass.value.classId)
+          : Promise.resolve(schedules.value = [])
+
         examResults.value = {}
-        for (const cls of enrolledClasses.value) {
+        const scorePromises = enrolledClasses.value.map(async (cls) => {
           try {
             const scoreRes = await api.get(`/api/v1/results/enrollment/${cls.enrollmentId}`)
             examResults.value[cls.enrollmentId] = scoreRes.data || []
           } catch (e) {
             console.error(`Error loading score for enrollment ${cls.enrollmentId}:`, e)
           }
-        }
+        })
+
+        enrolledSchedulesMap.value = {}
+        const conflictSchedulesPromises = enrolledClasses.value
+          .filter(cls => !isClassUnpaid(cls.classId) && cls.status === 'DangHoc')
+          .map(async (cls) => {
+            try {
+              const schedRes = await api.get(`/api/v1/classes/${cls.classId}/schedules`)
+              enrolledSchedulesMap.value[cls.classId] = schedRes.data || []
+            } catch (e) {
+              console.error(`Error loading schedules for class ${cls.classId}:`, e)
+            }
+          })
+
+        const msgPromise = api.get('/api/v1/support-messages/my-messages').then(res => {
+          mySupportMessages.value = res.data || []
+        }).catch(e => {
+          console.error('Error fetching support messages:', e)
+          mySupportMessages.value = []
+        })
+
+        await Promise.all([
+          schedulesPromise,
+          msgPromise,
+          ...scorePromises,
+          ...conflictSchedulesPromises
+        ])
       } else {
         selectedClass.value = null
         schedules.value = []
-      }
-
-      // Fetch schedules for each enrolled class to check for conflicts
-      enrolledSchedulesMap.value = {}
-      for (const cls of enrolledClasses.value) {
-        if (!isClassUnpaid(cls.classId) && cls.status === 'DangHoc') {
-          try {
-            const schedRes = await api.get(`/api/v1/classes/${cls.classId}/schedules`)
-            enrolledSchedulesMap.value[cls.classId] = schedRes.data || []
-          } catch (e) {
-            console.error(`Error loading schedules for class ${cls.classId}:`, e)
-          }
+        examResults.value = {}
+        enrolledSchedulesMap.value = {}
+        
+        try {
+          const msgRes = await api.get('/api/v1/support-messages/my-messages')
+          mySupportMessages.value = msgRes.data || []
+        } catch (e) {
+          console.error('Error fetching support messages:', e)
         }
-      }
-
-      // Fetch support messages
-      try {
-        const msgRes = await api.get('/api/v1/support-messages/my-messages')
-        mySupportMessages.value = msgRes.data || []
-      } catch (e) {
-        console.error('Error fetching support messages:', e)
       }
 
       // Initialize WebSockets
@@ -533,82 +546,87 @@ async function loadPortalData() {
 async function loadPortalDataForStudent(studentId, userId) {
   loading.value = true
   try {
-    // 2. Fetch payments / tuition first
-    try {
-      const payRes = await api.get(`/api/v1/payments/student/${userId}`)
-      payments.value = payRes.data || []
-    } catch (e) {
+    // 1. Fetch independent data in parallel
+    const payPromise = api.get(`/api/v1/payments/student/${userId}`).catch(e => {
       console.error('Error fetching payments:', e)
+      return { data: [] }
+    })
+    const classPromise = api.get(`/api/v1/students/${studentId}/enrollments`)
+    const attPromise = api.get(`/api/v1/attendances/student/${studentId}/summary`).catch(e => {
+      console.error('Error fetching attendance:', e)
+      return { data: [] }
+    })
+    const creditPromise = api.get(`/api/v1/enrollments/student-credits/${studentId}`).catch(e => {
+      console.error('Error fetching student credits:', e)
+      return { data: null }
+    })
+    const msgPromise = (authStore.isAdmin 
+      ? api.get('/api/v1/support-messages')
+      : api.get('/api/v1/support-messages/my-messages')
+    ).catch(e => {
+      console.error('Error fetching support messages:', e)
+      return { data: [] }
+    })
+
+    const [payRes, classRes, attRes, creditRes, msgRes] = await Promise.all([
+      payPromise,
+      classPromise,
+      attPromise,
+      creditPromise,
+      msgPromise
+    ])
+
+    payments.value = payRes.data || []
+    enrolledClasses.value = classRes.data || []
+    attendanceSummaries.value = attRes.data || []
+    creditSummary.value = creditRes.data
+
+    if (authStore.isAdmin) {
+      mySupportMessages.value = (msgRes.data || []).filter(m => m.studentId === studentId)
+    } else {
+      mySupportMessages.value = msgRes.data || []
     }
 
-    // 3. Fetch enrolled classes
-    const classRes = await api.get(`/api/v1/students/${studentId}/enrollments`)
-    enrolledClasses.value = classRes.data || []
-    
+    // 2. Fetch dependent class schedules and scores in parallel
     if (enrolledClasses.value.length > 0) {
-      // Pre-select first class
       selectedClass.value = enrolledClasses.value[0]
-      if (!isClassUnpaid(selectedClass.value.classId)) {
-        await fetchClassSchedules(selectedClass.value.classId)
-      } else {
-        schedules.value = []
-      }
       
-      // Fetch exam results for each enrollment
+      const schedulesPromise = !isClassUnpaid(selectedClass.value.classId)
+        ? fetchClassSchedules(selectedClass.value.classId)
+        : Promise.resolve(schedules.value = [])
+
       examResults.value = {}
-      for (const cls of enrolledClasses.value) {
+      const scorePromises = enrolledClasses.value.map(async (cls) => {
         try {
           const scoreRes = await api.get(`/api/v1/results/enrollment/${cls.enrollmentId}`)
           examResults.value[cls.enrollmentId] = scoreRes.data || []
         } catch (e) {
           console.error(`Error loading score for enrollment ${cls.enrollmentId}:`, e)
         }
-      }
+      })
+
+      enrolledSchedulesMap.value = {}
+      const conflictSchedulesPromises = enrolledClasses.value
+        .filter(cls => !isClassUnpaid(cls.classId) && cls.status === 'DangHoc')
+        .map(async (cls) => {
+          try {
+            const schedRes = await api.get(`/api/v1/classes/${cls.classId}/schedules`)
+            enrolledSchedulesMap.value[cls.classId] = schedRes.data || []
+          } catch (e) {
+            console.error(`Error loading schedules for class ${cls.classId}:`, e)
+          }
+        })
+
+      await Promise.all([
+        schedulesPromise,
+        ...scorePromises,
+        ...conflictSchedulesPromises
+      ])
     } else {
       selectedClass.value = null
       schedules.value = []
-    }
-
-    // 4. Fetch attendance summary
-    try {
-      const attRes = await api.get(`/api/v1/attendances/student/${studentId}/summary`)
-      attendanceSummaries.value = attRes.data || []
-    } catch (e) {
-      console.error('Error fetching attendance:', e)
-    }
-
-    // 5. Fetch student credits
-    try {
-      const creditRes = await api.get(`/api/v1/enrollments/student-credits/${studentId}`)
-      creditSummary.value = creditRes.data
-    } catch (e) {
-      console.error('Error fetching student credits:', e)
-    }
-
-    // 6. Fetch schedules for each enrolled class to check for conflicts
-    enrolledSchedulesMap.value = {}
-    for (const cls of enrolledClasses.value) {
-      if (!isClassUnpaid(cls.classId) && cls.status === 'DangHoc') {
-        try {
-          const schedRes = await api.get(`/api/v1/classes/${cls.classId}/schedules`)
-          enrolledSchedulesMap.value[cls.classId] = schedRes.data || []
-        } catch (e) {
-          console.error(`Error loading schedules for class ${cls.classId}:`, e)
-        }
-      }
-    }
-
-    // 7. Fetch support messages
-    try {
-      if (authStore.isAdmin) {
-        const msgRes = await api.get('/api/v1/support-messages')
-        mySupportMessages.value = (msgRes.data || []).filter(m => m.studentId === studentId)
-      } else {
-        const msgRes = await api.get('/api/v1/support-messages/my-messages')
-        mySupportMessages.value = msgRes.data || []
-      }
-    } catch (e) {
-      console.error('Error fetching support messages:', e)
+      examResults.value = {}
+      enrolledSchedulesMap.value = {}
     }
 
     // Initialize WebSockets
