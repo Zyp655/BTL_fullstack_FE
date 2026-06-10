@@ -190,6 +190,7 @@
           v-if="activeTab === 'payments'"
           :payments="payments"
           @open-payment-modal="openPaymentModal"
+          @refresh-payments="loadPortalData"
         />
 
         <TabCredits

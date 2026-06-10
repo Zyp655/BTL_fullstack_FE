@@ -45,6 +45,12 @@ const routes = [
     meta: { title: 'Quản lý học viên', icon: 'person', roles: ['Admin', 'GiaoVien'] }
   },
   {
+    path: '/teachers',
+    name: 'Teachers',
+    component: () => import('../views/teachers/TeacherList.vue'),
+    meta: { title: 'Quản lý giảng viên', icon: 'co_present', roles: ['Admin'] }
+  },
+  {
     path: '/payments',
     name: 'Payments',
     component: () => import('../views/payments/PaymentList.vue'),

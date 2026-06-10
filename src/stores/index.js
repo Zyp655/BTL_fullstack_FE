@@ -222,4 +222,5 @@ export { useAuthStore } from './auth'
 export { useStudentStore } from './students'
 export { useUserStore } from './users'
 export { useCategoryStore } from './categories'
+export { useTeacherStore } from './teachers'
 
