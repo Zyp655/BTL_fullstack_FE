@@ -1,7 +1,7 @@
 <template>
   <div class="flex min-h-screen text-on-surface font-body-lg text-body-lg">
     <!-- Sidebar Navigation -->
-    <nav v-if="route.name !== 'Login'" :class="[mobileMenuOpen ? 'left-0' : '-left-72 md:left-0', 'w-72 h-screen fixed top-0 bg-primary-container shadow-[0px_12px_24px_rgba(0,0,0,0.15)] flex flex-col py-base z-50 transition-all duration-300 md:flex']">
+    <nav v-if="!route.meta.public" :class="[mobileMenuOpen ? 'left-0' : '-left-72 md:left-0', 'w-72 h-screen fixed top-0 bg-primary-container shadow-[0px_12px_24px_rgba(0,0,0,0.15)] flex flex-col py-base z-50 transition-all duration-300 md:flex']">
       <!-- Brand/Header -->
       <div class="px-6 py-6 mb-4 flex items-center gap-4 border-b border-white/10">
         <div class="w-10 h-10 rounded-lg bg-on-tertiary-container flex items-center justify-center shadow-inner overflow-hidden shrink-0">
@@ -79,12 +79,12 @@
     </nav>
 
     <!-- Mobile Drawer Overlay -->
-    <div v-if="mobileMenuOpen && route.name !== 'Login'" @click="mobileMenuOpen = false" class="fixed inset-0 bg-[#000613]/40 backdrop-blur-xs z-40 md:hidden"></div>
+    <div v-if="mobileMenuOpen && !route.meta.public" @click="mobileMenuOpen = false" class="fixed inset-0 bg-[#000613]/40 backdrop-blur-xs z-40 md:hidden"></div>
 
     <!-- Main Content Wrapper -->
-    <div :class="[route.name === 'Login' ? 'ml-0' : 'main-content-layout', 'flex-1 flex flex-col min-h-screen']">
+    <div :class="[route.meta.public ? 'ml-0' : 'main-content-layout', 'flex-1 flex flex-col min-h-screen']">
       <!-- TopNavBar -->
-      <header v-if="route.name !== 'Login'" class="flex justify-between items-center px-container-padding h-20 bg-white/70 backdrop-blur-[20px] border-b border-white/40 shadow-sm sticky top-0 z-40 w-full">
+      <header v-if="!route.meta.public" class="flex justify-between items-center px-container-padding h-20 bg-white/70 backdrop-blur-[20px] border-b border-white/40 shadow-sm sticky top-0 z-40 w-full">
         <!-- Title / Page Name -->
         <div class="flex items-center">
           <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-on-surface-variant hover:text-on-tertiary-container mr-3 flex items-center" title="Menu">
@@ -158,8 +158,8 @@
       </header>
 
       <!-- Main Canvas -->
-      <main :class="[route.name === 'Login' ? 'p-0' : 'p-container-padding pb-20', 'flex-1']">
-        <div :class="[route.name === 'Login' ? 'max-w-none' : 'max-w-[1400px]', 'mx-auto']">
+      <main :class="[route.meta.public ? 'p-0' : 'p-container-padding pb-20', 'flex-1']">
+        <div :class="[route.meta.public ? 'max-w-none' : 'max-w-[1400px]', 'mx-auto']">
           <router-view v-slot="{ Component }">
             <transition name="fade" mode="out-in">
               <component :is="Component" />

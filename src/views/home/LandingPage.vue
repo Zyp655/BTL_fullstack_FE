@@ -1,203 +1,255 @@
 <template>
-  <div class="landing-page-container min-h-screen relative overflow-x-hidden bg-background text-on-background font-body-md">
-    <!-- Ambient Background Blobs -->
-    <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none noise-bg">
-      <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-primary-fixed opacity-30 blur-[80px] organic-blob"></div>
-      <div class="absolute top-[20%] right-[-5%] w-[400px] h-[400px] bg-tertiary-fixed opacity-30 blur-[60px] organic-blob animation-delay-2000"></div>
-    </div>
-
-    <!-- TopNavBar -->
-    <header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-surface-container-high/40 shadow-sm">
-      <div class="flex justify-between items-center px-container-padding py-4 max-w-7xl mx-auto">
-        <div class="text-headline-md font-headline-md text-primary tracking-tight">EduManager Pro</div>
-        <nav class="hidden md:flex gap-8">
-          <a class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-[14px] font-semibold" href="#features">Tính năng</a>
-          <a class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-[14px] font-semibold" href="#benefits">Lợi ích</a>
-          <a class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-[14px] font-semibold" href="#pricing">Bảng giá</a>
-        </nav>
-        <div class="flex gap-4 items-center">
-          <router-link to="/login" class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-[14px] font-semibold hover:opacity-90 active:scale-95 duration-200">
-            Đăng nhập
+  <div class="landing-page-wrapper min-h-screen relative flex flex-col bg-background text-on-surface antialiased overflow-x-hidden selection:bg-tertiary-fixed selection:text-on-tertiary-fixed">
+    <!-- Ambient Background Orbs -->
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+    
+    <!-- TopNavBar Component -->
+    <nav class="bg-glass-surface dark:bg-primary-container font-title-md text-title-md fixed top-0 w-full backdrop-blur-md border-b border-glass-border shadow-sm z-50">
+      <div class="flex justify-between items-center px-container-padding h-20 max-w-[1400px] mx-auto">
+        <div class="font-headline-lg text-headline-lg font-bold text-primary dark:text-on-primary">
+          EduManager Pro
+        </div>
+        <!-- Desktop Nav -->
+        <ul class="hidden md:flex space-x-stack-md">
+          <li><a class="text-on-tertiary-container dark:text-tertiary-fixed-dim border-b-2 border-on-tertiary-container pb-1 hover:text-tertiary transition-colors duration-200 block scale-95 transition-transform" href="#platform">Platform</a></li>
+          <li><a class="text-secondary dark:text-secondary-fixed-dim hover:text-tertiary transition-colors duration-200 block" href="#solutions">Solutions</a></li>
+          <li><a class="text-secondary dark:text-secondary-fixed-dim hover:text-tertiary transition-colors duration-200 block" href="#resources">Resources</a></li>
+          <li><a class="text-secondary dark:text-secondary-fixed-dim hover:text-tertiary transition-colors duration-200 block" href="#pricing">Pricing</a></li>
+        </ul>
+        <div class="hidden md:flex items-center space-x-stack-sm">
+          <router-link to="/login" class="text-tertiary dark:text-tertiary-fixed font-title-md px-4 py-2 hover:opacity-80 transition-opacity font-semibold">
+            Login
           </router-link>
-          <router-link to="/login" class="bg-primary text-on-primary px-6 py-2 rounded-full font-label-md text-[14px] font-semibold hover:opacity-90 active:scale-95 duration-200 shadow-sm">
-            Bắt đầu ngay
+          <router-link to="/login" class="bg-tertiary text-on-tertiary px-6 py-2 rounded-lg hover:shadow-lg transition-all duration-300 font-semibold">
+            Get Started
           </router-link>
         </div>
+        <!-- Mobile Menu Toggle (Visual only for layout) -->
+        <button class="md:hidden text-primary" @click="toggleMobileMenu">
+          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">menu</span>
+        </button>
       </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="pt-[90px]">
+    </nav>
+    
+    <!-- Main Content Canvas -->
+    <main class="flex-grow pt-28 pb-stack-lg px-container-padding max-w-[1400px] mx-auto w-full flex flex-col gap-y-[120px]">
       <!-- Hero Section -->
-      <section class="px-container-padding py-section-gap max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-gutter relative">
-        <div class="flex-1 flex flex-col gap-stack-md z-10 text-left">
-          <h1 class="font-headline-xl text-[44px] lg:text-[56px] leading-[1.1] font-bold text-on-background tracking-tight">
-            Hệ thống quản lý đào tạo toàn diện
+      <section class="flex flex-col lg:flex-row items-center justify-between gap-stack-lg mt-stack-md">
+        <div class="flex-1 space-y-stack-md z-10">
+          <div class="inline-block glass-panel px-4 py-1 rounded-full text-on-tertiary-container font-label-caps mb-4">
+            Next-Gen Education Management
+          </div>
+          <h1 class="font-display-lg text-display-lg text-primary text-balance">
+            Empower Your Institution with <span class="text-on-tertiary-container">Data-Driven</span> Clarity.
           </h1>
-          <p class="font-body-lg text-[16px] lg:text-[18px] text-on-surface-variant leading-relaxed">
-            Tối ưu hóa quy trình, nâng cao trải nghiệm học viên và tăng trưởng doanh thu với giải pháp công nghệ giáo dục hàng đầu.
+          <p class="font-body-lg text-body-lg text-secondary max-w-xl text-balance">
+            Transform administrative burden into actionable insights. A comprehensive suite designed for modern educational leaders who demand transparency and performance.
           </p>
-          <div class="flex flex-wrap gap-4 mt-2">
-            <router-link to="/login" class="bg-primary text-on-primary px-8 py-3.5 rounded-full font-label-md text-[15px] font-semibold hover:-translate-y-0.5 hover:shadow-md transition-all shadow-ambient">
-              Bắt đầu ngay
+          <div class="flex flex-wrap gap-stack-sm pt-4">
+            <router-link to="/login" class="bg-tertiary text-on-tertiary px-8 py-3 rounded-lg font-title-md shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 font-semibold">
+              Get Started
             </router-link>
-            <router-link to="/login" class="border-2 border-secondary-container text-primary px-8 py-3.5 rounded-full font-label-md text-[15px] font-semibold hover:bg-surface-container transition-colors hover:-translate-y-0.5 transition-all">
-              Xem Demo
+            <router-link to="/login" class="glass-panel text-primary px-8 py-3 rounded-lg font-title-md hover:bg-surface-container transition-colors duration-300 flex items-center gap-2 font-semibold">
+              <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">play_circle</span>
+              Watch Demo
             </router-link>
           </div>
         </div>
-        <div class="flex-1 relative w-full mt-8 lg:mt-0">
-          <div class="relative w-full aspect-[4/3] rounded-card overflow-hidden shadow-ambient border-[6px] border-surface">
+        
+        <div class="flex-1 w-full max-w-2xl relative z-10 perspective-1000">
+          <div class="relative rounded-xl overflow-hidden shadow-2xl transform rotate-y-[-5deg] rotate-x-[5deg] transition-transform duration-500 hover:rotate-0 border-4 border-surface-container-lowest/50 bg-surface-container-lowest/20 backdrop-blur-sm p-2">
             <img 
-              alt="EduManager Pro Dashboard" 
-              class="w-full h-full object-cover" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDl1elafLCPghijQdJABaeXlSDas7vMHFxq4QP_ojTmY829Uup4HTvQv50YbDVlnhlkO59867-CK41lSNAM0xxgVE8aaiwpIECpMOsEKT0k-JIR5A1xb2vbgWFEpK3cMwov_Gh6_nCXdRFXG7CcjQIzFgR02JkEGaQApNb9NsQGOwFYdjln5zcsD7F1O2N3mdZ96aMdjAq92KfI9P_QzcQk7RhSmtzD7RGB9-d-Tt3koE1SiTKlF7-GliHD84ea6KhZMJmmpO8O2MGi"
+              alt="A high-fidelity rendering of a modern, sleek laptop screen displaying a complex but cleanly organized data dashboard for educational management." 
+              class="w-full h-auto rounded-lg shadow-inner" 
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFGTE67V0VwVRVcE6c32UytIhoBeeDkY2BaxB9QI3zXLAD-WoUufa4aiFrHMQojjw5BkowZWXva1ONDooFBqMRkNDGzySry3I6XbrgB7IHXDdUvMcweqlIF1eHArn3IVlN2HC81whyjqPCAEzNaCLlZWdPpQw4K5ogkGNBAGL0yQ63AMkK4wxgqmT3_5mm5nljBh2Qjiom5_VlObetu-RLoho21wqHngK3dMpl8zYDR_KzJ7HKgUd-pQ6EwlhkwvrPhwhYOxOWLIyg"
             />
+          </div>
+          <!-- Decorative element behind image -->
+          <div class="absolute -inset-4 bg-gradient-to-tr from-tertiary-fixed-dim/30 to-transparent blur-2xl -z-10 rounded-full"></div>
+        </div>
+      </section>
+      
+      <!-- Stats Section -->
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-gutter relative z-10">
+        <div class="glass-panel p-stack-md rounded-xl text-center hover:-translate-y-2 transition-transform duration-300">
+          <div class="font-display-lg text-display-lg text-on-tertiary-container mb-2">1000+</div>
+          <div class="font-title-md text-title-md text-secondary">Centers Active</div>
+        </div>
+        <div class="glass-panel p-stack-md rounded-xl text-center hover:-translate-y-2 transition-transform duration-300">
+          <div class="font-display-lg text-display-lg text-on-tertiary-container mb-2">500k+</div>
+          <div class="font-title-md text-title-md text-secondary">Students Managed</div>
+        </div>
+        <div class="glass-panel p-stack-md rounded-xl text-center hover:-translate-y-2 transition-transform duration-300">
+          <div class="font-display-lg text-display-lg text-on-tertiary-container mb-2">98%</div>
+          <div class="font-title-md text-title-md text-secondary">Satisfaction Rate</div>
+        </div>
+      </section>
+      
+      <!-- Features Section (Bento Grid) -->
+      <section class="space-y-stack-lg z-10 relative">
+        <div class="text-center max-w-2xl mx-auto space-y-stack-sm">
+          <h2 class="font-headline-lg text-headline-lg text-primary">Comprehensive Ecosystem</h2>
+          <p class="font-body-lg text-body-lg text-secondary">Everything you need to streamline operations and enhance the educational experience in one cohesive platform.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+          <!-- Card 1 -->
+          <div class="glass-panel p-stack-md rounded-xl flex flex-col gap-stack-sm group hover:border-on-tertiary-container transition-colors duration-300">
+            <div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-on-tertiary-container group-hover:scale-110 transition-transform">
+              <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 0;">school</span>
+            </div>
+            <h3 class="font-title-md text-title-md text-primary mt-2">Course Management</h3>
+            <p class="font-body-sm text-body-sm text-secondary">Streamline curriculum planning, scheduling, and resource allocation with intuitive drag-and-drop tools.</p>
+          </div>
+          <!-- Card 2 -->
+          <div class="glass-panel p-stack-md rounded-xl flex flex-col gap-stack-sm group hover:border-on-tertiary-container transition-colors duration-300">
+            <div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-on-tertiary-container group-hover:scale-110 transition-transform">
+              <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 0;">person</span>
+            </div>
+            <h3 class="font-title-md text-title-md text-primary mt-2">Student Portal</h3>
+            <p class="font-body-sm text-body-sm text-secondary">Provide a unified, secure access point for grades, assignments, and communication tailored to individual needs.</p>
+          </div>
+          <!-- Card 3 -->
+          <div class="glass-panel p-stack-md rounded-xl flex flex-col gap-stack-sm group hover:border-on-tertiary-container transition-colors duration-300">
+            <div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-on-tertiary-container group-hover:scale-110 transition-transform">
+              <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 0;">bar_chart</span>
+            </div>
+            <h3 class="font-title-md text-title-md text-primary mt-2">Financial Reporting</h3>
+            <p class="font-body-sm text-body-sm text-secondary">Generate real-time, customizable fiscal reports to ensure compliance and optimize budget utilization.</p>
+          </div>
+          <!-- Card 4 -->
+          <div class="glass-panel p-stack-md rounded-xl flex flex-col gap-stack-sm group hover:border-on-tertiary-container transition-colors duration-300">
+            <div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-on-tertiary-container group-hover:scale-110 transition-transform">
+              <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 0;">phone_iphone</span>
+            </div>
+            <h3 class="font-title-md text-title-md text-primary mt-2">Mobile App</h3>
+            <p class="font-body-sm text-body-sm text-secondary">Stay connected on the go with full administrative capabilities optimized for mobile devices.</p>
           </div>
         </div>
       </section>
-
-      <!-- Features Section -->
-      <section id="features" class="px-container-padding py-section-gap max-w-7xl mx-auto">
-        <div class="text-center mb-16">
-          <h2 class="font-headline-lg text-[32px] font-bold text-on-background tracking-tight">Tính năng nổi bật</h2>
-          <p class="font-body-md text-[16px] text-on-surface-variant mt-3">Mọi công cụ bạn cần để vận hành trung tâm hiệu quả</p>
+      
+      <!-- Social Proof Section -->
+      <section class="glass-panel p-stack-lg rounded-2xl z-10 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-surface-container-low/50 to-transparent -z-10"></div>
+        <div class="text-center mb-stack-md">
+          <h2 class="font-headline-lg text-headline-lg text-primary">Trusted by Leaders</h2>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
-          <!-- Feature Card 1 -->
-          <div class="bg-surface rounded-card p-6 shadow-ambient flex flex-col gap-4 hover:-translate-y-1.5 transition-all duration-300 border border-surface-container/60 group">
-            <div class="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center text-primary-container group-hover:scale-110 transition-transform">
-              <span class="material-symbols-outlined text-[24px]">menu_book</span>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter max-w-4xl mx-auto">
+          <div class="bg-surface-container-lowest/50 p-stack-md rounded-xl border border-glass-border">
+            <p class="font-body-lg text-body-lg text-on-surface-variant italic mb-4">"EduManager Pro completely transformed our administrative workflows. The clarity it brings to our data is simply unmatched in the industry."</p>
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-full bg-surface-tint overflow-hidden">
+                <img 
+                  alt="Sarah Jenkins Headshot" 
+                  class="w-full h-full object-cover" 
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSltzJpWVG2YyLOwSHzlC_M5wLuYDkVeeWzmwfElbEgQw23U1bKRz11-NDlcMdGD-f4FygzkU1szGm9R7nXzQ--8SZIvsD8jkRAZEugF0iRMrh8bEjK9TkvFBeMZ_FJtvgW2DQYLVSSBdK5F9-djsBw5tK8OiHSOlgfi7NR5uB_o50DqxYxyVklFwgvdA1Tu6yM4soKY0zu_PkL7cNjlolUslJQcAzoiz_rzyFKCnZne_PwFBAwIw9JA2S7XsXdlYBsy-KyG1VIOTQ"
+                />
+              </div>
+              <div>
+                <div class="font-title-md text-title-md text-primary">Sarah Jenkins</div>
+                <div class="font-body-sm text-body-sm text-secondary">Dean of Operations, Horizon Academy</div>
+              </div>
             </div>
-            <h3 class="font-headline-md text-[20px] font-bold text-on-background">Quản lý Môn học</h3>
-            <p class="font-body-md text-[14px] text-on-surface-variant leading-relaxed">Lên lịch, sắp xếp giáo viên và phòng học thông minh.</p>
           </div>
-
-          <!-- Feature Card 2 -->
-          <div class="bg-surface rounded-card p-6 shadow-ambient flex flex-col gap-4 hover:-translate-y-1.5 transition-all duration-300 border border-surface-container/60 group">
-            <div class="w-12 h-12 rounded-full bg-tertiary-fixed flex items-center justify-center text-tertiary-container group-hover:scale-110 transition-transform">
-              <span class="material-symbols-outlined text-[24px]">groups</span>
+          <div class="bg-surface-container-lowest/50 p-stack-md rounded-xl border border-glass-border">
+            <p class="font-body-lg text-body-lg text-on-surface-variant italic mb-4">"The glassmorphic interface isn't just visually stunning; it actually reduces cognitive load for my team when analyzing complex student metrics."</p>
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-full bg-surface-tint overflow-hidden">
+                <img 
+                  alt="David Chen Headshot" 
+                  class="w-full h-full object-cover" 
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6npbLNgqQzB1eeaLbplDMwMqBhCLYqUWJ_OSryB5Qu9M2XmbrrCMEJn-IqiUOgojS_0FGbdX-jyYuGZxBmvCEBPhD0OGSGJwPGYAzaMCutwMhBN35pPLfTLVWEp8pKV4VqQhw8vKrNXWasCQYsCywjd8JrZzeWjVfxESPDhDJdjBbPIug7R23yRDoM5D7el5KC6TU1TpKmaBTaMthR6t4WXWVmYgqLutxxFSGkWj5_usqOXg8nYi9SMiwqxJwVy6KL784nABqgaqB"
+                />
+              </div>
+              <div>
+                <div class="font-title-md text-title-md text-primary">David Chen</div>
+                <div class="font-body-sm text-body-sm text-secondary">IT Director, Nexus Public Schools</div>
+              </div>
             </div>
-            <h3 class="font-headline-md text-[20px] font-bold text-on-background">Quản lý Học viên</h3>
-            <p class="font-body-md text-[14px] text-on-surface-variant leading-relaxed">Theo dõi tiến độ, điểm danh và đánh giá kết quả học tập.</p>
-          </div>
-
-          <!-- Feature Card 3 -->
-          <div class="bg-surface rounded-card p-6 shadow-ambient flex flex-col gap-4 hover:-translate-y-1.5 transition-all duration-300 border border-surface-container/60 group">
-            <div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container group-hover:scale-110 transition-transform">
-              <span class="material-symbols-outlined text-[24px]">request_quote</span>
-            </div>
-            <h3 class="font-headline-md text-[20px] font-bold text-on-background">Báo cáo Tài chính</h3>
-            <p class="font-body-md text-[14px] text-on-surface-variant leading-relaxed">Kiểm soát thu chi, học phí và xuất báo cáo tự động.</p>
-          </div>
-
-          <!-- Feature Card 4 -->
-          <div class="bg-surface rounded-card p-6 shadow-ambient flex flex-col gap-4 hover:-translate-y-1.5 transition-all duration-300 border border-surface-container/60 group">
-            <div class="w-12 h-12 rounded-full bg-primary-fixed-dim flex items-center justify-center text-primary-container group-hover:scale-110 transition-transform">
-              <span class="material-symbols-outlined text-[24px]">smartphone</span>
-            </div>
-            <h3 class="font-headline-md text-[20px] font-bold text-on-background">App Học viên</h3>
-            <p class="font-body-md text-[14px] text-on-surface-variant leading-relaxed">Ứng dụng di động giúp học viên kết nối và tự quản lý.</p>
           </div>
         </div>
       </section>
     </main>
-
-    <!-- Footer -->
-    <footer class="w-full py-12 bg-surface-container text-secondary flex flex-col md:flex-row justify-between items-center px-container-padding gap-6 mt-16 border-t border-surface-container-high/40">
-      <div class="text-[20px] font-bold text-primary tracking-tight">EduManager Pro</div>
-      <div class="flex flex-wrap justify-center gap-6">
-        <a class="text-on-secondary-container hover:text-primary transition-all duration-300 font-body-md text-[14px]" href="#">Chính sách bảo mật</a>
-        <a class="text-on-secondary-container hover:text-primary transition-all duration-300 font-body-md text-[14px]" href="#">Điều khoản sử dụng</a>
-        <a class="text-on-secondary-container hover:text-primary transition-all duration-300 font-body-md text-[14px]" href="#">Liên hệ</a>
-        <a class="text-on-secondary-container hover:text-primary transition-all duration-300 font-body-md text-[14px]" href="#">Tuyển dụng</a>
+    
+    <!-- Footer Component -->
+    <footer class="bg-primary dark:bg-surface-container-lowest font-body-sm text-body-sm w-full mt-auto">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-stack-lg px-container-padding py-stack-lg max-w-[1400px] mx-auto text-on-primary dark:text-on-surface">
+        <div class="col-span-1 md:col-span-2 space-y-4">
+          <div class="font-headline-lg text-headline-lg text-on-primary font-bold">EduManager Pro</div>
+          <p class="text-secondary-fixed-dim opacity-80 max-w-xs">
+            Elevating educational management through transparent, data-rich interfaces and seamless administrative tools.
+          </p>
+          <div class="pt-4 text-secondary-fixed-dim opacity-80">
+            © 2026 EduManager Pro. All rights reserved.
+          </div>
+        </div>
+        <div class="space-y-4">
+          <h4 class="font-title-md text-title-md text-on-primary mb-2">Legal</h4>
+          <ul class="space-y-2">
+            <li><a class="text-secondary-fixed-dim opacity-80 hover:text-tertiary-fixed transition-opacity" href="#">Privacy Policy</a></li>
+            <li><a class="text-secondary-fixed-dim opacity-80 hover:text-tertiary-fixed transition-opacity" href="#">Terms of Service</a></li>
+            <li><a class="text-secondary-fixed-dim opacity-80 hover:text-tertiary-fixed transition-opacity" href="#">Cookie Settings</a></li>
+          </ul>
+        </div>
+        <div class="space-y-4">
+          <h4 class="font-title-md text-title-md text-on-primary mb-2">Support</h4>
+          <ul class="space-y-2">
+            <li><a class="text-secondary-fixed-dim opacity-80 hover:text-tertiary-fixed transition-opacity" href="#">Contact Us</a></li>
+            <li><a class="text-secondary-fixed-dim opacity-80 hover:text-tertiary-fixed transition-opacity" href="#">Help Center</a></li>
+          </ul>
+        </div>
       </div>
-      <div class="font-body-md text-[14px] text-on-surface-variant">© 2026 EduManager Pro. All rights reserved.</div>
     </footer>
   </div>
 </template>
 
 <script setup>
-// Landing page setup
+import { ref } from 'vue'
+
+const mobileMenuOpen = ref(false)
+
+const toggleMobileMenu = () => {
+  mobileMenuOpen.value = !mobileMenuOpen.value
+}
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700&display=swap');
-
-/* Scope variables for Organic Soft-Tech theme */
-.landing-page-container {
-  --primary: #13334b;
-  --on-primary: #ffffff;
-  --secondary: #645e4b;
-  --on-secondary: #ffffff;
-  --background: #fbf9f4;
-  --on-background: #1b1c19;
-  --surface: #fbf9f4;
-  --on-surface: #1b1c19;
-  --on-surface-variant: #42474d;
-  --surface-container: #f0eee9;
-  --surface-container-high: #eae8e3;
-  --secondary-container: #ece2c9;
-  --on-secondary-container: #6b6450;
-  --primary-fixed: #cde5ff;
-  --primary-fixed-dim: #abcae8;
-  --tertiary-fixed: #ccebc7;
-  --tertiary-container: #334d33;
-  --primary-container: #2c4a63;
-  --on-primary-container: #9bb9d7;
-  
-  background-color: var(--background);
-  color: var(--on-background);
-  font-family: 'Inter', sans-serif;
+.landing-page-wrapper {
+  background-color: #f8f9fa;
+  background-image: radial-gradient(circle at top right, rgba(0, 31, 63, 0.03) 0%, transparent 40%),
+                    radial-gradient(circle at bottom left, rgba(0, 31, 63, 0.05) 0%, transparent 40%);
+  background-attachment: fixed;
 }
 
-/* Color classes overrides */
-.landing-page-container .bg-background { background-color: var(--background) !important; }
-.landing-page-container .text-on-background { color: var(--on-background) !important; }
-.landing-page-container .text-primary { color: var(--primary) !important; }
-.landing-page-container .text-on-surface-variant { color: var(--on-surface-variant) !important; }
-.landing-page-container .bg-surface\/80 { background-color: rgba(251, 249, 244, 0.8) !important; }
-.landing-page-container .bg-primary { background-color: var(--primary) !important; }
-.landing-page-container .text-on-primary { color: var(--on-primary) !important; }
-.landing-page-container .border-secondary-container { border-color: var(--secondary-container) !important; }
-.landing-page-container .hover\:bg-surface-container:hover { background-color: var(--surface-container) !important; }
-.landing-page-container .bg-primary-fixed { background-color: var(--primary-fixed) !important; }
-.landing-page-container .bg-tertiary-fixed { background-color: var(--tertiary-fixed) !important; }
-.landing-page-container .bg-secondary-container { background-color: var(--secondary-container) !important; }
-.landing-page-container .text-on-secondary-container { color: var(--on-secondary-container) !important; }
-.landing-page-container .bg-primary-fixed-dim { background-color: var(--primary-fixed-dim) !important; }
-.landing-page-container .bg-surface-container { background-color: var(--surface-container) !important; }
-.landing-page-container .text-secondary { color: var(--secondary) !important; }
-.landing-page-container .bg-surface { background-color: var(--surface) !important; }
-.landing-page-container .border-surface-container { border-color: var(--surface-container) !important; }
-.landing-page-container .text-headline-md { color: var(--primary) !important; font-family: 'Plus Jakarta Sans', sans-serif !important; }
-.landing-page-container .font-headline-xl { font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 700 !important; }
-
-/* Custom Background Blobs & Animations */
-.noise-bg {
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0px 12px 24px rgba(0,0,0,0.05);
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
-.organic-blob {
-  border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
-  animation: morph 8s ease-in-out infinite;
+.ambient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: -1;
+  opacity: 0.4;
 }
 
-.animation-delay-2000 {
-  animation-delay: -2s;
+.orb-1 {
+  width: 400px;
+  height: 400px;
+  background: #afc8f0;
+  top: -100px;
+  right: -100px;
 }
 
-@keyframes morph {
-  0%, 100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
-  34% { border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%; }
-  67% { border-radius: 100% 60% 60% 100% / 100% 100% 60% 60%; }
-}
-
-.material-symbols-outlined {
-  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-}
-
-.shadow-ambient {
-  box-shadow: 0 10px 40px -10px rgba(19, 51, 75, 0.08);
+.orb-2 {
+  width: 500px;
+  height: 500px;
+  background: #d8e2ff;
+  bottom: -200px;
+  left: -200px;
 }
 </style>
