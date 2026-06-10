@@ -1,196 +1,188 @@
 <template>
-  <div class="space-y-stack-lg animate-fade-in">
+  <div class="space-y-stack-lg animate-fade-in pb-16">
     <!-- Header Section -->
     <section class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center">
-          <span class="material-symbols-outlined text-primary-container">category</span>
+        <div class="w-12 h-12 rounded-xl bg-primary-fixed text-on-primary-fixed flex items-center justify-center shadow-sm">
+          <span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">category</span>
         </div>
         <div>
-          <h2 class="font-headline-lg text-headline-lg text-primary-container tracking-tight">Quản lý danh mục</h2>
-          <p class="font-body-lg text-body-lg text-on-surface-variant mt-1">Thiết lập và quản lý các danh mục môn học của trung tâm.</p>
+          <h2 class="font-headline-lg text-headline-lg font-bold text-on-background tracking-tight">Quản lý danh mục</h2>
+          <p class="font-body-sm text-body-sm text-secondary mt-1">Thiết lập và quản lý các nhóm môn học của trung tâm.</p>
         </div>
       </div>
       <div>
         <button
           @click="openCreateDialog"
-          class="bg-primary-container text-white px-6 py-3 rounded-lg font-semibold text-[14px] shadow-sm hover:bg-primary hover:shadow-md transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
+          class="flex items-center gap-2 bg-on-tertiary-container text-white px-5 py-2.5 rounded-lg font-semibold text-[13px] hover:opacity-90 transition-opacity shadow-sm shadow-on-tertiary-container/20 cursor-pointer active:scale-95"
         >
-          <span class="material-symbols-outlined text-[20px]">add</span>
+          <span class="material-symbols-outlined text-[18px]">add</span>
           Thêm danh mục
         </button>
       </div>
     </section>
 
     <!-- Stats Cards -->
-    <section class="flex overflow-x-auto lg:grid lg:grid-cols-4 gap-gutter pb-4 lg:pb-0 scrollbar-none snap-x snap-mandatory">
-      <div v-for="stat in stats" :key="stat.label" class="flex-shrink-0 w-[260px] sm:w-[280px] lg:w-auto bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl p-5 flex items-center gap-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 snap-start">
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
+      <div v-for="stat in stats" :key="stat.label" class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-5 flex items-center gap-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
         <div :class="[stat.bgColor, stat.textColor, 'w-12 h-12 rounded-lg flex items-center justify-center shrink-0']">
           <span class="material-symbols-outlined">{{ stat.icon }}</span>
         </div>
         <div>
           <div class="text-2xl font-bold text-primary">{{ stat.value }}</div>
-          <div class="text-label-caps font-label-caps text-on-surface-variant">{{ stat.label }}</div>
+          <div class="text-[12px] text-on-surface-variant font-medium">{{ stat.label }}</div>
         </div>
       </div>
     </section>
 
-    <!-- Filter Bar -->
-    <section class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl p-4 flex flex-col sm:flex-row gap-4 items-center">
-      <div class="relative flex-1 w-full">
-        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+    <!-- Search bar -->
+    <section class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-sm shadow-primary/5 rounded-xl p-4">
+      <div class="relative w-full">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
         <input
           v-model="filters.search"
-          class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg pl-10 pr-4 py-2.5 text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all"
+          class="w-full pl-10 pr-4 py-2 bg-primary-container/[0.05] border border-outline-variant/30 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-body-sm text-body-sm text-on-surface placeholder:text-outline transition-all"
           placeholder="Tìm kiếm danh mục theo tên hoặc mã..."
           type="text"
         />
       </div>
     </section>
 
-    <!-- Categories Table -->
-    <section>
-      <!-- Loading State -->
-      <div v-if="categoryStore.loading" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl overflow-hidden">
-        <div class="p-12 space-y-4 animate-pulse">
+    <!-- Data Table Card -->
+    <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-md shadow-primary/5 rounded-xl overflow-hidden flex flex-col relative">
+      <div class="absolute inset-x-0 top-0 h-px bg-white/80 z-10 pointer-events-none"></div>
+      
+      <div class="overflow-x-auto">
+        <div v-if="categoryStore.loading" class="p-12 space-y-4 animate-pulse">
           <div class="h-8 bg-surface-container-high rounded w-full"></div>
           <div class="h-12 bg-surface-container-high rounded w-full" v-for="i in 4" :key="i"></div>
         </div>
-      </div>
 
-      <!-- Data Table -->
-      <div v-else-if="filteredCategories.length > 0" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-surface-container-high">
-                <th class="py-3.5 px-6 text-label-caps font-label-caps text-on-surface-variant uppercase whitespace-nowrap">#</th>
-                <th class="py-3.5 px-6 text-label-caps font-label-caps text-on-surface-variant uppercase whitespace-nowrap">Danh mục</th>
-                <th class="py-3.5 px-6 text-label-caps font-label-caps text-on-surface-variant uppercase whitespace-nowrap">Mã danh mục</th>
-                <th class="py-3.5 px-6 text-label-caps font-label-caps text-on-surface-variant uppercase whitespace-nowrap">Số môn học</th>
-                <th class="py-3.5 px-6 text-label-caps font-label-caps text-on-surface-variant uppercase whitespace-nowrap text-right">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody class="font-body-sm text-body-sm">
-              <tr
-                v-for="(cat, index) in filteredCategories"
-                :key="cat.categoryId"
-                class="border-t border-white/40 hover:bg-white/30 transition-colors group"
-              >
-                <td class="py-4 px-6 text-on-surface-variant font-semibold">{{ index + 1 }}</td>
-                <td class="py-4 px-6">
-                  <div class="flex items-center gap-3">
-                    <div :class="[getCategoryBgClass(cat.categoryCode, index), 'w-9 h-9 rounded-lg flex items-center justify-center shrink-0']">
-                      <span class="material-symbols-outlined text-[20px]">{{ getCategoryIcon(cat.categoryCode, index) }}</span>
-                    </div>
-                    <span class="font-semibold text-primary" :title="cat.categoryName">{{ cat.categoryName }}</span>
+        <table v-else-if="filteredCategories.length > 0" class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-outline-variant/20 bg-surface-container-low/50">
+              <th class="py-3.5 px-4 font-label-caps text-label-caps text-on-surface-variant w-16 text-center">STT</th>
+              <th class="py-3.5 px-4 font-label-caps text-label-caps text-on-surface-variant">Tên danh mục</th>
+              <th class="py-3.5 px-4 font-label-caps text-label-caps text-on-surface-variant">Mã danh mục</th>
+              <th class="py-3.5 px-4 font-label-caps text-label-caps text-on-surface-variant w-44 text-center">Số môn học</th>
+              <th class="py-3.5 px-4 font-label-caps text-label-caps text-on-surface-variant w-24 text-center">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/10 font-body-sm text-body-sm text-on-surface">
+            <tr
+              v-for="(cat, index) in filteredCategories"
+              :key="cat.categoryId"
+              class="hover:bg-primary-fixed/5 transition-colors group"
+            >
+              <td class="py-3.5 px-4 text-center text-secondary">{{ index + 1 }}</td>
+              <td class="py-3.5 px-4">
+                <div class="flex items-center gap-3">
+                  <div :class="[getCategoryBgClass(cat.categoryCode, index), 'w-9 h-9 rounded-lg flex items-center justify-center shrink-0']">
+                    <span class="material-symbols-outlined text-[20px]">{{ getCategoryIcon(cat.categoryCode, index) }}</span>
                   </div>
-                </td>
-                <td class="py-4 px-6">
-                  <span class="font-mono text-on-surface-variant font-semibold bg-primary-container/[0.05] px-2 py-0.5 rounded text-[12px]">{{ cat.categoryCode }}</span>
-                </td>
-                <td class="py-4 px-6">
-                  <span class="bg-on-tertiary-container/10 text-on-tertiary-container font-semibold px-2.5 py-0.5 rounded-full text-[12px] border border-on-tertiary-container/20">
-                    {{ getCourseCount(cat.categoryCode) }} môn học
-                  </span>
-                </td>
-                <td class="py-4 px-6 text-right">
-                  <div class="flex items-center justify-end gap-2">
-                    <button
-                      @click="openEditDialog(cat)"
-                      class="w-8 h-8 rounded-lg bg-on-tertiary-container/10 hover:bg-on-tertiary-container/20 text-on-tertiary-container flex items-center justify-center transition-colors cursor-pointer"
-                      title="Sửa danh mục"
-                    >
-                      <span class="material-symbols-outlined text-[18px]">edit</span>
-                    </button>
-                    <button
-                      @click="confirmDelete(cat)"
-                      class="w-8 h-8 rounded-lg bg-error/10 hover:bg-error/20 text-error flex items-center justify-center transition-colors cursor-pointer"
-                      title="Xóa danh mục"
-                    >
-                      <span class="material-symbols-outlined text-[18px]">delete</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  <span class="font-bold text-primary">{{ cat.categoryName }}</span>
+                </div>
+              </td>
+              <td class="py-3.5 px-4 font-mono font-semibold text-secondary">
+                <span class="bg-primary-container/[0.05] border border-primary-container/10 px-2 py-0.5 rounded text-[12px]">{{ cat.categoryCode }}</span>
+              </td>
+              <td class="py-3.5 px-4 text-center">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] font-bold bg-on-tertiary-container/10 text-on-tertiary-container border border-on-tertiary-container/20">
+                  {{ getCourseCount(cat.categoryCode) }} môn học
+                </span>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="flex items-center justify-center gap-2">
+                  <button
+                    @click="openEditDialog(cat)"
+                    class="w-8 h-8 rounded-md bg-white/50 border border-outline-variant/20 flex items-center justify-center text-on-tertiary-container hover:border-on-tertiary-container/40 hover:bg-on-tertiary-container/5 transition-all cursor-pointer"
+                    title="Sửa danh mục"
+                  >
+                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                  </button>
+                  <button
+                    @click="confirmDelete(cat)"
+                    class="w-8 h-8 rounded-md bg-white/50 border border-outline-variant/20 flex items-center justify-center text-error hover:border-error/40 hover:bg-error/5 transition-all cursor-pointer"
+                    title="Xóa danh mục"
+                  >
+                    <span class="material-symbols-outlined text-[18px]">delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div v-else class="p-12 text-center flex flex-col items-center justify-center bg-white/30">
+          <span class="material-symbols-outlined text-primary-container/20 text-[64px] mb-4">category</span>
+          <p class="text-body-lg text-on-surface-variant font-medium">Không tìm thấy danh mục nào</p>
         </div>
       </div>
+    </div>
 
-      <!-- Empty State -->
-      <div v-else class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl p-12 text-center flex flex-col items-center justify-center">
-        <span class="material-symbols-outlined text-primary/30 text-[64px] mb-4">category</span>
-        <h3 class="font-title-md text-title-md font-bold text-primary mt-2">Không tìm thấy danh mục</h3>
-        <p class="text-body-sm text-on-surface-variant mt-2">
-          Thử tìm kiếm với từ khóa khác.
-        </p>
-      </div>
-    </section>
-
-    <!-- Create/Edit Dialog -->
+    <!-- Modal Form Overlay: Thêm/Sửa danh mục -->
     <teleport to="body">
-      <div v-if="dialog" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 glass-backdrop">
-        <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] w-full max-w-md rounded-2xl overflow-hidden animate-scale-in">
+      <div v-if="dialog" class="fixed inset-0 glass-backdrop z-[9999] flex items-center justify-center p-4">
+        <!-- Glass Modal Container -->
+        <div class="w-full max-w-lg bg-white/95 backdrop-blur-[32px] border border-white/60 rounded-xl shadow-[0_20px_40px_rgba(0,31,63,0.12)] overflow-hidden flex flex-col transform scale-100 opacity-100 transition-all duration-300">
           <!-- Dialog Header -->
-          <div class="px-6 py-4 border-b border-white/40 flex justify-between items-center">
+          <div class="px-6 py-4 border-b border-outline-variant/20 flex justify-between items-center">
             <h3 class="font-title-md text-[18px] font-bold text-primary flex items-center gap-2">
-              <span class="material-symbols-outlined text-on-tertiary-container">{{ isEdit ? 'edit' : 'category' }}</span>
-              {{ isEdit ? 'Cập nhật danh mục' : 'Thêm danh mục mới' }}
+              <span class="material-symbols-outlined text-on-tertiary-container">{{ isEdit ? 'edit_note' : 'category' }}</span>
+              {{ isEdit ? 'Cập nhật thông tin danh mục' : 'Thêm danh mục mới' }}
             </h3>
-            <button @click="dialog = false" class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer">
+            <button @click="dialog = false" class="text-on-surface-variant hover:text-primary cursor-pointer">
               <span class="material-symbols-outlined">close</span>
             </button>
           </div>
 
           <!-- Dialog Body -->
           <div class="p-6 space-y-4">
-            <!-- Category Name -->
-            <div class="space-y-1">
-              <label class="text-body-sm font-semibold text-primary">Tên danh mục *</label>
-              <input
-                v-model="formData.categoryName"
-                class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all"
-                placeholder="Ví dụ: Ngoại ngữ, Công nghệ thông tin..."
-                type="text"
-              />
-              <span v-if="validationErrors.categoryName" class="text-[11px] text-error font-semibold block mt-0.5 ml-1">
-                {{ validationErrors.categoryName }}
-              </span>
-            </div>
-
-            <!-- Category Code -->
-            <div class="space-y-1">
-              <label class="text-body-sm font-semibold text-primary">Mã danh mục *</label>
-              <input
-                v-model="formData.categoryCode"
-                :disabled="isEdit"
-                class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-                placeholder="Ví dụ: NgoaiNgu, TinHoc (chỉ chữ và số)"
-                type="text"
-              />
-              <span v-if="validationErrors.categoryCode" class="text-[11px] text-error font-semibold block mt-0.5 ml-1">
-                {{ validationErrors.categoryCode }}
-              </span>
-              <p v-if="!isEdit" class="text-[11px] text-on-surface-variant ml-1">Mã danh mục dùng để định danh kỹ thuật, không thể thay đổi sau khi tạo.</p>
-            </div>
+            <form class="space-y-4" @submit.prevent>
+              <div class="space-y-1">
+                <label class="block font-label-caps text-label-caps text-on-surface-variant ml-1 mb-1">Tên danh mục *</label>
+                <input
+                  v-model="formData.categoryName"
+                  class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg py-2.5 px-4 font-body-sm text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all"
+                  placeholder="Ví dụ: Ngoại ngữ, Công nghệ thông tin..."
+                  type="text"
+                />
+                <span v-if="validationErrors.categoryName" class="text-[11px] text-error font-semibold block mt-0.5 ml-1">
+                  {{ validationErrors.categoryName }}
+                </span>
+              </div>
+              <div class="space-y-1">
+                <label class="block font-label-caps text-label-caps text-on-surface-variant ml-1 mb-1">Mã danh mục *</label>
+                <input
+                  v-model="formData.categoryCode"
+                  :disabled="isEdit"
+                  class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg py-2.5 px-4 font-body-sm text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                  placeholder="Ví dụ: NgoaiNgu, TinHoc (chữ và số liền nhau)"
+                  type="text"
+                />
+                <span v-if="validationErrors.categoryCode" class="text-[11px] text-error font-semibold block mt-0.5 ml-1">
+                  {{ validationErrors.categoryCode }}
+                </span>
+                <p v-if="!isEdit" class="text-[11px] text-on-surface-variant ml-1">Mã danh mục dùng làm mã code hệ thống, không sửa được sau khi tạo.</p>
+              </div>
+            </form>
           </div>
 
           <!-- Dialog Footer -->
-          <div class="px-6 py-4 border-t border-white/40 flex justify-end gap-3 bg-white/20">
+          <div class="px-6 py-4 border-t border-outline-variant/20 flex justify-end gap-3 bg-surface/30">
             <button
               @click="dialog = false"
-              class="px-5 py-2.5 rounded-lg border border-white/60 text-on-surface-variant font-semibold text-[13px] hover:bg-white/40 transition-colors cursor-pointer"
+              class="px-5 py-2 rounded-lg font-title-md text-[13px] font-semibold text-on-surface-variant bg-white/50 border border-white/40 hover:bg-white/80 transition-colors cursor-pointer"
             >
-              Hủy bỏ
+              Hủy
             </button>
             <button
               @click="saveForm"
               :disabled="saving || !isFormValid"
-              class="px-5 py-2.5 rounded-lg bg-primary-container text-white font-semibold text-[13px] hover:bg-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
+              class="px-5 py-2 rounded-lg font-title-md text-[13px] font-semibold text-white bg-on-tertiary-container hover:opacity-90 transition-opacity shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
             >
               <span v-if="saving" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
-              Xác nhận
+              Lưu
             </button>
           </div>
         </div>
@@ -199,28 +191,28 @@
 
     <!-- Delete Confirmation Dialog -->
     <teleport to="body">
-      <div v-if="deleteDialog" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 glass-backdrop">
-        <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] w-full max-w-sm rounded-2xl overflow-hidden animate-scale-in">
+      <div v-if="deleteDialog" class="fixed inset-0 glass-backdrop z-[9999] flex items-center justify-center p-4">
+        <div class="bg-white/95 backdrop-blur-[24px] border border-white/50 shadow-[0_20px_40px_rgba(0,31,63,0.12)] w-full max-w-sm rounded-xl overflow-hidden animate-scale-in">
           <div class="p-6 text-center">
             <div class="w-16 h-16 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto mb-4">
               <span class="material-symbols-outlined text-[36px]">warning</span>
             </div>
             <h3 class="font-title-md text-title-md font-bold text-primary mb-2">Xác nhận xóa danh mục</h3>
-            <p class="text-body-sm text-on-surface-variant">
+            <p class="text-body-sm text-on-surface-variant leading-relaxed">
               Bạn có chắc chắn muốn xóa danh mục <strong class="text-primary">"{{ deleteTarget?.categoryName }}"</strong>? Hành động này không thể hoàn tác.
             </p>
           </div>
-          <div class="px-6 py-4 border-t border-white/40 flex justify-end gap-3 bg-white/20">
+          <div class="px-6 py-4 border-t border-outline-variant/20 flex justify-end gap-3 bg-surface/30">
             <button
               @click="deleteDialog = false"
-              class="px-4 py-2 rounded-lg border border-white/60 text-on-surface-variant font-semibold text-[13px] hover:bg-white/40 transition-colors cursor-pointer"
+              class="px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant font-semibold text-[13px] hover:bg-white/40 transition-colors cursor-pointer"
             >
               Hủy
             </button>
             <button
               @click="doDelete"
               :disabled="deleting"
-              class="px-4 py-2 rounded-lg bg-error text-white font-semibold text-[13px] hover:bg-error/90 transition-colors flex items-center gap-1 cursor-pointer"
+              class="px-4 py-2 rounded-lg bg-error text-white font-semibold text-[13px] hover:bg-red-700 transition-colors flex items-center gap-1 cursor-pointer"
             >
               <span v-if="deleting" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
               Xóa danh mục
@@ -261,7 +253,7 @@ const validationErrors = ref({
   categoryCode: '',
 })
 
-// Validate code to be alphanumeric only (regex: ^[a-zA-Z0-9]+$)
+// Validators
 const isFormValid = computed(() => {
   const isNameOk = formData.value.categoryName.trim().length >= 2
   const isCodeOk = /^[a-zA-Z0-9]+$/.test(formData.value.categoryCode.trim()) && formData.value.categoryCode.trim().length >= 2
@@ -277,13 +269,13 @@ watch(() => formData.value.categoryCode, (val) => {
   if (code.length < 2) {
     validationErrors.value.categoryCode = 'Mã danh mục phải có ít nhất 2 ký tự'
   } else if (!/^[a-zA-Z0-9]+$/.test(code)) {
-    validationErrors.value.categoryCode = 'Mã danh mục chỉ được chứa chữ cái và chữ số (không khoảng trắng, dấu tiếng Việt hoặc ký tự đặc biệt)'
+    validationErrors.value.categoryCode = 'Mã danh mục chỉ chứa chữ cái và số'
   } else {
     validationErrors.value.categoryCode = ''
   }
 })
 
-// Filter categories locally
+// Client-side category filtering
 const filteredCategories = computed(() => {
   const query = filters.value.search.trim().toLowerCase()
   if (!query) return categoryStore.categories
@@ -293,7 +285,7 @@ const filteredCategories = computed(() => {
   )
 })
 
-// Compute statistics
+// Stats display
 const stats = computed(() => [
   {
     label: 'Tổng số danh mục',
@@ -353,10 +345,9 @@ function getCategoryBgClass(code, index) {
 async function loadData() {
   try {
     await categoryStore.fetchCategories()
-    // Also load courses to count them
     await courseStore.fetchCourses({ pageSize: 500 })
   } catch (e) {
-    showSnackbar('Lỗi tải danh sách danh mục', 'error')
+    showSnackbar('Lỗi tải danh mục và môn học', 'error')
   }
 }
 
@@ -410,7 +401,7 @@ async function doDelete() {
     deleteDialog.value = false
     await loadData()
   } catch (e) {
-    showSnackbar(e.response?.data?.message || 'Lỗi khi xóa danh mục. Vui lòng kiểm tra nếu danh mục đang được sử dụng.', 'error')
+    showSnackbar(e.response?.data?.message || 'Lỗi khi xóa danh mục. Vui lòng kiểm tra nếu danh mục đang chứa môn học.', 'error')
   } finally {
     deleting.value = false
   }
@@ -422,18 +413,20 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+.glass-input {
+  background: rgba(0, 31, 63, 0.05);
+  border: 1px solid rgba(0, 31, 63, 0.1);
 }
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out forwards;
-}
-.animate-scale-in {
-  animation: scaleIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+.glass-input:focus {
+  border-color: #2b83ff;
+  box-shadow: 0 0 0 2px rgba(43, 131, 255, 0.2);
+  outline: none;
 }
 </style>

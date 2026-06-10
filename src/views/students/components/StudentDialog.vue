@@ -1,132 +1,142 @@
 <template>
   <teleport to="body">
     <div v-if="show" class="fixed inset-0 glass-backdrop z-[9999] flex items-center justify-center p-4">
-      <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-xl shadow-[0_20px_40px_rgba(0,31,63,0.12)] max-w-lg w-full overflow-hidden animate-scale-in flex flex-col">
-        <!-- Title -->
-        <div class="px-6 py-4 border-b border-outline-variant/20 flex items-center justify-between">
-          <h3 class="font-title-md text-[18px] font-bold text-primary flex items-center gap-2">
+      <div class="glass-panel w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col relative overflow-hidden bg-surface/95">
+        <!-- Modal Header -->
+        <div class="px-6 py-4 border-b border-outline-variant/30 flex justify-between items-center bg-white/50">
+          <h3 class="font-headline-lg text-title-md font-bold text-primary flex items-center gap-2">
             <span class="material-symbols-outlined text-on-tertiary-container">{{ isEdit ? 'edit' : 'person_add' }}</span>
-            {{ isEdit ? 'Cập nhật thông tin học viên' : 'Tạo hồ sơ học viên' }}
+            {{ isEdit ? 'Cập nhật thông tin học viên' : 'Thêm học viên mới' }}
           </h3>
-          <button @click="$emit('close')" class="text-on-surface-variant hover:text-primary cursor-pointer">
+          <button @click="$emit('close')" class="w-8 h-8 rounded-full flex items-center justify-center text-secondary hover:bg-error/10 hover:text-error transition-colors cursor-pointer">
             <span class="material-symbols-outlined">close</span>
           </button>
         </div>
 
-        <!-- Form Body -->
-        <div class="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
-          <!-- Link to User Account -->
-          <div class="space-y-1">
-            <label class="text-body-sm font-semibold text-primary">Liên kết tài khoản người dùng *</label>
-            <div class="relative">
-              <select
-                v-model="formData.userId"
-                class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-primary bg-transparent cursor-pointer"
-                @change="onUserSelect"
-              >
-                <option :value="null" disabled>Chọn tài khoản liên kết...</option>
-                <option v-for="user in users" :key="user.userId" :value="user.userId">
-                  {{ user.fullName }} ({{ user.username }}) - {{ user.email }}
-                </option>
-              </select>
-              <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
-            </div>
-            <p class="text-[11px] text-on-surface-variant/80 italic">Chỉ tài khoản có vai trò học viên mới được liên kết.</p>
-            <p v-if="validationErrors.userId" class="text-error text-[11px] font-semibold">{{ validationErrors.userId }}</p>
-          </div>
-
-          <!-- Full Name -->
-          <div class="space-y-1">
-            <label class="text-body-sm font-semibold text-primary">Họ và tên *</label>
-            <input
-              v-model="formData.fullName"
-              type="text"
-              class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary placeholder:text-on-surface-variant/60 focus:outline-none focus:border-on-tertiary-container/30 transition-colors"
-              placeholder="Nhập họ và tên học viên"
-              maxlength="100"
-            />
-            <p v-if="validationErrors.fullName" class="text-error text-[11px] font-semibold">{{ validationErrors.fullName }}</p>
-          </div>
-
-          <!-- Gender & DoB -->
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-1">
-              <label class="text-body-sm font-semibold text-primary">Giới tính *</label>
-              <div class="relative">
-                <select
-                  v-model="formData.gender"
-                  class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-primary bg-transparent cursor-pointer"
-                >
-                  <option value="Nam">Nam</option>
-                  <option value="Nữ">Nữ</option>
-                  <option value="Khác">Khác</option>
-                </select>
-                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+        <!-- Modal Body -->
+        <div class="p-6 overflow-y-auto max-h-[75vh]">
+          <form class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <!-- Left Column -->
+            <div class="space-y-5">
+              <!-- Link to User Account -->
+              <div>
+                <label class="block font-title-md text-body-sm text-on-surface-variant mb-1.5">Liên kết tài khoản người dùng <span class="text-error">*</span></label>
+                <div class="relative">
+                  <select
+                    v-model="formData.userId"
+                    class="w-full glass-input rounded-lg px-4 py-2 font-body-sm text-body-sm text-on-surface appearance-none pr-10 bg-no-repeat bg-[right_0.75rem_center] bg-[length:16px_16px]"
+                    style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%235d5f5f%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E');"
+                    @change="onUserSelect"
+                    :disabled="isEdit"
+                  >
+                    <option :value="null" disabled>-- Chọn tài khoản người dùng --</option>
+                    <option v-for="user in users" :key="user.userId" :value="user.userId">
+                      {{ user.fullName }} ({{ user.username }}) - {{ user.email }}
+                    </option>
+                  </select>
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined pointer-events-none text-secondary">expand_more</span>
+                </div>
+                <p class="text-[12px] text-secondary mt-1">Liên kết để học viên có thể đăng nhập vào portal.</p>
+                <p v-if="validationErrors.userId" class="text-error text-[11px] font-semibold">{{ validationErrors.userId }}</p>
               </div>
-              <p v-if="validationErrors.gender" class="text-error text-[11px] font-semibold">{{ validationErrors.gender }}</p>
-            </div>
-            <div class="space-y-1">
-              <label class="text-body-sm font-semibold text-primary">Ngày sinh *</label>
-              <input
-                v-model="formData.dateOfBirth"
-                type="date"
-                class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary bg-transparent"
-              />
-              <p v-if="validationErrors.dateOfBirth" class="text-error text-[11px] font-semibold">{{ validationErrors.dateOfBirth }}</p>
-            </div>
-          </div>
 
-          <!-- Phone & Email -->
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-1">
-              <label class="text-body-sm font-semibold text-primary">Số điện thoại</label>
-              <input
-                v-model="formData.phone"
-                type="text"
-                class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary placeholder:text-on-surface-variant/60 focus:outline-none focus:border-on-tertiary-container/30 transition-colors"
-                placeholder="Số điện thoại"
-              />
-            </div>
-            <div class="space-y-1">
-              <label class="text-body-sm font-semibold text-primary">Email</label>
-              <input
-                v-model="formData.email"
-                type="email"
-                class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary placeholder:text-on-surface-variant/60 focus:outline-none focus:border-on-tertiary-container/30 transition-colors"
-                placeholder="Ví dụ: hocvien@gmail.com"
-              />
-              <p v-if="validationErrors.email" class="text-error text-[11px] font-semibold">{{ validationErrors.email }}</p>
-            </div>
-          </div>
+              <!-- Họ và tên -->
+              <div>
+                <label class="block font-title-md text-body-sm text-on-surface-variant mb-1.5">Họ tên <span class="text-error">*</span></label>
+                <input
+                  v-model="formData.fullName"
+                  class="w-full glass-input rounded-lg px-4 py-2 font-body-sm text-body-sm text-on-surface"
+                  placeholder="Nhập họ và tên"
+                  type="text"
+                  maxlength="100"
+                />
+                <p v-if="validationErrors.fullName" class="text-error text-[11px] font-semibold">{{ validationErrors.fullName }}</p>
+              </div>
 
-          <!-- Address -->
-          <div class="space-y-1">
-            <label class="text-body-sm font-semibold text-primary">Địa chỉ liên hệ</label>
-            <textarea
-              v-model="formData.address"
-              rows="3"
-              class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary placeholder:text-on-surface-variant/60 focus:outline-none focus:border-on-tertiary-container/30 transition-colors"
-              placeholder="Nhập địa chỉ tạm trú, thường trú..."
-              maxlength="500"
-            ></textarea>
-          </div>
+              <!-- Giới tính & Ngày sinh -->
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block font-title-md text-body-sm text-on-surface-variant mb-1.5">Giới tính <span class="text-error">*</span></label>
+                  <div class="relative">
+                    <select
+                      v-model="formData.gender"
+                      class="w-full glass-input rounded-lg px-4 py-2 font-body-sm text-body-sm text-on-surface appearance-none pr-10 bg-no-repeat bg-[right_0.75rem_center] bg-[length:16px_16px]"
+                      style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%235d5f5f%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E');"
+                    >
+                      <option value="Nam">Nam</option>
+                      <option value="Nữ">Nữ</option>
+                      <option value="Khác">Khác</option>
+                    </select>
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined pointer-events-none text-secondary">expand_more</span>
+                  </div>
+                  <p v-if="validationErrors.gender" class="text-error text-[11px] font-semibold">{{ validationErrors.gender }}</p>
+                </div>
+                <div>
+                  <label class="block font-title-md text-body-sm text-on-surface-variant mb-1.5">Ngày sinh <span class="text-error">*</span></label>
+                  <input
+                    v-model="formData.dateOfBirth"
+                    class="w-full glass-input rounded-lg px-4 py-2 font-body-sm text-body-sm text-secondary"
+                    type="date"
+                  />
+                  <p v-if="validationErrors.dateOfBirth" class="text-error text-[11px] font-semibold">{{ validationErrors.dateOfBirth }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-5">
+              <!-- Số điện thoại -->
+              <div>
+                <label class="block font-title-md text-body-sm text-on-surface-variant mb-1.5">Số điện thoại</label>
+                <input
+                  v-model="formData.phone"
+                  class="w-full glass-input rounded-lg px-4 py-2 font-body-sm text-body-sm text-on-surface"
+                  placeholder="Nhập số điện thoại"
+                  type="tel"
+                />
+              </div>
+
+              <!-- Email -->
+              <div>
+                <label class="block font-title-md text-body-sm text-on-surface-variant mb-1.5">Email</label>
+                <input
+                  v-model="formData.email"
+                  class="w-full glass-input rounded-lg px-4 py-2 font-body-sm text-body-sm text-on-surface"
+                  placeholder="Nhập địa chỉ email"
+                  type="email"
+                />
+                <p v-if="validationErrors.email" class="text-error text-[11px] font-semibold">{{ validationErrors.email }}</p>
+              </div>
+
+              <!-- Địa chỉ -->
+              <div>
+                <label class="block font-title-md text-body-sm text-on-surface-variant mb-1.5">Địa chỉ</label>
+                <textarea
+                  v-model="formData.address"
+                  class="w-full glass-input rounded-lg px-4 py-2 font-body-sm text-body-sm resize-none h-[104px]"
+                  placeholder="Nhập địa chỉ cư trú"
+                  maxlength="500"
+                ></textarea>
+              </div>
+            </div>
+          </form>
         </div>
 
-        <!-- Footer Actions -->
-        <div class="px-6 py-4 border-t border-outline-variant/20 flex justify-end gap-3 bg-surface/30">
+        <!-- Modal Footer -->
+        <div class="px-6 py-4 border-t border-outline-variant/30 flex justify-end gap-3 bg-white/50">
           <button
             @click="$emit('close')"
-            class="px-5 py-2.5 rounded-lg border border-outline-variant text-on-surface-variant font-semibold text-[13px] hover:bg-white/40 transition-colors cursor-pointer"
+            class="px-5 py-2 rounded-lg border border-outline-variant text-secondary font-title-md text-body-sm hover:bg-secondary/10 transition-colors cursor-pointer"
           >
-            Hủy bỏ
+            Hủy
           </button>
           <button
             @click="saveForm"
             :disabled="saving || !isFormValid"
-            class="px-5 py-2.5 rounded-lg bg-primary-container text-white font-semibold text-[13px] hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
+            class="px-5 py-2 rounded-lg bg-primary text-white font-title-md text-body-sm hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
           >
             <span v-if="saving" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
-            {{ isEdit ? 'Cập nhật' : 'Tạo mới' }}
+            {{ isEdit ? 'Cập nhật' : 'Lưu thông tin' }}
           </button>
         </div>
       </div>
