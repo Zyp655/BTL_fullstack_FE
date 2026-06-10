@@ -257,15 +257,15 @@
 
             <!-- Role selection -->
             <div class="space-y-1">
-              <label class="text-body-sm font-semibold text-primary-container">Vai trò (Role) *</label>
+              <label class="text-body-sm font-semibold text-primary-container">Vai trò *</label>
               <div class="relative">
                 <select
                   v-model="formData.role"
                   class="w-full bg-white border border-outline-variant/60 appearance-none px-4 py-2.5 rounded-lg text-body-sm text-primary-container bg-transparent cursor-pointer focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/15 transition-all"
                 >
-                  <option value="Admin">Quản trị viên (Admin)</option>
-                  <option value="GiaoVien">Giáo viên (Teacher)</option>
-                  <option value="HocVien">Học viên (Student)</option>
+                  <option value="Admin">Quản trị viên</option>
+                  <option value="GiaoVien">Giáo viên</option>
+                  <option value="HocVien">Học viên</option>
                 </select>
                 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
               </div>
