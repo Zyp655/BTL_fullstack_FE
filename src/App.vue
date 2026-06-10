@@ -336,6 +336,7 @@ const navItems = computed(() => {
     items.push({ title: 'Đăng ký khóa học (HV)', icon: 'import_contacts', path: '/register-course' })
     items.push({ title: 'Thanh toán & Báo cáo', icon: 'payments', path: '/payments' })
     items.push({ title: 'Quản lý danh mục', icon: 'category', path: '/categories' })
+    items.push({ title: 'Quản lý giảng viên', icon: 'co_present', path: '/teachers' })
     items.push({ title: 'Quản lý tài khoản', icon: 'manage_accounts', path: '/users' })
     items.push({ title: 'Yêu cầu hỗ trợ', icon: 'chat', path: '/support-messages' })
   }
