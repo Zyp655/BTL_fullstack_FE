@@ -564,21 +564,33 @@
           </div>
 
           <!-- Footer Actions -->
-          <div class="px-6 py-4 border-t border-white/40 flex justify-end gap-3 bg-white/20">
-            <button
-              @click="dialog = false"
-              class="px-5 py-2.5 rounded-lg border border-white/60 text-on-surface-variant font-semibold text-[13px] hover:bg-white/40 transition-colors cursor-pointer"
-            >
-              Hủy bỏ
-            </button>
-            <button
-              @click="saveForm"
-              :disabled="saving || !isFormValid"
-              class="px-5 py-2.5 rounded-lg bg-primary-container text-white font-semibold text-[13px] hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
-            >
-              <span v-if="saving" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
-              {{ isEdit ? 'Cập nhật' : 'Mở lớp' }}
-            </button>
+          <div class="px-6 py-4 border-t border-white/40 flex justify-between gap-3 bg-white/20">
+            <div>
+              <button
+                v-if="isEdit"
+                @click="confirmDelete(formData)"
+                class="px-5 py-2.5 rounded-lg bg-error text-white font-semibold text-[13px] hover:bg-red-700 transition-colors flex items-center gap-1 cursor-pointer"
+              >
+                <span class="material-symbols-outlined text-[16px]">delete</span>
+                Xóa lớp
+              </button>
+            </div>
+            <div class="flex gap-3">
+              <button
+                @click="dialog = false"
+                class="px-5 py-2.5 rounded-lg border border-white/60 text-on-surface-variant font-semibold text-[13px] hover:bg-white/40 transition-colors cursor-pointer"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                @click="saveForm"
+                :disabled="saving || !isFormValid"
+                class="px-5 py-2.5 rounded-lg bg-primary-container text-white font-semibold text-[13px] hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
+              >
+                <span v-if="saving" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
+                {{ isEdit ? 'Cập nhật' : 'Mở lớp' }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1074,6 +1086,7 @@ async function changeStatus(classId, status) {
 }
 
 function confirmDelete(cls) {
+  dialog.value = false
   activeDropdownId.value = null
   deleteTarget.value = cls
   deleteDialog.value = true

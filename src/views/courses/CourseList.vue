@@ -120,7 +120,7 @@
             <div :class="[getCategoryBgClass(course.category), 'w-10 h-10 rounded-lg flex items-center justify-center border']">
               <span class="material-symbols-outlined">{{ getCategoryIcon(course.category) }}</span>
             </div>
-            <div v-if="authStore.isAdmin" class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" @click.stop>
+            <div v-if="authStore.isAdmin" class="flex items-center gap-1 transition-opacity" @click.stop>
               <button
                 @click="openEditDialog(course)"
                 class="w-8 h-8 rounded-lg hover:bg-on-tertiary-container/10 flex items-center justify-center text-on-tertiary-container transition-colors cursor-pointer"
@@ -324,21 +324,33 @@
           </div>
 
           <!-- Dialog Footer -->
-          <div class="px-6 py-4 border-t border-white/40 flex justify-end gap-3 bg-white/20">
-            <button
-              @click="dialog = false"
-              class="px-5 py-2.5 rounded-lg bg-transparent text-on-surface-variant border border-outline-variant font-semibold text-[13px] hover:bg-surface-container transition-colors cursor-pointer"
-            >
-              Hủy bỏ
-            </button>
-            <button
-              @click="saveForm"
-              :disabled="saving || !isCourseFormValid"
-              class="px-5 py-2.5 rounded-lg bg-primary-container text-white font-semibold text-[13px] hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
-            >
-              <span v-if="saving" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
-              Xác nhận
-            </button>
+          <div class="px-6 py-4 border-t border-white/40 flex justify-between gap-3 bg-white/20">
+            <div>
+              <button
+                v-if="isEdit"
+                @click="confirmDelete(formData)"
+                class="px-5 py-2.5 rounded-lg bg-error text-white font-semibold text-[13px] hover:bg-red-700 transition-colors flex items-center gap-1 cursor-pointer"
+              >
+                <span class="material-symbols-outlined text-[16px]">delete</span>
+                Xóa khóa học
+              </button>
+            </div>
+            <div class="flex gap-3">
+              <button
+                @click="dialog = false"
+                class="px-5 py-2.5 rounded-lg bg-transparent text-on-surface-variant border border-outline-variant font-semibold text-[13px] hover:bg-surface-container transition-colors cursor-pointer"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                @click="saveForm"
+                :disabled="saving || !isCourseFormValid"
+                class="px-5 py-2.5 rounded-lg bg-primary-container text-white font-semibold text-[13px] hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
+              >
+                <span v-if="saving" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
+                Xác nhận
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -776,6 +788,7 @@ async function saveForm() {
 }
 
 function confirmDelete(item) {
+  dialog.value = false
   deleteTarget.value = item
   deleteDialog.value = true
 }
