@@ -41,7 +41,7 @@
             <tr class="bg-surface-container-high">
               <th class="py-4 px-6 font-label-caps text-label-caps text-on-surface-variant uppercase whitespace-nowrap">Mã phiếu</th>
               <th class="py-4 px-6 font-label-caps text-label-caps text-on-surface-variant uppercase whitespace-nowrap">Học viên</th>
-              <th class="py-4 px-6 font-label-caps text-label-caps text-on-surface-variant uppercase whitespace-nowrap">Lớp / Khóa học</th>
+              <th class="py-4 px-6 font-label-caps text-label-caps text-on-surface-variant uppercase whitespace-nowrap">Lớp / Môn học</th>
               <th class="py-4 px-6 font-label-caps text-label-caps text-on-surface-variant uppercase whitespace-nowrap text-right">Học phí</th>
               <th class="py-4 px-6 font-label-caps text-label-caps text-on-surface-variant uppercase whitespace-nowrap text-right">Đã đóng</th>
               <th class="py-4 px-6 font-label-caps text-label-caps text-on-surface-variant uppercase whitespace-nowrap text-right">Còn thiếu</th>

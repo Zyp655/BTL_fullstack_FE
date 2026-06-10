@@ -309,8 +309,14 @@
     <!-- No Student Selected State -->
     <div v-else-if="!loading" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-12 rounded-xl text-center flex flex-col items-center justify-center">
       <span class="material-symbols-outlined text-primary-container/30 text-[64px] mb-4">school</span>
-      <h3 class="font-title-md text-headline-sm text-primary-container mb-2">Chưa chọn học viên</h3>
-      <p class="text-body-md text-on-surface-variant max-w-md">Vui lòng chọn một học viên từ danh sách ở trên để xem thời khóa biểu, điểm số, chuyên cần và học phí của họ.</p>
+      <h3 class="font-title-md text-headline-sm text-primary-container mb-2">
+        {{ authStore.isAdmin ? 'Chưa chọn học viên' : 'Chưa có hồ sơ học tập' }}
+      </h3>
+      <p class="text-body-md text-on-surface-variant max-w-md">
+        {{ authStore.isAdmin 
+          ? 'Vui lòng chọn một học viên từ danh sách ở trên để xem thời khóa biểu, điểm số, chuyên cần và học phí của họ.' 
+          : 'Hồ sơ học viên của bạn chưa được liên kết với tài khoản này. Vui lòng liên hệ Quản trị viên để được hỗ trợ liên kết tài khoản học viên.' }}
+      </p>
     </div>
   </div>
 </template>

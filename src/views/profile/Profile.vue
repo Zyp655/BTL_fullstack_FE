@@ -246,17 +246,22 @@ const loadProfile = async () => {
     profileForm.value.phone = user.phone || ''
 
     if (authStore.isStudent) {
-      const { data } = await api.get(`/api/v1/students/by-user/${user.userId}`)
-      if (data) {
-        studentProfileId.value = data.studentId
-        profileForm.value.gender = data.gender || 'Nam'
-        profileForm.value.address = data.address || ''
-        
-        if (data.dateOfBirth) {
-          // Format dateOfBirth to YYYY-MM-DD for input type="date"
-          const dob = new Date(data.dateOfBirth)
-          profileForm.value.dateOfBirth = dob.toISOString().substring(0, 10)
+      try {
+        const { data } = await api.get(`/api/v1/students/by-user/${user.userId}`)
+        if (data) {
+          studentProfileId.value = data.studentId
+          profileForm.value.gender = data.gender || 'Nam'
+          profileForm.value.address = data.address || ''
+          
+          if (data.dateOfBirth) {
+            // Format dateOfBirth to YYYY-MM-DD for input type="date"
+            const dob = new Date(data.dateOfBirth)
+            profileForm.value.dateOfBirth = dob.toISOString().substring(0, 10)
+          }
         }
+      } catch (studentErr) {
+        console.warn('Student profile not yet linked or not found:', studentErr)
+        studentProfileId.value = null
       }
     }
   } catch (err) {

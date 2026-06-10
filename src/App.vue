@@ -310,12 +310,12 @@ const navItems = computed(() => {
           { title: 'Ví bảo lưu', icon: 'account_balance_wallet', path: '/student-portal', query: { tab: 'credits' } }
         ]
       },
-      { title: 'Đăng ký khóa học', icon: 'import_contacts', path: '/register-course' }
+      { title: 'Đăng ký môn học', icon: 'import_contacts', path: '/register-course' }
     ]
   }
 
   const items = [
-    { title: 'Khóa học', icon: 'school', path: '/courses' },
+    { title: 'Môn học', icon: 'school', path: '/courses' },
     { title: 'Lớp học', icon: 'groups', path: '/classes' },
     { title: 'Học viên', icon: 'person', path: '/students' }
   ]
@@ -333,7 +333,7 @@ const navItems = computed(() => {
         { title: 'Ví bảo lưu', icon: 'account_balance_wallet', path: '/student-portal', query: { tab: 'credits' } }
       ]
     })
-    items.push({ title: 'Đăng ký khóa học (HV)', icon: 'import_contacts', path: '/register-course' })
+    items.push({ title: 'Đăng ký môn học (HV)', icon: 'import_contacts', path: '/register-course' })
     items.push({ title: 'Thanh toán & Báo cáo', icon: 'payments', path: '/payments' })
     items.push({ title: 'Quản lý danh mục', icon: 'category', path: '/categories' })
     items.push({ title: 'Quản lý giảng viên', icon: 'co_present', path: '/teachers' })

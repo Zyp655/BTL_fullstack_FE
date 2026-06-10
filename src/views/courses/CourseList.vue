@@ -7,8 +7,8 @@
           <span class="material-symbols-outlined text-primary-container">school</span>
         </div>
         <div>
-          <h2 class="font-headline-lg text-headline-lg text-primary-container tracking-tight">Quản lý khóa học</h2>
-          <p class="font-body-lg text-body-lg text-on-surface-variant mt-1">Quản lý tất cả khóa học tại trung tâm.</p>
+          <h2 class="font-headline-lg text-headline-lg text-primary-container tracking-tight">Quản lý môn học</h2>
+          <p class="font-body-lg text-body-lg text-on-surface-variant mt-1">Quản lý tất cả môn học tại trung tâm.</p>
         </div>
       </div>
       <div v-if="authStore.isAdmin">
@@ -17,7 +17,7 @@
           class="bg-primary-container text-white px-6 py-3 rounded-lg font-semibold text-[14px] shadow-sm hover:bg-primary hover:shadow-md transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
         >
           <span class="material-symbols-outlined text-[20px]">add</span>
-          Thêm khóa học
+          Thêm môn học
         </button>
       </div>
     </section>
@@ -44,7 +44,7 @@
           v-model="filters.search"
           @input="debouncedFetch"
           class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg pl-10 pr-4 py-2.5 text-body-sm text-primary placeholder:text-outline-variant focus:border-primary-container/40 focus:ring-2 focus:ring-primary-container/20 focus:outline-none transition-all"
-          placeholder="Tìm kiếm khóa học..."
+          placeholder="Tìm kiếm môn học..."
           type="text"
         />
       </div>
@@ -124,14 +124,14 @@
               <button
                 @click="openEditDialog(course)"
                 class="w-8 h-8 rounded-lg hover:bg-on-tertiary-container/10 flex items-center justify-center text-on-tertiary-container transition-colors cursor-pointer"
-                title="Sửa khóa học"
+                title="Sửa môn học"
               >
                 <span class="material-symbols-outlined text-[18px]">edit</span>
               </button>
               <button
                 @click="confirmDelete(course)"
                 class="w-8 h-8 rounded-lg hover:bg-error/10 flex items-center justify-center text-error transition-colors cursor-pointer"
-                title="Xóa khóa học"
+                title="Xóa môn học"
               >
                 <span class="material-symbols-outlined text-[18px]">delete</span>
               </button>
@@ -212,12 +212,12 @@
       <!-- Empty State -->
       <div v-else class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl p-12 text-center flex flex-col items-center justify-center">
         <span class="material-symbols-outlined text-primary/30 text-[64px] mb-4">school</span>
-        <h3 class="font-title-md text-title-md font-bold text-primary mt-2">Chưa có khóa học nào</h3>
+        <h3 class="font-title-md text-title-md font-bold text-primary mt-2">Chưa có môn học nào</h3>
         <p class="text-body-sm text-on-surface-variant mt-2">
-          Thử tìm kiếm với từ khóa khác hoặc tạo một khóa học mới.
+          Thử tìm kiếm với từ khóa khác hoặc tạo một môn học mới.
         </p>
         <button v-if="authStore.isAdmin" @click="openCreateDialog" class="mt-4 bg-primary-container text-white px-5 py-2.5 rounded-lg font-semibold text-[13px] hover:bg-primary shadow transition-all active:scale-95 cursor-pointer">
-          Thêm khóa học đầu tiên
+          Thêm môn học đầu tiên
         </button>
       </div>
     </section>
@@ -230,7 +230,7 @@
           <div class="px-6 py-4 border-b border-white/40 flex justify-between items-center">
             <h3 class="font-title-md text-[18px] font-bold text-primary flex items-center gap-2">
               <span class="material-symbols-outlined text-on-tertiary-container">{{ isEdit ? 'edit' : 'add_circle' }}</span>
-              {{ isEdit ? 'Cập nhật khóa học' : 'Thêm khóa học mới' }}
+              {{ isEdit ? 'Cập nhật môn học' : 'Thêm môn học mới' }}
             </h3>
             <button @click="dialog = false" class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer">
               <span class="material-symbols-outlined">close</span>
@@ -241,11 +241,11 @@
           <div class="p-6 space-y-4">
             <!-- Course Name -->
             <div class="space-y-1">
-              <label class="text-body-sm font-semibold text-primary">Tên khóa học *</label>
+              <label class="text-body-sm font-semibold text-primary">Tên môn học *</label>
               <input
                 v-model="formData.courseName"
                 class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all"
-                placeholder="Nhập tên khóa học..."
+                placeholder="Nhập tên môn học..."
                 type="text"
               />
             </div>
@@ -257,7 +257,7 @@
                 v-model="formData.description"
                 rows="3"
                 class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all resize-none"
-                placeholder="Nhập mô tả chi tiết khóa học..."
+                placeholder="Nhập mô tả chi tiết môn học..."
               ></textarea>
             </div>
 
@@ -319,7 +319,7 @@
                 id="isActiveCheck"
                 class="w-4 h-4 text-on-tertiary-container bg-white/40 border-white/60 rounded focus:ring-0 cursor-pointer"
               />
-              <label for="isActiveCheck" class="text-body-sm font-semibold text-primary select-none cursor-pointer">Khóa học đang hoạt động</label>
+              <label for="isActiveCheck" class="text-body-sm font-semibold text-primary select-none cursor-pointer">Môn học đang hoạt động</label>
             </div>
           </div>
 
@@ -332,7 +332,7 @@
                 class="px-5 py-2.5 rounded-lg bg-error text-white font-semibold text-[13px] hover:bg-red-700 transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <span class="material-symbols-outlined text-[16px]">delete</span>
-                Xóa khóa học
+                Xóa môn học
               </button>
             </div>
             <div class="flex gap-3">
@@ -362,10 +362,10 @@
         <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-xl shadow-[0_20px_40px_rgba(0,31,63,0.12)] max-w-md w-full p-6 space-y-4 animate-scale-in">
           <div class="flex items-center gap-3 text-error">
             <span class="material-symbols-outlined text-[32px]">warning</span>
-            <h3 class="font-title-md text-title-md font-bold">Xác nhận xóa khóa học</h3>
+            <h3 class="font-title-md text-title-md font-bold">Xác nhận xóa môn học</h3>
           </div>
           <p class="text-body-sm text-on-surface-variant leading-relaxed">
-            Bạn có chắc chắn muốn xóa khóa học <strong class="text-primary-container">{{ deleteTarget?.courseName }}</strong> không? Hành động này không thể hoàn tác.
+            Bạn có chắc chắn muốn xóa môn học <strong class="text-primary-container">{{ deleteTarget?.courseName }}</strong> không? Hành động này không thể hoàn tác.
           </p>
           <div class="flex justify-end gap-3 pt-2">
             <button
@@ -405,7 +405,7 @@
           <!-- Body -->
           <div class="p-6 space-y-4">
             <div>
-              <label class="text-body-sm font-semibold text-on-surface-variant">Khóa học</label>
+              <label class="text-body-sm font-semibold text-on-surface-variant">Môn học</label>
               <div class="text-primary-container font-bold text-lg mt-1">
                 {{ queueTargetCourse?.courseName }}
               </div>
@@ -697,7 +697,7 @@ const isVipLaunchFormValid = computed(() => {
 
 const stats = computed(() => [
   {
-    label: 'Tổng khóa học',
+    label: 'Tổng môn học',
     value: authStore.isTeacher ? filteredCourses.value.length : store.totalCount,
     icon: 'school',
     bgColor: 'bg-primary-container/10',
@@ -773,10 +773,10 @@ async function saveForm() {
   try {
     if (isEdit.value) {
       await store.updateCourse(formData.value.courseId, formData.value)
-      showSnackbar('Cập nhật khóa học thành công', 'success')
+      showSnackbar('Cập nhật môn học thành công', 'success')
     } else {
       await store.createCourse(formData.value)
-      showSnackbar('Thêm khóa học thành công', 'success')
+      showSnackbar('Thêm môn học thành công', 'success')
     }
     dialog.value = false
     fetchData()
@@ -797,7 +797,7 @@ async function doDelete() {
   deleting.value = true
   try {
     await store.deleteCourse(deleteTarget.value.courseId)
-    showSnackbar('Đã xóa khóa học thành công', 'success')
+    showSnackbar('Đã xóa môn học thành công', 'success')
     deleteDialog.value = false
     fetchData()
   } catch (e) {

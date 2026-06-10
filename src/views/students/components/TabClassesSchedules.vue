@@ -68,7 +68,7 @@
         >
           <div class="space-y-1 min-w-0 flex-1 mr-3">
             <div class="font-semibold text-primary-container text-body-lg truncate" :title="cls.className">{{ cls.className }}</div>
-            <div class="text-body-sm text-on-surface-variant truncate" :title="cls.courseName">Khóa học: {{ cls.courseName }}</div>
+            <div class="text-body-sm text-on-surface-variant truncate" :title="cls.courseName">Môn học: {{ cls.courseName }}</div>
             <div class="text-body-sm text-on-surface-variant/80">Ngày đăng ký: {{ formatDate(cls.enrolledAt) }}</div>
           </div>
           <div class="flex flex-col items-end gap-1.5 shrink-0">

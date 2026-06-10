@@ -18,7 +18,7 @@ const routes = [
     path: '/courses',
     name: 'Courses',
     component: () => import('../views/courses/CourseList.vue'),
-    meta: { title: 'Quản lý khóa học', icon: 'school', roles: ['Admin', 'GiaoVien'] }
+    meta: { title: 'Quản lý môn học', icon: 'school', roles: ['Admin', 'GiaoVien'] }
   },
   {
     path: '/classes',
@@ -84,7 +84,7 @@ const routes = [
     path: '/register-course',
     name: 'RegisterCourse',
     component: () => import('../views/students/RegisterCourse.vue'),
-    meta: { title: 'Đăng ký khóa học', icon: 'import_contacts', roles: ['HocVien', 'Admin'] }
+    meta: { title: 'Đăng ký môn học', icon: 'import_contacts', roles: ['HocVien', 'Admin'] }
   },
   {
     path: '/profile',

@@ -33,7 +33,7 @@
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/40 pb-4 mb-4">
         <div>
           <h2 class="font-headline-lg text-headline-lg text-primary-container">{{ currentClass.className }}</h2>
-          <p class="text-body-sm font-body-sm text-on-surface-variant mt-0.5">Khóa học: <span class="font-semibold text-primary-container">{{ currentClass.courseName }}</span></p>
+          <p class="text-body-sm font-body-sm text-on-surface-variant mt-0.5">Môn học: <span class="font-semibold text-primary-container">{{ currentClass.courseName }}</span></p>
         </div>
         <div class="flex items-center gap-2">
           <span class="text-body-sm text-on-surface-variant font-semibold">Trạng thái lớp:</span>
@@ -565,7 +565,7 @@
           <div class="p-6 space-y-4">
             <div class="bg-primary-container/5 p-4 rounded-xl border border-primary-container/10 text-body-sm space-y-1">
               <div>Học viên: <span class="font-bold text-primary-container">{{ transferEnrollmentTarget?.studentName }}</span></div>
-              <div>Khóa học: <span class="font-semibold text-primary-container">{{ currentClass?.courseName }}</span></div>
+              <div>Môn học: <span class="font-semibold text-primary-container">{{ currentClass?.courseName }}</span></div>
               <div>Lớp hiện tại: <strong class="text-primary-container">{{ currentClass?.className }}</strong></div>
             </div>
 

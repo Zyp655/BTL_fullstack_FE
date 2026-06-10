@@ -95,7 +95,7 @@
                   <button
                     @click.stop="$emit('view-enrollments', student)"
                     class="w-8 h-8 rounded-lg bg-on-tertiary-container/10 hover:bg-on-tertiary-container/20 text-on-tertiary-container flex items-center justify-center transition-colors animate-press"
-                    title="Khóa học & lớp học đăng ký"
+                    title="Môn học & lớp học đăng ký"
                   >
                     <span class="material-symbols-outlined text-[18px]">school</span>
                   </button>

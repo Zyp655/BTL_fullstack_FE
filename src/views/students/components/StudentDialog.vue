@@ -15,8 +15,8 @@
 
         <!-- Form Body -->
         <div class="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
-          <!-- Link to User Account (Only on Create) -->
-          <div v-if="!isEdit" class="space-y-1">
+          <!-- Link to User Account -->
+          <div class="space-y-1">
             <label class="text-body-sm font-semibold text-primary">Liên kết tài khoản người dùng *</label>
             <div class="relative">
               <select
@@ -33,11 +33,6 @@
             </div>
             <p class="text-[11px] text-on-surface-variant/80 italic">Chỉ tài khoản có vai trò học viên mới được liên kết.</p>
             <p v-if="validationErrors.userId" class="text-error text-[11px] font-semibold">{{ validationErrors.userId }}</p>
-          </div>
-
-          <div v-else class="bg-primary-container/[0.05] border border-primary-container/10 rounded-lg p-3 flex items-center gap-2">
-            <span class="material-symbols-outlined text-on-tertiary-container">link</span>
-            <span class="text-body-sm text-on-surface-variant">Tài khoản liên kết: <strong>{{ formData.email || 'Học viên' }}</strong></span>
           </div>
 
           <!-- Full Name -->
@@ -175,7 +170,7 @@ const validationErrors = ref({
 })
 
 const isFormValid = computed(() => {
-  const isUserValid = isEdit.value || formData.value.userId !== null
+  const isUserValid = formData.value.userId !== null
   const isNameValid = formData.value.fullName.trim().length > 0 && formData.value.fullName.length <= 100
   const isGenderValid = ['Nam', 'Nữ', 'Khác'].includes(formData.value.gender)
   const isDobValid = formData.value.dateOfBirth !== ''
@@ -259,6 +254,7 @@ async function saveForm() {
   try {
     if (isEdit.value) {
       await store.updateStudent(formData.value.studentId, {
+        userId: formData.value.userId,
         fullName: formData.value.fullName,
         dateOfBirth: new Date(formData.value.dateOfBirth).toISOString(),
         gender: formData.value.gender,

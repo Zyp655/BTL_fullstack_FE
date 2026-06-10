@@ -14,7 +14,7 @@
       <div>
         <h1 class="font-headline-lg text-headline-lg text-primary-container">Thời khóa biểu</h1>
         <p class="font-body-lg text-on-surface-variant mt-1" v-if="classInfo">
-          Lớp: <strong class="text-primary-container font-semibold">{{ classInfo.className }}</strong> &mdash; Khóa học: {{ classInfo.courseName }}
+          Lớp: <strong class="text-primary-container font-semibold">{{ classInfo.className }}</strong> &mdash; Môn học: {{ classInfo.courseName }}
         </p>
       </div>
       <div>

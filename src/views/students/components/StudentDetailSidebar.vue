@@ -28,7 +28,7 @@
             >
               <div>
                 <h4 class="font-bold text-primary text-base">{{ en.className }}</h4>
-                <p class="text-[12px] text-on-surface-variant mt-1">Khóa học: {{ en.courseName }}</p>
+                <p class="text-[12px] text-on-surface-variant mt-1">Môn học: {{ en.courseName }}</p>
                 <p class="text-[12px] text-on-surface-variant mt-0.5">Ngày đăng ký: {{ formatDate(en.enrollDate || en.enrolledAt) }}</p>
                 <!-- Attendance summary -->
                 <p v-if="en.totalSessions > 0" class="text-[12px] text-on-surface-variant mt-1.5 flex items-center gap-1.5">
