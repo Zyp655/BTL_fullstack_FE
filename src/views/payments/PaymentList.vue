@@ -146,7 +146,7 @@
                 <thead>
                   <tr class="bg-surface-container-high text-body-xs font-semibold text-on-surface-variant uppercase">
                     <th class="py-3 px-4 rounded-l-lg">Tên lớp</th>
-                    <th class="py-3 px-4">Khóa học</th>
+                    <th class="py-3 px-4">Môn học</th>
                     <th class="py-3 px-4 text-center">Sĩ số (Học viên)</th>
                     <th class="py-3 px-4 text-right rounded-r-lg" style="width: 180px;">Tỷ lệ lấp đầy</th>
                   </tr>
@@ -178,7 +178,7 @@
             <div>
               <h3 class="font-title-md text-title-md font-bold text-primary-container flex items-center gap-2 mb-2">
                 <span class="material-symbols-outlined text-amber-500">hourglass_top</span>
-                Hàng chờ khóa học
+                Hàng chờ môn học
               </h3>
               <p class="text-body-sm text-on-surface-variant mb-4">Số lượng học viên đang đợi đủ điều kiện mở lớp</p>
             </div>
@@ -187,7 +187,7 @@
                 <div v-for="w in studentAnalytics.waitlists" :key="w.courseId" class="py-3 flex justify-between items-center">
                   <div>
                     <div class="font-semibold text-body-sm text-on-surface">{{ w.courseName }}</div>
-                    <div class="text-[11px] text-on-surface-variant">Khóa học #{{ w.courseId }}</div>
+                    <div class="text-[11px] text-on-surface-variant">Môn học #{{ w.courseId }}</div>
                   </div>
                   <div class="flex items-center gap-2">
                     <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-700 border border-amber-500/20">
@@ -441,7 +441,7 @@ async function fetchChartsData() {
     
     const courseGroups = {}
     payments.forEach(p => {
-      const courseName = p.courseName || 'Khóa học khác'
+      const courseName = p.courseName || 'Môn học khác'
       if (!courseGroups[courseName]) {
         courseGroups[courseName] = { revenue: 0, debt: 0 }
       }

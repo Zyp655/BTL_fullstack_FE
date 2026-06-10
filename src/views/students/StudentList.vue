@@ -332,9 +332,15 @@ async function openCreateDialog() {
   }
 }
 
-function openEditDialog(student) {
+async function openEditDialog(student) {
   selectedStudent.value = student
   studentDialogModal.value = true
+  
+  try {
+    await store.fetchHocVienUsers()
+  } catch (e) {
+    console.error('Error fetching linkable users on edit:', e)
+  }
 }
 
 function onDialogSuccess() {

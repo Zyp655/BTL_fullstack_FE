@@ -8,9 +8,9 @@
       <div class="space-y-2">
         <h2 class="font-headline-lg text-headline-lg text-primary-container flex items-center gap-2">
           <span class="material-symbols-outlined text-[28px] text-on-tertiary-container">import_contacts</span>
-          Đăng ký khóa học
+          Đăng ký môn học
         </h2>
-        <p class="text-body-sm text-on-surface-variant">Lựa chọn các khóa học và đăng ký vào danh sách hàng chờ xếp lớp mới</p>
+        <p class="text-body-sm text-on-surface-variant">Lựa chọn các môn học và đăng ký vào danh sách hàng chờ xếp lớp mới</p>
       </div>
     </div>
 
@@ -20,7 +20,7 @@
         <span class="material-symbols-outlined text-[28px] text-on-tertiary-container">person_search</span>
         <div>
           <h3 class="font-title-md text-body-lg font-bold text-primary-container">Chế độ Quản trị viên</h3>
-          <p class="text-body-sm text-on-surface-variant">Đăng ký khóa học thay mặt cho học viên</p>
+          <p class="text-body-sm text-on-surface-variant">Đăng ký môn học thay mặt cho học viên</p>
         </div>
       </div>
       <div class="relative w-full sm:w-80">
@@ -41,13 +41,13 @@
       <!-- Loading screen -->
       <div v-if="loading" class="bg-white/70 backdrop-blur-[20px] p-12 rounded-xl text-center flex flex-col items-center justify-center border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)]">
         <div class="w-12 h-12 border-4 border-primary-container/30 border-t-primary-container rounded-full animate-spin mb-4"></div>
-        <p class="text-body-sm font-semibold text-primary-container">Đang tải dữ liệu khóa học...</p>
+        <p class="text-body-sm font-semibold text-primary-container">Đang tải dữ liệu môn học...</p>
       </div>
 
       <!-- Courses Grid -->
       <div v-else class="space-y-4">
         <div v-if="courses.length === 0" class="bg-white/70 backdrop-blur-[20px] p-8 text-center rounded-xl border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] text-on-surface-variant">
-          Hiện tại trung tâm chưa mở khóa học nào.
+          Hiện tại trung tâm chưa mở môn học nào.
         </div>
 
         <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
@@ -63,7 +63,7 @@
                   {{ course.totalSessions }} buổi
                 </span>
               </div>
-              <p class="text-body-sm text-on-surface-variant line-clamp-3 min-h-[50px]">{{ course.description || 'Chưa có mô tả chi tiết cho khóa học này.' }}</p>
+              <p class="text-body-sm text-on-surface-variant line-clamp-3 min-h-[50px]">{{ course.description || 'Chưa có mô tả chi tiết cho môn học này.' }}</p>
               <div class="pt-3 border-t border-outline-variant/20 flex justify-between items-center">
                 <span class="text-body-sm text-on-surface-variant">Học phí khóa:</span>
                 <span class="text-on-tertiary-container font-semibold text-body-lg">{{ formatCurrency(course.fee) }}</span>
@@ -138,7 +138,7 @@
             <div class="px-gutter py-4 border-b border-white/40 flex items-center justify-between">
               <h3 class="font-title-md text-title-md text-primary-container flex items-center gap-2">
                 <span class="material-symbols-outlined text-on-tertiary-container">info</span>
-                Xác nhận đăng ký khóa học
+                Xác nhận đăng ký môn học
               </h3>
               <button @click="enrollModal = false" class="text-on-surface-variant hover:text-primary-container cursor-pointer">
                 <span class="material-symbols-outlined">close</span>
@@ -146,7 +146,7 @@
             </div>
 
             <div class="p-gutter space-y-3">
-              <p class="text-body-sm text-on-surface">Bạn có chắc chắn muốn đăng ký vào danh sách hàng chờ của khóa học:</p>
+              <p class="text-body-sm text-on-surface">Bạn có chắc chắn muốn đăng ký vào danh sách hàng chờ của môn học:</p>
               <div class="p-4 rounded-xl bg-on-tertiary-container/5 border border-on-tertiary-container/15">
                 <div class="font-title-md text-title-md text-primary-container">{{ selectedCourseToEnroll?.courseName }}</div>
                 <div class="text-body-sm text-on-surface-variant mt-1">Học phí: <span class="font-semibold text-on-tertiary-container">{{ formatCurrency(selectedCourseToEnroll?.fee) }}</span></div>
@@ -182,7 +182,7 @@
     <div v-else-if="!loading" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-12 rounded-xl text-center flex flex-col items-center justify-center">
       <span class="material-symbols-outlined text-primary-container/30 text-[64px] mb-4">import_contacts</span>
       <h3 class="font-title-md text-headline-sm text-primary-container mb-2">Chưa chọn học viên</h3>
-      <p class="text-body-md text-on-surface-variant max-w-md">Vui lòng chọn một học viên từ danh sách ở trên để đăng ký khóa học cho họ.</p>
+      <p class="text-body-md text-on-surface-variant max-w-md">Vui lòng chọn một học viên từ danh sách ở trên để đăng ký môn học cho họ.</p>
     </div>
   </div>
 </template>
@@ -294,7 +294,7 @@ async function loadRegistrationData() {
 
   } catch (err) {
     console.error('Error loading registration data:', err)
-    showSnackbar('Có lỗi xảy ra khi tải danh sách khóa học.', 'error')
+    showSnackbar('Có lỗi xảy ra khi tải danh sách môn học.', 'error')
     loading.value = false
   }
 }
@@ -360,7 +360,7 @@ async function submitEnrollment() {
 // Check if student is actively attending/enrolled in a class of this course
 function isEnrolledActive(courseId, courseName) {
   return enrolledClasses.value.some(cls => 
-    cls.courseName === courseName && 
+    cls.courseId === courseId && 
     cls.classId > 0 && 
     cls.status === 'DangHoc'
   )
@@ -369,7 +369,7 @@ function isEnrolledActive(courseId, courseName) {
 // Check if student has a registration that is pending payment (either in queue or class)
 function isPendingPayment(courseId, courseName) {
   return enrolledClasses.value.some(cls => 
-    (cls.courseName === courseName || cls.classId === -courseId) && 
+    (cls.courseId === courseId || cls.classId === -courseId) && 
     (cls.status === 'PendingPayment' || cls.status === 'Pending')
   )
 }

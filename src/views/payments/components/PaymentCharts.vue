@@ -35,9 +35,9 @@
       <div>
         <h3 class="font-title-md text-title-md font-bold text-primary-container flex items-center gap-2">
           <span class="material-symbols-outlined text-emerald-600">pie_chart</span>
-          Cơ cấu theo khóa học
+          Cơ cấu theo môn học
         </h3>
-        <p class="text-body-sm text-on-surface-variant">Tỷ lệ doanh thu và công nợ nợ đọng của từng khóa học</p>
+        <p class="text-body-sm text-on-surface-variant">Tỷ lệ doanh thu và công nợ nợ đọng của từng môn học</p>
       </div>
       <div class="relative flex-1 w-full h-64 mt-4">
         <div v-if="loading" class="absolute inset-0 flex items-center justify-center bg-black/5 rounded-lg z-10">

@@ -67,7 +67,7 @@
                 <th class="py-3.5 px-6 text-label-caps font-label-caps text-on-surface-variant uppercase whitespace-nowrap">#</th>
                 <th class="py-3.5 px-6 text-label-caps font-label-caps text-on-surface-variant uppercase whitespace-nowrap">Danh mục</th>
                 <th class="py-3.5 px-6 text-label-caps font-label-caps text-on-surface-variant uppercase whitespace-nowrap">Mã danh mục</th>
-                <th class="py-3.5 px-6 text-label-caps font-label-caps text-on-surface-variant uppercase whitespace-nowrap">Số khóa học</th>
+                <th class="py-3.5 px-6 text-label-caps font-label-caps text-on-surface-variant uppercase whitespace-nowrap">Số môn học</th>
                 <th class="py-3.5 px-6 text-label-caps font-label-caps text-on-surface-variant uppercase whitespace-nowrap text-right">Thao tác</th>
               </tr>
             </thead>
@@ -91,7 +91,7 @@
                 </td>
                 <td class="py-4 px-6">
                   <span class="bg-on-tertiary-container/10 text-on-tertiary-container font-semibold px-2.5 py-0.5 rounded-full text-[12px] border border-on-tertiary-container/20">
-                    {{ getCourseCount(cat.categoryCode) }} khóa học
+                    {{ getCourseCount(cat.categoryCode) }} môn học
                   </span>
                 </td>
                 <td class="py-4 px-6 text-right">
@@ -303,21 +303,21 @@ const stats = computed(() => [
     textColor: 'text-primary-container'
   },
   {
-    label: 'Khóa học Ngoại ngữ',
+    label: 'Môn học Ngoại ngữ',
     value: getCourseCount('NgoaiNgu'),
     icon: 'translate',
     bgColor: 'bg-sky-500/10',
     textColor: 'text-sky-600'
   },
   {
-    label: 'Khóa học Tin học',
+    label: 'Môn học Tin học',
     value: getCourseCount('TinHoc'),
     icon: 'laptop_mac',
     bgColor: 'bg-amber-500/10',
     textColor: 'text-amber-600'
   },
   {
-    label: 'Khóa học Kỹ năng',
+    label: 'Môn học Kỹ năng',
     value: getCourseCount('KyNang'),
     icon: 'psychology',
     bgColor: 'bg-purple-500/10',
