@@ -1,6 +1,6 @@
 <template>
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
-    <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl p-4 sm:p-5 xl:p-gutter flex items-center gap-3 sm:gap-4">
+  <div class="flex overflow-x-auto lg:grid lg:grid-cols-4 gap-gutter pb-4 lg:pb-0 scrollbar-none snap-x snap-mandatory">
+    <div class="flex-shrink-0 w-[260px] sm:w-[280px] lg:w-auto bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl p-4 sm:p-5 xl:p-gutter flex items-center gap-3 sm:gap-4 snap-start">
       <div class="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
         <span class="material-symbols-outlined text-[24px]">payments</span>
       </div>
@@ -12,7 +12,7 @@
       </div>
     </div>
 
-    <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl p-4 sm:p-5 xl:p-gutter flex items-center gap-3 sm:gap-4">
+    <div class="flex-shrink-0 w-[260px] sm:w-[280px] lg:w-auto bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl p-4 sm:p-5 xl:p-gutter flex items-center gap-3 sm:gap-4 snap-start">
       <div class="w-12 h-12 rounded-full bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0">
         <span class="material-symbols-outlined text-[24px]">money_off</span>
       </div>
@@ -24,7 +24,7 @@
       </div>
     </div>
 
-    <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl p-4 sm:p-5 xl:p-gutter flex items-center gap-3 sm:gap-4">
+    <div class="flex-shrink-0 w-[260px] sm:w-[280px] lg:w-auto bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl p-4 sm:p-5 xl:p-gutter flex items-center gap-3 sm:gap-4 snap-start">
       <div class="w-12 h-12 rounded-full bg-on-tertiary-container/10 text-on-tertiary-container flex items-center justify-center shrink-0">
         <span class="material-symbols-outlined text-[24px]">description</span>
       </div>
@@ -36,7 +36,7 @@
       </div>
     </div>
 
-    <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl p-4 sm:p-5 xl:p-gutter flex items-center gap-3 sm:gap-4">
+    <div class="flex-shrink-0 w-[260px] sm:w-[280px] lg:w-auto bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl p-4 sm:p-5 xl:p-gutter flex items-center gap-3 sm:gap-4 snap-start">
       <div class="w-12 h-12 rounded-full bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
         <span class="material-symbols-outlined text-[24px]">percent</span>
       </div>
