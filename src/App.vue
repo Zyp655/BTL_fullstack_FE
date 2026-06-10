@@ -291,8 +291,7 @@ const getRoleLabel = (role) => {
 
 const logout = () => {
   authStore.logout()
-  router.push('/login')
-  showSnackbar('Đăng xuất thành công', 'success')
+  window.location.href = '/login?logout=success'
 }
 
 const navItems = computed(() => {
