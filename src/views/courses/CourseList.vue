@@ -682,7 +682,7 @@ const filters = ref({
   search: '',
   category: null,
   level: null,
-  isActive: null,
+  isActive: true,
 })
 
 const categoryOptions = computed(() => {
