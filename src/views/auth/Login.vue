@@ -226,14 +226,21 @@
 </template>
 
 <script setup>
-import { ref, inject } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, inject, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores'
 import api from '../../services/api'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const showSnackbar = inject('showSnackbar')
+
+onMounted(() => {
+  if (route.query.logout === 'success') {
+    showSnackbar('Đăng xuất thành công', 'success')
+  }
+})
 
 // Login fields (empty by default for standard design)
 const username = ref('')
