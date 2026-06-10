@@ -12,9 +12,8 @@
         </div>
         <!-- Desktop Nav -->
         <ul class="hidden md:flex space-x-stack-md">
-          <li><a class="text-on-tertiary-container dark:text-tertiary-fixed-dim border-b-2 border-on-tertiary-container pb-1 hover:text-tertiary transition-colors duration-200 block scale-95 transition-transform" href="#platform">Platform</a></li>
-          <li><a class="text-secondary dark:text-secondary-fixed-dim hover:text-tertiary transition-colors duration-200 block" href="#solutions">Solutions</a></li>
-          <li><a class="text-secondary dark:text-secondary-fixed-dim hover:text-tertiary transition-colors duration-200 block" href="#resources">Resources</a></li>
+          <li><a class="text-secondary dark:text-secondary-fixed-dim hover:text-tertiary transition-colors duration-200 block" href="#features">Features</a></li>
+          <li><a class="text-secondary dark:text-secondary-fixed-dim hover:text-tertiary transition-colors duration-200 block" href="#benefits">Benefits</a></li>
           <li><a class="text-secondary dark:text-secondary-fixed-dim hover:text-tertiary transition-colors duration-200 block" href="#pricing">Pricing</a></li>
         </ul>
         <div class="hidden md:flex items-center space-x-stack-sm">
@@ -25,34 +24,30 @@
             Get Started
           </router-link>
         </div>
-        <!-- Mobile Menu Toggle (Visual only for layout) -->
+        <!-- Mobile Menu Toggle -->
         <button class="md:hidden text-primary" @click="toggleMobileMenu">
-          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">menu</span>
+          <span class="material-symbols-outlined">menu</span>
         </button>
       </div>
     </nav>
     
     <!-- Main Content Canvas -->
-    <main class="flex-grow pt-28 pb-stack-lg px-container-padding max-w-[1400px] mx-auto w-full flex flex-col gap-y-[120px]">
+    <main class="flex-grow pt-28 pb-stack-lg px-container-padding max-w-[1400px] mx-auto w-full flex flex-col gap-y-16">
       <!-- Hero Section -->
       <section class="flex flex-col lg:flex-row items-center justify-between gap-stack-lg mt-stack-md">
-        <div class="flex-1 space-y-stack-md z-10">
-          <div class="inline-block glass-panel px-4 py-1 rounded-full text-on-tertiary-container font-label-caps mb-4">
-            Next-Gen Education Management
-          </div>
-          <h1 class="font-display-lg text-display-lg text-primary text-balance">
-            Empower Your Institution with <span class="text-on-tertiary-container">Data-Driven</span> Clarity.
+        <div class="flex-1 space-y-stack-md z-10 pr-4">
+          <h1 class="font-display-lg text-display-lg text-primary leading-tight font-bold">
+            Hệ thống quản lý đào tạo toàn diện
           </h1>
-          <p class="font-body-lg text-body-lg text-secondary max-w-xl text-balance">
-            Transform administrative burden into actionable insights. A comprehensive suite designed for modern educational leaders who demand transparency and performance.
+          <p class="font-body-lg text-body-lg text-secondary max-w-xl">
+            Tối ưu hóa quy trình, nâng cao trải nghiệm học viên và tăng trưởng doanh thu với giải pháp công nghệ giáo dục hàng đầu.
           </p>
           <div class="flex flex-wrap gap-stack-sm pt-4">
             <router-link to="/login" class="bg-tertiary text-on-tertiary px-8 py-3 rounded-lg font-title-md shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 font-semibold">
-              Get Started
+              Bắt đầu ngay
             </router-link>
             <router-link to="/login" class="glass-panel text-primary px-8 py-3 rounded-lg font-title-md hover:bg-surface-container transition-colors duration-300 flex items-center gap-2 font-semibold">
-              <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">play_circle</span>
-              Watch Demo
+              Xem Demo
             </router-link>
           </div>
         </div>
@@ -60,143 +55,73 @@
         <div class="flex-1 w-full max-w-2xl relative z-10 perspective-1000">
           <div class="relative rounded-xl overflow-hidden shadow-2xl transform rotate-y-[-5deg] rotate-x-[5deg] transition-transform duration-500 hover:rotate-0 border-4 border-surface-container-lowest/50 bg-surface-container-lowest/20 backdrop-blur-sm p-2">
             <img 
-              alt="A high-fidelity rendering of a modern, sleek laptop screen displaying a complex but cleanly organized data dashboard for educational management." 
+              alt="Dashboard" 
               class="w-full h-auto rounded-lg shadow-inner" 
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFGTE67V0VwVRVcE6c32UytIhoBeeDkY2BaxB9QI3zXLAD-WoUufa4aiFrHMQojjw5BkowZWXva1ONDooFBqMRkNDGzySry3I6XbrgB7IHXDdUvMcweqlIF1eHArn3IVlN2HC81whyjqPCAEzNaCLlZWdPpQw4K5ogkGNBAGL0yQ63AMkK4wxgqmT3_5mm5nljBh2Qjiom5_VlObetu-RLoho21wqHngK3dMpl8zYDR_KzJ7HKgUd-pQ6EwlhkwvrPhwhYOxOWLIyg"
             />
           </div>
-          <!-- Decorative element behind image -->
           <div class="absolute -inset-4 bg-gradient-to-tr from-tertiary-fixed-dim/30 to-transparent blur-2xl -z-10 rounded-full"></div>
         </div>
       </section>
       
-      <!-- Stats Section -->
-      <section class="grid grid-cols-1 md:grid-cols-3 gap-gutter relative z-10">
-        <div class="glass-panel p-stack-md rounded-xl text-center hover:-translate-y-2 transition-transform duration-300">
-          <div class="font-display-lg text-display-lg text-on-tertiary-container mb-2">1000+</div>
-          <div class="font-title-md text-title-md text-secondary">Centers Active</div>
+      <!-- Features Section -->
+      <section class="space-y-stack-lg z-10 relative mt-8">
+        <div class="text-center max-w-2xl mx-auto space-y-2">
+          <h2 class="font-headline-lg text-headline-lg font-bold text-primary">Tính năng nổi bật</h2>
+          <p class="font-body-lg text-body-lg text-secondary">Mọi công cụ bạn cần để vận hành trung tâm hiệu quả</p>
         </div>
-        <div class="glass-panel p-stack-md rounded-xl text-center hover:-translate-y-2 transition-transform duration-300">
-          <div class="font-display-lg text-display-lg text-on-tertiary-container mb-2">500k+</div>
-          <div class="font-title-md text-title-md text-secondary">Students Managed</div>
-        </div>
-        <div class="glass-panel p-stack-md rounded-xl text-center hover:-translate-y-2 transition-transform duration-300">
-          <div class="font-display-lg text-display-lg text-on-tertiary-container mb-2">98%</div>
-          <div class="font-title-md text-title-md text-secondary">Satisfaction Rate</div>
-        </div>
-      </section>
-      
-      <!-- Features Section (Bento Grid) -->
-      <section class="space-y-stack-lg z-10 relative">
-        <div class="text-center max-w-2xl mx-auto space-y-stack-sm">
-          <h2 class="font-headline-lg text-headline-lg text-primary">Comprehensive Ecosystem</h2>
-          <p class="font-body-lg text-body-lg text-secondary">Everything you need to streamline operations and enhance the educational experience in one cohesive platform.</p>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
           <!-- Card 1 -->
-          <div class="glass-panel p-stack-md rounded-xl flex flex-col gap-stack-sm group hover:border-on-tertiary-container transition-colors duration-300">
-            <div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-on-tertiary-container group-hover:scale-110 transition-transform">
-              <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 0;">school</span>
+          <div class="glass-panel p-6 rounded-xl flex flex-col gap-3 group hover:border-on-tertiary-container transition-colors duration-300">
+            <div class="w-12 h-12 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <span class="material-symbols-outlined text-3xl">menu_book</span>
             </div>
-            <h3 class="font-title-md text-title-md text-primary mt-2">Course Management</h3>
-            <p class="font-body-sm text-body-sm text-secondary">Streamline curriculum planning, scheduling, and resource allocation with intuitive drag-and-drop tools.</p>
+            <h3 class="font-title-md text-title-md font-bold text-primary mt-2">Quản lý Khóa học</h3>
+            <p class="font-body-sm text-body-sm text-secondary">Lên lịch, sắp xếp giáo viên và phòng học thông minh.</p>
           </div>
           <!-- Card 2 -->
-          <div class="glass-panel p-stack-md rounded-xl flex flex-col gap-stack-sm group hover:border-on-tertiary-container transition-colors duration-300">
-            <div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-on-tertiary-container group-hover:scale-110 transition-transform">
-              <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 0;">person</span>
+          <div class="glass-panel p-6 rounded-xl flex flex-col gap-3 group hover:border-on-tertiary-container transition-colors duration-300">
+            <div class="w-12 h-12 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <span class="material-symbols-outlined text-3xl">groups</span>
             </div>
-            <h3 class="font-title-md text-title-md text-primary mt-2">Student Portal</h3>
-            <p class="font-body-sm text-body-sm text-secondary">Provide a unified, secure access point for grades, assignments, and communication tailored to individual needs.</p>
+            <h3 class="font-title-md text-title-md font-bold text-primary mt-2">Quản lý Học viên</h3>
+            <p class="font-body-sm text-body-sm text-secondary">Theo dõi tiến độ, điểm danh và đánh giá kết quả học tập.</p>
           </div>
           <!-- Card 3 -->
-          <div class="glass-panel p-stack-md rounded-xl flex flex-col gap-stack-sm group hover:border-on-tertiary-container transition-colors duration-300">
-            <div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-on-tertiary-container group-hover:scale-110 transition-transform">
-              <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 0;">bar_chart</span>
+          <div class="glass-panel p-6 rounded-xl flex flex-col gap-3 group hover:border-on-tertiary-container transition-colors duration-300">
+            <div class="w-12 h-12 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <span class="material-symbols-outlined text-3xl">receipt_long</span>
             </div>
-            <h3 class="font-title-md text-title-md text-primary mt-2">Financial Reporting</h3>
-            <p class="font-body-sm text-body-sm text-secondary">Generate real-time, customizable fiscal reports to ensure compliance and optimize budget utilization.</p>
+            <h3 class="font-title-md text-title-md font-bold text-primary mt-2">Báo cáo Tài chính</h3>
+            <p class="font-body-sm text-body-sm text-secondary">Kiểm soát thu chi, học phí và xuất báo cáo tự động.</p>
           </div>
           <!-- Card 4 -->
-          <div class="glass-panel p-stack-md rounded-xl flex flex-col gap-stack-sm group hover:border-on-tertiary-container transition-colors duration-300">
-            <div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-on-tertiary-container group-hover:scale-110 transition-transform">
-              <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 0;">phone_iphone</span>
+          <div class="glass-panel p-6 rounded-xl flex flex-col gap-3 group hover:border-on-tertiary-container transition-colors duration-300">
+            <div class="w-12 h-12 rounded-lg bg-indigo-500/10 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <span class="material-symbols-outlined text-3xl">smartphone</span>
             </div>
-            <h3 class="font-title-md text-title-md text-primary mt-2">Mobile App</h3>
-            <p class="font-body-sm text-body-sm text-secondary">Stay connected on the go with full administrative capabilities optimized for mobile devices.</p>
-          </div>
-        </div>
-      </section>
-      
-      <!-- Social Proof Section -->
-      <section class="glass-panel p-stack-lg rounded-2xl z-10 relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-surface-container-low/50 to-transparent -z-10"></div>
-        <div class="text-center mb-stack-md">
-          <h2 class="font-headline-lg text-headline-lg text-primary">Trusted by Leaders</h2>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter max-w-4xl mx-auto">
-          <div class="bg-surface-container-lowest/50 p-stack-md rounded-xl border border-glass-border">
-            <p class="font-body-lg text-body-lg text-on-surface-variant italic mb-4">"EduManager Pro completely transformed our administrative workflows. The clarity it brings to our data is simply unmatched in the industry."</p>
-            <div class="flex items-center gap-4">
-              <div class="w-12 h-12 rounded-full bg-surface-tint overflow-hidden">
-                <img 
-                  alt="Sarah Jenkins Headshot" 
-                  class="w-full h-full object-cover" 
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSltzJpWVG2YyLOwSHzlC_M5wLuYDkVeeWzmwfElbEgQw23U1bKRz11-NDlcMdGD-f4FygzkU1szGm9R7nXzQ--8SZIvsD8jkRAZEugF0iRMrh8bEjK9TkvFBeMZ_FJtvgW2DQYLVSSBdK5F9-djsBw5tK8OiHSOlgfi7NR5uB_o50DqxYxyVklFwgvdA1Tu6yM4soKY0zu_PkL7cNjlolUslJQcAzoiz_rzyFKCnZne_PwFBAwIw9JA2S7XsXdlYBsy-KyG1VIOTQ"
-                />
-              </div>
-              <div>
-                <div class="font-title-md text-title-md text-primary">Sarah Jenkins</div>
-                <div class="font-body-sm text-body-sm text-secondary">Dean of Operations, Horizon Academy</div>
-              </div>
-            </div>
-          </div>
-          <div class="bg-surface-container-lowest/50 p-stack-md rounded-xl border border-glass-border">
-            <p class="font-body-lg text-body-lg text-on-surface-variant italic mb-4">"The glassmorphic interface isn't just visually stunning; it actually reduces cognitive load for my team when analyzing complex student metrics."</p>
-            <div class="flex items-center gap-4">
-              <div class="w-12 h-12 rounded-full bg-surface-tint overflow-hidden">
-                <img 
-                  alt="David Chen Headshot" 
-                  class="w-full h-full object-cover" 
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6npbLNgqQzB1eeaLbplDMwMqBhCLYqUWJ_OSryB5Qu9M2XmbrrCMEJn-IqiUOgojS_0FGbdX-jyYuGZxBmvCEBPhD0OGSGJwPGYAzaMCutwMhBN35pPLfTLVWEp8pKV4VqQhw8vKrNXWasCQYsCywjd8JrZzeWjVfxESPDhDJdjBbPIug7R23yRDoM5D7el5KC6TU1TpKmaBTaMthR6t4WXWVmYgqLutxxFSGkWj5_usqOXg8nYi9SMiwqxJwVy6KL784nABqgaqB"
-                />
-              </div>
-              <div>
-                <div class="font-title-md text-title-md text-primary">David Chen</div>
-                <div class="font-body-sm text-body-sm text-secondary">IT Director, Nexus Public Schools</div>
-              </div>
-            </div>
+            <h3 class="font-title-md text-title-md font-bold text-primary mt-2">App Học viên</h3>
+            <p class="font-body-sm text-body-sm text-secondary">Ứng dụng di động giúp học viên kết nối và tự quản lý.</p>
           </div>
         </div>
       </section>
     </main>
     
     <!-- Footer Component -->
-    <footer class="bg-primary dark:bg-surface-container-lowest font-body-sm text-body-sm w-full mt-auto">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-stack-lg px-container-padding py-stack-lg max-w-[1400px] mx-auto text-on-primary dark:text-on-surface">
-        <div class="col-span-1 md:col-span-2 space-y-4">
-          <div class="font-headline-lg text-headline-lg text-on-primary font-bold">EduManager Pro</div>
-          <p class="text-secondary-fixed-dim opacity-80 max-w-xs">
-            Elevating educational management through transparent, data-rich interfaces and seamless administrative tools.
-          </p>
-          <div class="pt-4 text-secondary-fixed-dim opacity-80">
-            © 2026 EduManager Pro. All rights reserved.
-          </div>
+    <footer class="bg-[#f8f9fa] dark:bg-surface-container-lowest font-body-sm text-body-sm w-full mt-auto border-t border-gray-200">
+      <div class="flex flex-col md:flex-row justify-between items-center px-container-padding py-6 max-w-[1400px] mx-auto text-on-surface gap-4">
+        <div class="font-title-md font-bold text-primary">
+          EduManager Pro
         </div>
-        <div class="space-y-4">
-          <h4 class="font-title-md text-title-md text-on-primary mb-2">Legal</h4>
-          <ul class="space-y-2">
-            <li><a class="text-secondary-fixed-dim opacity-80 hover:text-tertiary-fixed transition-opacity" href="#">Privacy Policy</a></li>
-            <li><a class="text-secondary-fixed-dim opacity-80 hover:text-tertiary-fixed transition-opacity" href="#">Terms of Service</a></li>
-            <li><a class="text-secondary-fixed-dim opacity-80 hover:text-tertiary-fixed transition-opacity" href="#">Cookie Settings</a></li>
-          </ul>
+        <div class="flex flex-wrap justify-center gap-6 text-on-surface-variant font-medium">
+          <a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+          <a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+          <a class="hover:text-primary transition-colors" href="#">Contact Us</a>
+          <a class="hover:text-primary transition-colors" href="#">Careers</a>
         </div>
-        <div class="space-y-4">
-          <h4 class="font-title-md text-title-md text-on-primary mb-2">Support</h4>
-          <ul class="space-y-2">
-            <li><a class="text-secondary-fixed-dim opacity-80 hover:text-tertiary-fixed transition-opacity" href="#">Contact Us</a></li>
-            <li><a class="text-secondary-fixed-dim opacity-80 hover:text-tertiary-fixed transition-opacity" href="#">Help Center</a></li>
-          </ul>
+        <div class="text-on-surface-variant">
+          &copy; 2024 EduManager Pro. All rights reserved.
         </div>
       </div>
     </footer>
