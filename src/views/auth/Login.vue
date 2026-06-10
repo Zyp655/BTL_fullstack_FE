@@ -19,10 +19,10 @@
         </div>
         <div class="relative z-10 max-w-lg mb-20">
           <h1 class="font-display-lg text-display-lg text-on-primary mb-stack-md leading-tight drop-shadow-md">
-            Empowering the Future of Education
+            Kiến tạo Tương lai Giáo dục
           </h1>
           <p class="font-body-lg text-body-lg text-on-primary-container opacity-90 max-w-md">
-            The centralized, secure platform for modern academic administration.
+            Nền tảng quản lý học vụ tập trung và bảo mật cho giáo dục hiện đại.
           </p>
         </div>
         <!-- Decorative gradient to ensure text readability at bottom -->
@@ -107,17 +107,13 @@
             </div>
 
             <!-- Options -->
-            <div class="flex justify-between items-center mt-1">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input class="w-4 h-4 rounded border-outline-variant text-on-tertiary-container focus:ring-on-tertiary-container bg-surface cursor-pointer" type="checkbox"/>
-                <span class="font-body-sm text-body-sm text-on-surface-variant">Remember me</span>
-              </label>
+            <div class="flex justify-end items-center mt-1">
               <button 
                 type="button"
                 @click="openForgotPasswordModal"
                 class="font-body-sm text-body-sm text-on-tertiary-container hover:text-on-tertiary-fixed-variant font-semibold transition-colors focus:outline-none focus:underline rounded px-1 bg-transparent border-none p-0 cursor-pointer"
               >
-                Forgot Password?
+                Quên mật khẩu?
               </button>
             </div>
 
@@ -139,7 +135,7 @@
               :disabled="loading"
             >
               <span v-if="loading" class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-              <span v-else>Sign In</span>
+              <span v-else>Đăng nhập</span>
             </button>
           </form>
 
@@ -169,8 +165,8 @@
 
         <!-- Subtle Footer Links -->
         <div class="absolute bottom-container-padding flex gap-stack-md font-body-sm text-body-sm text-on-surface-variant">
-          <a class="hover:text-on-surface transition-colors hover:underline focus:outline-none focus:text-on-tertiary-container rounded px-1" href="#">Privacy Policy</a>
-          <a class="hover:text-on-surface transition-colors hover:underline focus:outline-none focus:text-on-tertiary-container rounded px-1" href="#">Terms of Service</a>
+          <a class="hover:text-on-surface transition-colors hover:underline focus:outline-none focus:text-on-tertiary-container rounded px-1" href="#">Chính sách bảo mật</a>
+          <a class="hover:text-on-surface transition-colors hover:underline focus:outline-none focus:text-on-tertiary-container rounded px-1" href="#">Điều khoản dịch vụ</a>
         </div>
       </section>
     </main>
