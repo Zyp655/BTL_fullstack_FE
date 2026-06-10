@@ -603,7 +603,7 @@ async function fetchTeacherCourses() {
   if (authStore.isTeacher && authStore.currentUser?.userId) {
     try {
       const { data } = await api.get('/api/v1/classes', {
-        params: { teacherId: authStore.currentUser.userId, page: 1, pageSize: 100 }
+        params: { teacherId: authStore.currentUser.userId, page: 1, pageSize: 1000 }
       })
       const classes = data.items || []
       teacherCourseIds.value = [...new Set(classes.map(c => c.courseId))]
@@ -740,7 +740,7 @@ async function fetchData() {
       level: filters.value.level || undefined,
       isActive: filters.value.isActive ?? undefined,
       page: 1,
-      pageSize: 50,
+      pageSize: 1000,
     })
   } catch (e) {
     showSnackbar('Lỗi tải dữ liệu', 'error')

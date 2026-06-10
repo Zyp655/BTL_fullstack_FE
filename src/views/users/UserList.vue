@@ -579,7 +579,7 @@ async function fetchData() {
       role: filters.value.role || undefined,
       isActive: filters.value.isActive ?? undefined,
       page: 1,
-      pageSize: 50,
+      pageSize: 1000,
     })
   } catch (e) {
     showSnackbar('Lỗi tải dữ liệu người dùng', 'error')
