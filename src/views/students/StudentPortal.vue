@@ -1,7 +1,7 @@
 <template>
-  <div class="space-y-gutter">
+  <div class="space-y-gutter animate-fade-in">
     <!-- Student Selector (Admin Only) -->
-    <div v-if="authStore.isAdmin" class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl p-5 shadow-[0_12px_24px_rgba(0,0,0,0.05)] flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div v-if="authStore.isAdmin" class="glass-panel rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
       <div class="flex items-center gap-3">
         <span class="material-symbols-outlined text-[28px] text-on-tertiary-container">person_search</span>
         <div>
@@ -25,131 +25,133 @@
 
     <template v-if="studentProfile">
       <!-- Hero Profile Section -->
-      <div class="relative overflow-hidden bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl p-gutter shadow-[0_12px_24px_rgba(0,0,0,0.05)] flex flex-col md:flex-row items-center md:items-start gap-gutter">
+      <section class="glass-panel rounded-xl p-stack-md flex flex-col md:flex-row gap-stack-md items-start md:items-center relative overflow-hidden">
         <!-- Background decorative gradients -->
         <div class="absolute -right-16 -top-16 w-48 h-48 rounded-full bg-primary/10 blur-3xl pointer-events-none"></div>
         <div class="absolute -left-16 -bottom-16 w-48 h-48 rounded-full bg-on-tertiary-container/10 blur-3xl pointer-events-none"></div>
 
-        <!-- Avatar block -->
-        <div class="w-24 h-24 rounded-full border-4 border-white shadow-md bg-primary-container text-white flex items-center justify-center font-bold text-[36px] shrink-0">
-          {{ (studentProfile?.fullName || authStore.currentUser?.fullName || 'N').charAt(0).toUpperCase() }}
+        <div class="flex-shrink-0">
+          <div class="w-24 h-24 rounded-full bg-gradient-to-br from-tertiary-container to-primary-container flex items-center justify-center font-display-lg text-display-lg text-on-primary shadow-lg shadow-primary-container/20 border-4 border-white">
+            {{ (studentProfile?.fullName || authStore.currentUser?.fullName || 'P').charAt(0).toUpperCase() }}
+          </div>
         </div>
-
-        <!-- Profile details -->
-        <div class="flex-1 text-center md:text-left space-y-3">
+        <div class="flex-1 space-y-4">
           <div>
-            <div class="flex flex-col md:flex-row md:items-center gap-3 justify-center md:justify-start">
+            <div class="flex flex-wrap items-center gap-3">
               <h2 class="font-headline-lg text-headline-lg text-primary-container">{{ studentProfile?.fullName || authStore.currentUser?.fullName }}</h2>
-              <span class="bg-primary-container/10 text-primary-container rounded-full px-3 py-1 text-body-sm font-semibold self-center md:self-auto">
-                Mã HV: {{ studentProfile?.studentId ? `HV-${String(studentProfile.studentId).padStart(4, '0')}` : 'Đang xử lý' }}
+              <span class="px-3 py-1 bg-surface-tint/10 text-surface-tint rounded-full font-label-caps text-label-caps border border-surface-tint/20">
+                Mã HV: {{ studentProfile?.studentId ? `HV-${String(studentProfile.studentId).padStart(4, '0')}` : 'HV-0000' }}
               </span>
             </div>
-            <p class="text-body-sm text-on-surface-variant mt-1">Cổng thông tin học tập & học phí cá nhân</p>
+            <p class="text-on-surface-variant font-title-md text-title-md font-normal mt-1">Cổng thông tin học tập & học phí cá nhân</p>
           </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-2 gap-x-6 text-body-sm text-on-surface pt-3 border-t border-white/20">
-            <div class="flex items-center justify-center md:justify-start gap-2">
-              <span class="material-symbols-outlined text-[18px] text-on-tertiary-container">mail</span>
-              <span class="truncate">{{ studentProfile?.email || authStore.currentUser?.email || 'Chưa cập nhật email' }}</span>
+          <div class="flex flex-wrap gap-x-6 gap-y-2 text-body-sm font-body-sm text-on-surface-variant">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[18px]">mail</span>
+              {{ studentProfile?.email || authStore.currentUser?.email || 'Chưa cập nhật email' }}
             </div>
-            <div class="flex items-center justify-center md:justify-start gap-2">
-              <span class="material-symbols-outlined text-[18px] text-on-tertiary-container">call</span>
-              <span>{{ studentProfile?.phone || authStore.currentUser?.phone || 'Chưa cập nhật SĐT' }}</span>
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[18px]">phone</span>
+              {{ studentProfile?.phone || authStore.currentUser?.phone || 'Chưa cập nhật SĐT' }}
             </div>
-            <div class="flex items-center justify-center md:justify-start gap-2">
-              <span class="material-symbols-outlined text-[18px] text-on-tertiary-container">wc</span>
-              <span>Giới tính: {{ studentProfile?.gender || 'Chưa cập nhật' }}</span>
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[18px]">person</span>
+              {{ studentProfile?.gender || 'Chưa cập nhật' }}
             </div>
-            <div class="flex items-center justify-center md:justify-start gap-2">
-              <span class="material-symbols-outlined text-[18px] text-on-tertiary-container">calendar_month</span>
-              <span>Ngày sinh: {{ formatDate(studentProfile?.dateOfBirth) }}</span>
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[18px]">cake</span>
+              {{ formatDate(studentProfile?.dateOfBirth) }}
             </div>
-            <div class="flex items-center justify-center md:justify-start gap-2 sm:col-span-2">
-              <span class="material-symbols-outlined text-[18px] text-on-tertiary-container">home</span>
-              <span class="truncate" :title="studentProfile?.address">{{ studentProfile?.address || 'Chưa cập nhật địa chỉ' }}</span>
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[18px]">location_on</span>
+              {{ studentProfile?.address || 'Chưa cập nhật địa chỉ' }}
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Overview Statistics Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <!-- Total enrolled classes -->
-        <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-5 rounded-xl flex items-center gap-4">
-          <div class="w-12 h-12 rounded-full bg-primary-container/10 text-primary-container flex items-center justify-center shrink-0">
-            <span class="material-symbols-outlined text-[28px]">groups</span>
+      <!-- Stats Row -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-gutter">
+        <!-- Stat 1 -->
+        <div class="glass-panel rounded-lg p-4 flex items-center gap-4 glass-panel-hover">
+          <div class="w-12 h-12 rounded-full bg-primary-container/10 flex items-center justify-center text-primary-container">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">menu_book</span>
           </div>
           <div>
-            <p class="text-body-sm text-on-surface-variant">Lớp đang học</p>
-            <h3 class="font-title-md text-title-md text-primary-container">{{ enrolledClasses.length }} lớp</h3>
+            <p class="text-on-surface-variant text-body-sm font-body-sm">Lớp đang học</p>
+            <p class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">{{ enrolledClasses.length }} lớp</p>
           </div>
         </div>
-
-        <!-- Average grade -->
-        <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-5 rounded-xl flex items-center gap-4">
-          <div class="w-12 h-12 rounded-full bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
-            <span class="material-symbols-outlined text-[28px]">history_edu</span>
+        <!-- Stat 2 -->
+        <div class="glass-panel rounded-lg p-4 flex items-center gap-4 glass-panel-hover">
+          <div class="w-12 h-12 rounded-full bg-tertiary-container/10 flex items-center justify-center text-tertiary-container">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
           </div>
           <div>
-            <p class="text-body-sm text-on-surface-variant">Điểm trung bình</p>
-            <h3 class="font-title-md text-title-md text-primary-container">{{ averageGrade > 0 ? averageGrade.toFixed(2) : 'Chưa có điểm' }}</h3>
+            <p class="text-on-surface-variant text-body-sm font-body-sm">Điểm trung bình</p>
+            <p class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">
+              {{ averageGrade > 0 ? averageGrade.toFixed(2) : '—' }}
+            </p>
           </div>
         </div>
-
-        <!-- Attendance rate -->
-        <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-5 rounded-xl flex items-center gap-4">
-          <div class="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
-            <span class="material-symbols-outlined text-[28px]">how_to_reg</span>
+        <!-- Stat 3 -->
+        <div class="glass-panel rounded-lg p-4 flex items-center gap-4 glass-panel-hover">
+          <div class="w-12 h-12 rounded-full bg-[#059669]/10 flex items-center justify-center text-[#059669]">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
           </div>
           <div>
-            <p class="text-body-sm text-on-surface-variant">Chuyên cần chung</p>
-            <h3 class="font-title-md text-title-md text-primary-container">{{ averageAttendanceRate > 0 ? averageAttendanceRate.toFixed(1) + '%' : '—' }}</h3>
+            <p class="text-on-surface-variant text-body-sm font-body-sm">Chuyên cần chung</p>
+            <p class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">
+              {{ averageAttendanceRate > 0 ? averageAttendanceRate.toFixed(1) + '%' : '—' }}
+            </p>
           </div>
         </div>
-
-        <!-- Debt tuition fee -->
-        <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-5 rounded-xl flex items-center gap-4">
-          <div class="w-12 h-12 rounded-full bg-error/10 text-error flex items-center justify-center shrink-0">
-            <span class="material-symbols-outlined text-[28px]">receipt_long</span>
+        <!-- Stat 4 -->
+        <div class="glass-panel rounded-lg p-4 flex items-center gap-4 glass-panel-hover">
+          <div class="w-12 h-12 rounded-full bg-error/10 flex items-center justify-center text-error">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">payments</span>
           </div>
           <div>
-            <p class="text-body-sm text-on-surface-variant">Học phí cần đóng</p>
-            <h3 class="font-title-md text-title-md text-primary-container">{{ formatCurrency(totalDebt) }}</h3>
+            <p class="text-on-surface-variant text-body-sm font-body-sm">Học phí cần đóng</p>
+            <p class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">{{ formatCurrency(totalDebt) }}</p>
           </div>
         </div>
-
-        <!-- Credit wallet balance -->
-        <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-5 rounded-xl flex items-center gap-4">
-          <div class="w-12 h-12 rounded-full bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
-            <span class="material-symbols-outlined text-[28px]">account_balance_wallet</span>
+        <!-- Stat 5 -->
+        <div class="glass-panel rounded-lg p-4 flex items-center gap-4 glass-panel-hover">
+          <div class="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-600">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
           </div>
           <div>
-            <p class="text-body-sm text-on-surface-variant">Số dư bảo lưu</p>
-            <h3 class="font-title-md text-title-md text-primary-container">{{ formatCurrency(creditSummary?.totalAvailable || 0) }}</h3>
+            <p class="text-on-surface-variant text-body-sm font-body-sm">Số dư bảo lưu</p>
+            <p class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">
+              {{ formatCurrency(creditSummary?.totalAvailable || 0) }}
+            </p>
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- Navigation Tabs -->
-      <div class="flex space-x-2 overflow-x-auto p-1 bg-white/40 backdrop-blur-[10px] rounded-xl border border-white/40">
-        <button
-          v-for="tab in tabs"
-          :key="tab.value"
-          @click="selectTab(tab.value)"
-          :class="[
-            activeTab === tab.value
-              ? 'bg-primary-container text-white shadow-sm'
-              : 'text-on-surface-variant hover:bg-surface-container-high',
-            'px-5 py-2.5 text-body-sm font-semibold transition-all rounded-lg flex items-center gap-2 whitespace-nowrap cursor-pointer'
-          ]"
-        >
-          <span class="material-symbols-outlined text-[18px]">{{ tab.icon }}</span>
-          {{ tab.label }}
-        </button>
+      <div class="border-b border-outline-variant/30 overflow-x-auto hide-scrollbar">
+        <nav class="flex gap-6 min-w-max px-2">
+          <button
+            v-for="tab in tabs"
+            :key="tab.value"
+            @click="selectTab(tab.value)"
+            :class="[
+              activeTab === tab.value
+                ? 'border-primary-container text-primary-container font-semibold'
+                : 'border-transparent text-on-surface-variant hover:text-on-surface',
+              'pb-3 border-b-2 font-title-md text-title-md flex items-center gap-2 transition-colors cursor-pointer'
+            ]"
+          >
+            <span class="material-symbols-outlined" :style="activeTab === tab.value ? 'font-variation-settings: \'FILL\' 1;' : ''">{{ tab.icon }}</span>
+            {{ tab.label }}
+          </button>
+        </nav>
       </div>
 
       <!-- Loading screen -->
-      <div v-if="loading" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-12 rounded-xl text-center flex flex-col items-center justify-center">
+      <div v-if="loading" class="glass-panel p-12 rounded-xl text-center flex flex-col items-center justify-center">
         <div class="w-12 h-12 border-4 border-primary-container/30 border-t-primary-container rounded-full animate-spin mb-4"></div>
         <p class="text-body-sm font-semibold text-primary-container">Đang tải dữ liệu học tập...</p>
       </div>
@@ -157,6 +159,7 @@
       <!-- Content Sections based on Active Tab -->
       <div v-else class="space-y-gutter">
         <TabClassesSchedules
+          v-slot="{ cls }"
           v-if="activeTab === 'classes'"
           :enrolled-classes="enrolledClasses"
           :selected-class="selectedClass"
@@ -174,6 +177,7 @@
         />
 
         <TabGrades
+          v-slot="{ cls }"
           v-if="activeTab === 'grades'"
           :enrolled-classes="enrolledClasses"
           :exam-results="examResults"
@@ -181,12 +185,14 @@
         />
 
         <TabAttendance
+          v-slot="{ session }"
           v-if="activeTab === 'attendance'"
           :attendance-summaries="attendanceSummaries"
           @change-attendance-status="({ session, newStatus }) => changeAttendanceStatus(session, newStatus)"
         />
 
         <TabPayments
+          v-slot="{ pay }"
           v-if="activeTab === 'payments'"
           :payments="payments"
           @open-payment-modal="openPaymentModal"
@@ -194,6 +200,7 @@
         />
 
         <TabCredits
+          v-slot="{ credit }"
           v-if="activeTab === 'credits'"
           :credit-summary="creditSummary"
         />
@@ -307,7 +314,7 @@
     </template>
 
     <!-- No Student Selected State -->
-    <div v-else-if="!loading" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-12 rounded-xl text-center flex flex-col items-center justify-center">
+    <div v-else-if="!loading" class="glass-panel p-12 rounded-xl text-center flex flex-col items-center justify-center">
       <span class="material-symbols-outlined text-primary-container/30 text-[64px] mb-4">school</span>
       <h3 class="font-title-md text-headline-sm text-primary-container mb-2">
         {{ authStore.isAdmin ? 'Chưa chọn học viên' : 'Chưa có hồ sơ học tập' }}

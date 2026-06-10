@@ -10,9 +10,9 @@ const routes = [
   },
   {
     path: '/',
-    redirect: to => {
-      return '/courses'
-    }
+    name: 'LandingPage',
+    component: () => import('../views/home/LandingPage.vue'),
+    meta: { title: 'EduManager Pro - Quản lý Đào tạo', public: true }
   },
   {
     path: '/courses',

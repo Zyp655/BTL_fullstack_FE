@@ -2,36 +2,46 @@
   <div class="space-y-stack-lg animate-fade-in">
     <!-- Header -->
     <section class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div>
-        <h1 class="font-headline-lg text-headline-lg text-primary-container flex items-center gap-3">
-          <span class="material-symbols-outlined text-[32px]">person</span>
-          Quản lý học viên
-        </h1>
-        <p class="font-body-lg text-on-surface-variant mt-1">Quản lý hồ sơ học viên, thông tin liên hệ và xem chi tiết đăng ký lớp học.</p>
-      </div>
       <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center text-primary border border-primary/10">
+          <span class="material-symbols-outlined text-3xl">person</span>
+        </div>
+        <div>
+          <h1 class="font-headline-lg text-headline-lg font-bold text-primary">Quản lý học viên</h1>
+          <p class="font-body-sm text-body-sm text-secondary mt-1">Quản lý hồ sơ và thông tin liên hệ của học viên</p>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-3">
         <button
           v-if="authStore.isAdmin"
           @click="importDialogModal = true"
-          class="px-5 py-3 rounded-lg border border-outline-variant text-on-surface-variant bg-transparent font-semibold text-[14px] hover:bg-white/40 shadow-sm transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
+          class="px-4 py-2.5 rounded-lg border border-outline/30 text-primary font-title-md text-body-sm hover:bg-primary/5 transition-colors flex items-center gap-2 bg-white/50 backdrop-blur-sm cursor-pointer"
         >
-          <span class="material-symbols-outlined text-[20px] text-on-tertiary-container">publish</span>
-          Nhập từ Excel
+          <span class="material-symbols-outlined text-[20px]">upload</span>
+          Nhập Excel
+        </button>
+        <button
+          v-if="authStore.isAdmin"
+          @click="exportToExcel"
+          class="px-4 py-2.5 rounded-lg bg-emerald-600 text-white font-title-md text-body-sm hover:bg-emerald-700 transition-colors flex items-center gap-2 shadow-sm cursor-pointer"
+        >
+          <span class="material-symbols-outlined text-[20px]">download</span>
+          Xuất Excel
         </button>
         <button
           v-if="authStore.isAdmin"
           @click="openCreateDialog"
-          class="bg-primary-container text-white px-6 py-3 rounded-lg font-semibold text-[14px] shadow-sm hover:bg-primary hover:shadow-md transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
+          class="px-4 py-2.5 rounded-lg bg-primary text-white font-title-md text-body-sm hover:bg-primary/90 transition-colors flex items-center gap-2 shadow-sm cursor-pointer animate-press"
         >
-          <span class="material-symbols-outlined text-[20px]">person_add</span>
-          Tạo tài khoản học viên mới
+          <span class="material-symbols-outlined text-[20px]">add</span>
+          Thêm học viên
         </button>
       </div>
     </section>
 
     <!-- Stats Row -->
     <section class="flex overflow-x-auto lg:grid lg:grid-cols-4 gap-gutter pb-4 lg:pb-0 scrollbar-none snap-x snap-mandatory">
-      <div v-for="stat in stats" :key="stat.label" class="flex-shrink-0 w-[260px] sm:w-[280px] lg:w-auto bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-5 flex items-center gap-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 snap-start">
+      <div v-for="stat in stats" :key="stat.label" class="flex-shrink-0 w-[260px] sm:w-[280px] lg:w-auto glass-panel p-5 flex items-center gap-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 snap-start">
         <div :class="[stat.bgColor, stat.textColor, 'w-12 h-12 rounded-lg flex items-center justify-center shrink-0']">
           <span class="material-symbols-outlined">{{ stat.icon }}</span>
         </div>
@@ -89,6 +99,7 @@
 import { ref, computed, onMounted, inject, watch } from 'vue'
 import { useStudentStore, useAuthStore } from '../../stores'
 import api from '../../services/api'
+import * as XLSX from 'xlsx'
 
 import StudentTable from './components/StudentTable.vue'
 import StudentDialog from './components/StudentDialog.vue'
@@ -109,6 +120,48 @@ const importDialogModal = ref(false)
 const loadingEnrollments = ref(false)
 const enrollments = ref([])
 const selectedStudent = ref(null)
+
+function exportToExcel() {
+  try {
+    const dataToExport = filteredAllStudents.value !== null ? filteredAllStudents.value : store.students
+    
+    if (!dataToExport || dataToExport.length === 0) {
+      showSnackbar('Không có dữ liệu để xuất Excel', 'warning')
+      return
+    }
+
+    const rows = dataToExport.map((student, idx) => ({
+      'STT': idx + 1,
+      'Mã học viên': `HV-${String(student.studentId).padStart(4, '0')}`,
+      'Họ và tên': student.fullName,
+      'Giới tính': student.gender,
+      'Ngày sinh': student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString('vi-VN') : '',
+      'Số điện thoại': student.phone || '',
+      'Email': student.email || '',
+      'Địa chỉ': student.address || ''
+    }))
+
+    const worksheet = XLSX.utils.json_to_sheet(rows)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách Học viên')
+    
+    // Auto-fit column widths
+    const maxLens = {}
+    rows.forEach(row => {
+      Object.keys(row).forEach(key => {
+        const val = String(row[key] || '')
+        maxLens[key] = Math.max(maxLens[key] || key.length, val.length)
+      })
+    })
+    worksheet['!cols'] = Object.keys(maxLens).map(key => ({ wch: maxLens[key] + 3 }))
+
+    XLSX.writeFile(workbook, 'Danh_Sach_Hoc_Vien.xlsx')
+    showSnackbar('Xuất file Excel thành công', 'success')
+  } catch (err) {
+    console.error('Error exporting excel:', err)
+    showSnackbar('Lỗi khi xuất file Excel', 'error')
+  }
+}
 
 const filters = ref({
   search: '',
