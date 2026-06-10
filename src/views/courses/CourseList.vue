@@ -23,8 +23,8 @@
     </section>
 
     <!-- Stats Cards -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
-      <div v-for="stat in stats" :key="stat.label" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl p-5 flex items-center gap-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+    <section class="flex overflow-x-auto lg:grid lg:grid-cols-4 gap-gutter pb-4 lg:pb-0 scrollbar-none snap-x snap-mandatory">
+      <div v-for="stat in stats" :key="stat.label" class="flex-shrink-0 w-[260px] sm:w-[280px] lg:w-auto bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl p-5 flex items-center gap-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 snap-start">
         <div :class="[stat.bgColor, stat.textColor, 'w-12 h-12 rounded-lg flex items-center justify-center shrink-0']">
           <span class="material-symbols-outlined">{{ stat.icon }}</span>
         </div>
@@ -167,8 +167,18 @@
               <span class="font-bold text-on-tertiary-container">{{ formatCurrency(course.fee) }}</span>
             </div>
             <div class="flex justify-between items-center text-body-sm">
-              <span class="text-on-surface-variant font-medium">Chờ ghép lớp:</span>
-              <span class="text-on-tertiary-container font-bold">{{ getQueueCount(course.courseId) }}/5 học viên</span>
+              <template v-if="authStore.isTeacher">
+                <span class="text-on-surface-variant font-medium">Số học viên:</span>
+                <span class="text-primary-container font-bold">{{ getCourseStudentCount(course.courseId) }} học viên</span>
+              </template>
+              <template v-else>
+                <span class="text-on-surface-variant font-medium">Chờ ghép lớp:</span>
+                <span class="text-on-tertiary-container font-bold">{{ getQueueCount(course.courseId) }}/5 học viên</span>
+              </template>
+            </div>
+            <div v-if="authStore.isAdmin" class="flex justify-between items-center text-body-sm">
+              <span class="text-on-surface-variant font-medium">Số học viên đang học:</span>
+              <span class="text-primary-container font-bold">{{ getCourseStudentCount(course.courseId) }} học viên</span>
             </div>
             <div class="mt-3 flex justify-between items-center">
               <span :class="[course.isActive ? 'status-opened' : 'status-cancelled', 'status-badge']">
@@ -598,18 +608,21 @@ const classStore = useClassStore()
 const showSnackbar = inject('showSnackbar')
 
 const teacherCourseIds = ref([])
+const classesList = ref([])
 
-async function fetchTeacherCourses() {
-  if (authStore.isTeacher && authStore.currentUser?.userId) {
-    try {
-      const { data } = await api.get('/api/v1/classes', {
-        params: { teacherId: authStore.currentUser.userId, page: 1, pageSize: 1000 }
-      })
-      const classes = data.items || []
-      teacherCourseIds.value = [...new Set(classes.map(c => c.courseId))]
-    } catch (e) {
-      console.error('Error fetching teacher classes for course filter:', e)
+async function fetchClassesData() {
+  try {
+    const params = { page: 1, pageSize: 1000 }
+    if (authStore.isTeacher && authStore.currentUser?.userId) {
+      params.teacherId = authStore.currentUser.userId
     }
+    const { data } = await api.get('/api/v1/classes', { params })
+    classesList.value = data.items || []
+    if (authStore.isTeacher) {
+      teacherCourseIds.value = [...new Set(classesList.value.map(c => c.courseId))]
+    }
+  } catch (e) {
+    console.error('Lỗi khi tải danh sách lớp học để tính sĩ số:', e)
   }
 }
 
@@ -857,6 +870,12 @@ const getQueueCount = (courseId) => {
   return store.courseQueueStatuses?.find(q => q.courseId === courseId)?.count || 0
 }
 
+const getCourseStudentCount = (courseId) => {
+  return classesList.value
+    .filter(c => c.courseId === courseId)
+    .reduce((sum, c) => sum + (c.currentStudents || 0), 0)
+}
+
 const fetchQueueStatuses = async () => {
   try {
     await store.fetchCourseQueueStatus()
@@ -1054,7 +1073,7 @@ const submitVipLaunch = async () => {
 
 onMounted(async () => {
   await categoryStore.fetchCategories()
-  await fetchTeacherCourses()
+  await fetchClassesData()
   await fetchData()
   await fetchQueueStatuses()
   await fetchCurrentStudentProfile()
