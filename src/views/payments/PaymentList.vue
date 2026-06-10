@@ -40,8 +40,8 @@
 
     <!-- Financial Stats Dashboard Cards -->
     <template v-if="activeTab === 'invoices'">
-      <div v-if="loadingStats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter animate-pulse">
-        <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl p-gutter h-24" v-for="i in 4" :key="i"></div>
+      <div v-if="loadingStats" class="flex overflow-x-auto lg:grid lg:grid-cols-4 gap-gutter pb-4 lg:pb-0 animate-pulse">
+        <div class="flex-shrink-0 w-[260px] sm:w-[280px] lg:w-auto bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl p-gutter h-24" v-for="i in 4" :key="i"></div>
       </div>
       <PaymentKPIs
         v-else
