@@ -214,8 +214,6 @@ defineProps({
   payments: { type: Array, required: true }
 })
 
-defineEmits(['open-payment-modal'])
-
 function formatDate(dateStr) {
   if (!dateStr) return '—'
   const date = new Date(dateStr)
