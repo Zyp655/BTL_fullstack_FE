@@ -135,17 +135,17 @@
         <div class="p-6 flex flex-col md:flex-row items-center gap-6">
           <!-- QR Section (Left) -->
           <div class="w-full md:w-auto shrink-0 flex flex-col items-center gap-3">
-            <div class="relative bg-white p-4 rounded-2xl shadow-md border border-outline-variant/10 w-[200px] h-[200px] flex items-center justify-center">
+            <div class="relative bg-white p-3 rounded-2xl shadow-md border border-outline-variant/10 max-w-[260px] w-full min-h-[300px] flex items-center justify-center">
               <!-- VietQR image -->
               <img
                 v-if="!isExpired"
-                :src="`https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-qr_only.png?amount=${activePayment.remainingAmount}&addInfo=PAY${activePayment.paymentId}`"
+                :src="`https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact.png?amount=${activePayment.remainingAmount}&addInfo=PAY${activePayment.paymentId}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`"
                 alt="Quét mã VietQR"
                 class="w-full h-auto rounded-lg transition-opacity duration-300"
               />
               
               <!-- Expired overlay -->
-              <div v-else class="w-[168px] h-[168px] flex flex-col items-center justify-center text-center gap-2 bg-error/[0.02] p-2 text-error">
+              <div v-else class="w-[200px] h-[200px] flex flex-col items-center justify-center text-center gap-2 bg-error/[0.02] p-2 text-error">
                 <span class="material-symbols-outlined text-[40px] text-error/80 animate-pulse">timer_off</span>
                 <div class="text-body-xs font-bold">Mã QR hết hiệu lực</div>
               </div>
