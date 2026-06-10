@@ -9,7 +9,7 @@
         </div>
         <div>
           <h1 class="font-headline-lg text-[18px] leading-tight font-bold text-white">EduManager Pro</h1>
-          <p class="font-body-sm text-[12px] text-white/60">Executive Dashboard</p>
+          <p class="font-body-sm text-[12px] text-white/60">Hệ thống quản lý</p>
         </div>
       </div>
 
@@ -73,7 +73,7 @@
       <div class="px-4 mt-auto pt-4 border-t border-white/10">
         <button class="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-colors font-title-md text-[14px]">
           <span class="material-symbols-outlined text-[20px]">help_center</span>
-          Help Center
+          Trung tâm hỗ trợ
         </button>
       </div>
     </nav>
