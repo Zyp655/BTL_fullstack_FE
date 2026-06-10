@@ -240,7 +240,7 @@
 </template>
 
 <script setup>
-import { inject, ref, computed, onUnmounted } from 'vue'
+import { inject, ref, computed, onUnmounted, watch } from 'vue'
 import { useAuthStore } from '../../../stores'
 
 const authStore = useAuthStore()
@@ -272,16 +272,31 @@ const startTimer = () => {
   }, 1000)
 }
 
+let pollInterval = null
+
+const startPolling = () => {
+  clearInterval(pollInterval)
+  pollInterval = setInterval(() => {
+    emit('refresh-payments')
+  }, 4000) // Poll every 4 seconds
+}
+
+const stopPolling = () => {
+  clearInterval(pollInterval)
+}
+
 const openPaymentQr = (payment) => {
   activePayment.value = payment
   showQrModal.value = true
   startTimer()
+  startPolling()
 }
 
 const closeQrModal = () => {
   showQrModal.value = false
   activePayment.value = null
   clearInterval(timerInterval)
+  stopPolling()
 }
 
 const formatTimeLeft = computed(() => {
@@ -294,6 +309,7 @@ const isExpired = computed(() => timeLeft.value === 0)
 
 onUnmounted(() => {
   clearInterval(timerInterval)
+  clearInterval(pollInterval)
 })
 
 function copyToClipboard(text) {
@@ -318,9 +334,21 @@ function checkTransaction() {
   }, 2000)
 }
 
-defineProps({
+const props = defineProps({
   payments: { type: Array, required: true }
 })
+
+watch(() => props.payments, (newPayments) => {
+  if (showQrModal.value && activePayment.value) {
+    const updatedPayment = newPayments.find(p => p.paymentId === activePayment.value.paymentId)
+    if (updatedPayment && updatedPayment.status === 'HoanTat') {
+      closeQrModal()
+      if (showSnackbar) {
+        showSnackbar('Thanh toán học phí thành công! Lớp học đã được kích hoạt.', 'success')
+      }
+    }
+  }
+}, { deep: true })
 
 function formatDate(dateStr) {
   if (!dateStr) return '—'
