@@ -253,7 +253,7 @@ async function loadRegistrationData() {
   try {
     // 1. Fetch all courses for registrations
     try {
-      await courseStore.fetchCourses({ page: 1, pageSize: 100 })
+      await courseStore.fetchCourses({ page: 1, pageSize: 1000 })
       courses.value = courseStore.courses || []
     } catch (e) {
       console.error('Error fetching courses:', e)

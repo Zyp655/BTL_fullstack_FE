@@ -974,7 +974,7 @@ async function fetchData() {
       search: filters.value.search || undefined,
       courseId: filters.value.courseId || undefined,
       status: filters.value.status || undefined,
-      pageSize: 50,
+      pageSize: 1000,
     }
     if (authStore.currentUser?.role === 'GiaoVien') {
       params.teacherId = authStore.currentUser.userId
@@ -1123,7 +1123,7 @@ function formatDate(date) {
 
 onMounted(async () => {
   window.addEventListener('click', closeAllDropdowns)
-  await courseStore.fetchCourses({ pageSize: 100 })
+  await courseStore.fetchCourses({ pageSize: 1000 })
   await fetchTeachers()
   fetchData()
 })
