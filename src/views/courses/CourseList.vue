@@ -489,16 +489,6 @@
             </div>
 
             <div v-else class="space-y-4">
-              <div v-if="launchMode === 'vip'" class="p-3 bg-primary-container/5 border border-primary-container/10 text-primary-container rounded-xl text-[12px] leading-relaxed">
-                Có <strong>{{ vipLaunchStudents.length }} học viên</strong> đang chờ ghép lớp. Số buổi học được thu nhỏ tỷ lệ với sĩ số thực tế:
-                <span class="font-bold text-on-tertiary-container">
-                  {{ vipLaunchTargetCourse?.totalSessions }} buổi &times; ({{ vipLaunchStudents.length }} học viên / 5) = {{ vipLaunchForm.totalSessions }} buổi
-                </span>.
-              </div>
-              <div v-else class="p-3 bg-emerald-500/5 border border-emerald-500/10 text-emerald-800 rounded-xl text-[12px] leading-relaxed">
-                Có <strong>{{ vipLaunchStudents.length }} học viên</strong> đang chờ ghép lớp. Lớp học thường sẽ khai giảng đầy đủ <strong>{{ vipLaunchForm.totalSessions }} buổi</strong>.
-              </div>
-
               <!-- Class Name -->
               <div class="space-y-1">
                 <label class="text-body-sm font-semibold text-primary">Tên lớp học *</label>
