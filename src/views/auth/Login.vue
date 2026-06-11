@@ -5,11 +5,11 @@
       <!-- Left Pane: Brand & Graphic (Hidden on small screens) -->
       <section class="hidden lg:flex lg:w-1/2 bg-primary-container relative overflow-hidden flex-col justify-between p-stack-lg">
         <!-- Graphic Background -->
-        <div class="absolute inset-0 z-0 flex items-center justify-center opacity-80 mix-blend-lighten pointer-events-none">
+        <div class="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
           <img 
             alt="Abstract flowing glowing shapes representing education and connectivity" 
             class="w-full h-full object-cover" 
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuADRL12gsKtYemVxwlzlasXb5v2U6faE6-MkjZ--1lDSMp2g_tiEtoVO45Lvxk-JjJ5vCg_9Sy7OttnyRj2586nkeU_pQDszcB6oQNrTXiqOBUYWbBCWIgXrfwBMqvLhQ_VRryd0GlvX1Tcs56w8sxcw9S-aJuOvJRZsDGItn9hcjlXw2oefGyGdMMhm5jSMzuYDNjKDjasa4XRyS1PM-5aj_YXF3rnyFveJDq7mB7k6_GQOfpfJQ3WrCZm2cbqUnfV1mxpOcZ-nYf2"
+            src="../../assets/education_login_bg.png"
           />
         </div>
         <!-- Content Overlay -->
