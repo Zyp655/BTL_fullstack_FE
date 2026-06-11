@@ -15,6 +15,12 @@ const routes = [
     meta: { title: 'EduManager Pro - Quản lý Đào tạo', public: true }
   },
   {
+    path: '/checkout-mock',
+    name: 'CheckoutMock',
+    component: () => import('../views/payments/CheckoutMock.vue'),
+    meta: { title: 'Cổng thanh toán giả lập', public: true }
+  },
+  {
     path: '/courses',
     name: 'Courses',
     component: () => import('../views/courses/CourseList.vue'),

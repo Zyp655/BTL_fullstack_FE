@@ -123,8 +123,8 @@
         <!-- Modal Header -->
         <div class="px-6 py-4 border-b border-white/40 flex items-center justify-between bg-primary-container/5">
           <h3 class="font-title-md text-[18px] font-bold text-primary-container flex items-center gap-2">
-            <span class="material-symbols-outlined text-[24px] text-amber-500">account_balance</span>
-            Thanh toán chuyển khoản học phí
+            <span class="material-symbols-outlined text-[24px] text-amber-500 font-bold">account_balance</span>
+            Thanh toán chuyển khoản học phí trực tuyến
           </h3>
           <button @click="closeQrModal" class="text-on-surface-variant hover:text-primary-container cursor-pointer">
             <span class="material-symbols-outlined">close</span>
@@ -132,85 +132,105 @@
         </div>
 
         <!-- Modal Body -->
-        <div class="p-6 flex flex-col md:flex-row items-center gap-6">
-          <!-- QR Section (Left) -->
-          <div class="w-full md:w-auto shrink-0 flex flex-col items-center gap-3">
-            <div class="relative bg-white p-3 rounded-2xl shadow-md border border-outline-variant/10 max-w-[260px] w-full min-h-[300px] flex items-center justify-center">
-              <!-- VietQR image -->
-              <img
-                v-if="!isExpired"
-                :src="`https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact.png?amount=${activePayment.remainingAmount}&addInfo=PAY${activePayment.paymentId}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`"
-                alt="Quét mã VietQR"
-                class="w-full h-auto rounded-lg transition-opacity duration-300"
-              />
-              
-              <!-- Expired overlay -->
-              <div v-else class="w-[200px] h-[200px] flex flex-col items-center justify-center text-center gap-2 bg-error/[0.02] p-2 text-error">
-                <span class="material-symbols-outlined text-[40px] text-error/80 animate-pulse">timer_off</span>
-                <div class="text-body-xs font-bold">Mã QR hết hiệu lực</div>
-              </div>
-            </div>
-            
-            <!-- Countdown timer -->
-            <div 
-              v-if="!isExpired"
-              class="px-3 py-1.5 rounded-full text-body-xs font-bold flex items-center gap-1.5"
-              :class="timeLeft < 60 ? 'bg-error/10 text-error animate-pulse' : 'bg-amber-500/10 text-amber-700'"
-            >
-              <span class="material-symbols-outlined text-[14px]">schedule</span>
-              Hết hạn sau: {{ formatTimeLeft }}
-            </div>
-            <button
-              v-else
-              @click="startTimer"
-              class="px-4 py-1.5 rounded-lg bg-primary-container text-white font-semibold text-[11px] hover:bg-primary transition-all active:scale-95 cursor-pointer shadow-sm flex items-center gap-1"
-            >
-              <span class="material-symbols-outlined text-[14px]">refresh</span>
-              Tạo mã mới
-            </button>
+        <div class="p-6 flex-grow flex flex-col">
+          <div v-if="loadingCheckout" class="flex-grow flex flex-col items-center justify-center py-12 space-y-3">
+            <div class="w-10 h-10 border-4 border-primary-container/30 border-t-primary-container rounded-full animate-spin"></div>
+            <p class="text-body-xs font-bold text-primary-container">Đang kết nối cổng thanh toán...</p>
           </div>
 
-          <!-- Details Section (Right) -->
-          <div class="flex-1 space-y-4 w-full">
-            <div class="p-3 bg-emerald-500/[0.05] rounded-xl border border-emerald-500/20 text-body-xs text-emerald-800 flex items-start gap-1.5">
-              <span class="material-symbols-outlined text-[16px] text-emerald-600 shrink-0 mt-0.5">info</span>
-              <span>Vui lòng quét mã QR bên trái hoặc chuyển khoản chính xác thông tin bên dưới để hệ thống đối soát và tự động duyệt đóng học phí.</span>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-body-sm">
-              <div class="p-3 bg-white/50 rounded-lg border border-outline-variant/10">
-                <span class="text-on-surface-variant block text-[11px] font-medium">Ngân hàng</span>
-                <span class="font-bold text-primary-container">{{ BANK_NAME }}</span>
+          <div v-else-if="checkoutInfo" class="flex flex-col md:flex-row items-center gap-6 animate-fade-in">
+            <!-- QR Section (Left) -->
+            <div class="w-full md:w-auto shrink-0 flex flex-col items-center gap-3">
+              <div class="relative bg-white p-3 rounded-2xl shadow-md border border-outline-variant/10 max-w-[240px] w-full min-h-[240px] flex items-center justify-center">
+                <!-- QR Code image -->
+                <img
+                  v-if="!isExpired"
+                  :src="checkoutInfo.qrUrl"
+                  alt="Mã QR thanh toán"
+                  class="w-full h-auto rounded-lg transition-opacity duration-300"
+                />
+                
+                <!-- Expired overlay -->
+                <div v-else class="w-[180px] h-[180px] flex flex-col items-center justify-center text-center gap-2 bg-error/[0.02] p-2 text-error">
+                  <span class="material-symbols-outlined text-[40px] text-error/80 animate-pulse">timer_off</span>
+                  <div class="text-body-xs font-bold">Mã QR hết hiệu lực</div>
+                </div>
               </div>
               
-              <div class="p-3 bg-white/50 rounded-lg border border-outline-variant/10 flex justify-between items-center">
-                <div>
-                  <span class="text-on-surface-variant block text-[11px] font-medium">Số tài khoản</span>
-                  <span class="font-mono font-bold text-primary-container">{{ ACCOUNT_NO }}</span>
-                </div>
-                <button @click="copyToClipboard(ACCOUNT_NO)" class="text-on-tertiary-container hover:text-primary transition-colors cursor-pointer" title="Sao chép số tài khoản">
-                  <span class="material-symbols-outlined text-[18px]">content_copy</span>
-                </button>
+              <!-- Countdown timer -->
+              <div 
+                v-if="!isExpired"
+                class="px-3 py-1.5 rounded-full text-body-xs font-bold flex items-center gap-1.5"
+                :class="timeLeft < 60 ? 'bg-error/10 text-error animate-pulse' : 'bg-amber-500/10 text-amber-700'"
+              >
+                <span class="material-symbols-outlined text-[14px]">schedule</span>
+                Hết hạn sau: {{ formatTimeLeft }}
+              </div>
+              <button
+                v-else
+                @click="startTimer"
+                class="px-4 py-1.5 rounded-lg bg-primary-container text-white font-semibold text-[11px] hover:bg-primary transition-all active:scale-95 cursor-pointer shadow-sm flex items-center gap-1"
+              >
+                <span class="material-symbols-outlined text-[14px]">refresh</span>
+                Tạo mã mới
+              </button>
+            </div>
+
+            <!-- Details Section (Right) -->
+            <div class="flex-1 space-y-4 w-full">
+              <div class="p-3 bg-emerald-500/[0.05] rounded-xl border border-emerald-500/20 text-body-xs text-emerald-800 flex items-start gap-1.5">
+                <span class="material-symbols-outlined text-[16px] text-emerald-600 shrink-0 mt-0.5">info</span>
+                <span>Vui lòng quét VietQR bằng ứng dụng ngân hàng. Cổng SePay sẽ tự động ghi nhận và kích hoạt lớp học sau khi giao dịch hoàn tất.</span>
               </div>
 
-              <div class="p-3 bg-white/50 rounded-lg border border-outline-variant/10 flex justify-between items-center">
-                <div>
-                  <span class="text-on-surface-variant block text-[11px] font-medium">Số tiền cần nộp</span>
-                  <span class="font-bold text-emerald-600">{{ formatCurrency(activePayment.remainingAmount) }}</span>
+              <!-- Branded Details Fields -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-body-sm">
+                <div class="p-3 bg-white/50 rounded-lg border border-outline-variant/10">
+                  <span class="text-on-surface-variant block text-[11px] font-medium">Ngân hàng nhận</span>
+                  <span class="font-bold text-primary-container">{{ checkoutInfo.bankName }}</span>
                 </div>
-                <button @click="copyToClipboard(activePayment.remainingAmount)" class="text-on-tertiary-container hover:text-primary transition-colors cursor-pointer" title="Sao chép số tiền">
-                  <span class="material-symbols-outlined text-[18px]">content_copy</span>
-                </button>
+                
+                <div class="p-3 bg-white/50 rounded-lg border border-outline-variant/10 flex justify-between items-center">
+                  <div>
+                    <span class="text-on-surface-variant block text-[11px] font-medium">Số tài khoản nhận</span>
+                    <span class="font-mono font-bold text-primary-container">{{ checkoutInfo.accountNo }}</span>
+                  </div>
+                  <button @click="copyToClipboard(checkoutInfo.accountNo)" class="text-on-tertiary-container hover:text-primary transition-colors cursor-pointer" title="Sao chép">
+                    <span class="material-symbols-outlined text-[18px]">content_copy</span>
+                  </button>
+                </div>
+
+                <div class="p-3 bg-white/50 rounded-lg border border-outline-variant/10 flex justify-between items-center">
+                  <div>
+                    <span class="text-on-surface-variant block text-[11px] font-medium">Số tiền cần nộp</span>
+                    <span class="font-bold text-emerald-600">{{ formatCurrency(checkoutInfo.remainingAmount) }}</span>
+                  </div>
+                  <button @click="copyToClipboard(checkoutInfo.remainingAmount)" class="text-on-tertiary-container hover:text-primary transition-colors cursor-pointer" title="Sao chép">
+                    <span class="material-symbols-outlined text-[18px]">content_copy</span>
+                  </button>
+                </div>
+
+                <div class="p-3 bg-amber-500/[0.04] rounded-lg border border-amber-500/20 flex justify-between items-center">
+                  <div>
+                    <span class="text-amber-800 block text-[11px] font-bold">Nội dung chuyển khoản (bắt buộc)</span>
+                    <span class="font-mono font-bold text-amber-700">{{ checkoutInfo.paymentCode }}</span>
+                  </div>
+                  <button @click="copyToClipboard(checkoutInfo.paymentCode)" class="text-amber-700 hover:text-amber-900 transition-colors cursor-pointer" title="Sao chép">
+                    <span class="material-symbols-outlined text-[18px]">content_copy</span>
+                  </button>
+                </div>
               </div>
 
-              <div class="p-3 bg-amber-500/[0.04] rounded-lg border border-amber-500/20 flex justify-between items-center">
-                <div>
-                  <span class="text-amber-800 block text-[11px] font-bold">Nội dung chuyển khoản (bắt buộc)</span>
-                  <span class="font-mono font-bold text-amber-700">PAY{{ activePayment.paymentId }}</span>
-                </div>
-                <button @click="copyToClipboard('PAY' + activePayment.paymentId)" class="text-amber-700 hover:text-amber-900 transition-colors cursor-pointer" title="Sao chép nội dung">
-                  <span class="material-symbols-outlined text-[18px]">content_copy</span>
-                </button>
+              <!-- Sandbox Simulation (Developer Testing) -->
+              <div class="pt-2 border-t border-dashed border-outline-variant/30 mt-4">
+                <a
+                  :href="checkoutInfo.checkoutUrl"
+                  target="_blank"
+                  class="w-full py-2.5 bg-slate-800 text-slate-300 font-bold rounded-xl border border-white/10 hover:bg-slate-700 hover:text-white transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer text-center text-[12px]"
+                >
+                  <span class="material-symbols-outlined text-[16px]">developer_mode</span>
+                  GIẢ LẬP THANH TOÁN WEBHOOK SEPAY (Developer Only)
+                </a>
               </div>
             </div>
           </div>
@@ -242,15 +262,14 @@
 <script setup>
 import { inject, ref, computed, onUnmounted, watch } from 'vue'
 import { useAuthStore } from '../../../stores'
+import api from '../../../services/api'
 
 const authStore = useAuthStore()
 const showSnackbar = inject('showSnackbar')
 
-// Cấu hình thông tin tài khoản nhận tiền SePay từ file môi trường .env
-const BANK_ID = import.meta.env.VITE_BANK_ID || 'MB'
-const BANK_NAME = import.meta.env.VITE_BANK_NAME || 'MBBank (Ngân hàng Quân Đội)'
-const ACCOUNT_NO = import.meta.env.VITE_ACCOUNT_NO || '0366265607'
-const ACCOUNT_NAME = import.meta.env.VITE_ACCOUNT_NAME || 'NGUYEN DINH MINH HIEU'
+const selectedGateway = ref('SePay')
+const checkoutInfo = ref(null)
+const loadingCheckout = ref(false)
 
 const isChecking = ref(false)
 const showQrModal = ref(false)
@@ -259,6 +278,29 @@ const timeLeft = ref(600)
 let timerInterval = null
 
 const emit = defineEmits(['open-payment-modal', 'refresh-payments'])
+
+const loadCheckoutInfo = async () => {
+  if (!activePayment.value) return
+  loadingCheckout.value = true
+  try {
+    const res = await api.get(`/api/v1/payments/${activePayment.value.paymentId}/checkout`, {
+      params: { gateway: selectedGateway.value }
+    })
+    checkoutInfo.value = res.data
+    startTimer()
+  } catch (err) {
+    console.error('Error fetching checkout info:', err)
+    if (showSnackbar) {
+      showSnackbar(err.response?.data?.message || 'Không thể tạo mã thanh toán.', 'error')
+    }
+  } finally {
+    loadingCheckout.value = false
+  }
+}
+
+watch(selectedGateway, () => {
+  loadCheckoutInfo()
+})
 
 const startTimer = () => {
   clearInterval(timerInterval)
@@ -278,7 +320,7 @@ const startPolling = () => {
   clearInterval(pollInterval)
   pollInterval = setInterval(() => {
     emit('refresh-payments')
-  }, 4000) // Poll every 4 seconds
+  }, 4000)
 }
 
 const stopPolling = () => {
@@ -287,14 +329,16 @@ const stopPolling = () => {
 
 const openPaymentQr = (payment) => {
   activePayment.value = payment
+  selectedGateway.value = 'SePay'
   showQrModal.value = true
-  startTimer()
+  loadCheckoutInfo()
   startPolling()
 }
 
 const closeQrModal = () => {
   showQrModal.value = false
   activePayment.value = null
+  checkoutInfo.value = null
   clearInterval(timerInterval)
   stopPolling()
 }
@@ -378,7 +422,7 @@ function getPaymentStatusLabel(status) {
 }
 
 function formatPaymentMethod(method) {
-  const map = { TienMat: 'Tiền mặt', ChuyenKhoan: 'Chuyển khoản', TheTD: 'Thẻ tín dụng' }
+  const map = { TienMat: 'Tiền mặt', ChuyenKhoan: 'Chuyển khoản', TheTD: 'Thẻ tín dụng', ViDienTu: 'Ví điện tử' }
   return map[method] || method
 }
 </script>
