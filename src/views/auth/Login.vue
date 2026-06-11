@@ -13,10 +13,10 @@
           />
         </div>
         <!-- Content Overlay -->
-        <div class="relative z-10 flex items-center gap-base">
+        <router-link to="/" class="relative z-10 flex items-center gap-base cursor-pointer hover:opacity-90 transition-all no-underline hover:scale-[1.02] active:scale-[0.98]">
           <span class="material-symbols-outlined text-headline-lg text-on-primary">school</span>
           <span class="font-title-md text-title-md text-on-primary tracking-tight">EduManager Pro</span>
-        </div>
+        </router-link>
         <div class="relative z-10 max-w-lg mb-20">
           <h1 class="font-display-lg text-display-lg text-on-primary mb-stack-md leading-tight drop-shadow-md">
             Kiến tạo Tương lai Giáo dục
@@ -32,10 +32,10 @@
       <!-- Right Pane: Form Interface -->
       <section class="w-full lg:w-1/2 flex flex-col justify-center items-center bg-surface-container-lowest relative p-container-padding">
         <!-- Mobile Brand Header (Visible only on mobile) -->
-        <div class="lg:hidden flex items-center gap-base absolute top-container-padding left-container-padding">
+        <router-link to="/" class="lg:hidden flex items-center gap-base absolute top-container-padding left-container-padding cursor-pointer hover:opacity-90 transition-all no-underline hover:scale-[1.02] active:scale-[0.98]">
           <span class="material-symbols-outlined text-headline-lg-mobile text-primary">school</span>
           <span class="font-title-md text-title-md text-primary tracking-tight">EduManager Pro</span>
-        </div>
+        </router-link>
         
         <!-- Login Container (Glassmorphism) -->
         <div 
@@ -139,28 +139,6 @@
             </button>
           </form>
 
-          <!-- Quick Demo Login Buttons (Integrated for testing) -->
-          <div class="space-y-2 mt-4 pt-4 border-t border-outline-variant/20">
-            <div class="text-[12px] text-center text-on-surface-variant font-medium">Đăng nhập nhanh tài khoản dùng thử</div>
-            <div class="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                @click="fillDemo('admin')"
-                class="px-4 py-2.5 rounded-lg border border-primary-container/20 hover:border-primary-container/40 hover:bg-primary-container/5 text-primary-container font-semibold text-[13px] flex items-center justify-center gap-1.5 transition-all active:scale-[0.97] cursor-pointer bg-white/40"
-              >
-                <span class="material-symbols-outlined text-[16px]">admin_panel_settings</span>
-                Admin
-              </button>
-              <button
-                type="button"
-                @click="fillDemo('student')"
-                class="px-4 py-2.5 rounded-lg border border-on-tertiary-container/20 hover:border-on-tertiary-container/40 hover:bg-on-tertiary-container/5 text-on-tertiary-container font-semibold text-[13px] flex items-center justify-center gap-1.5 transition-all active:scale-[0.97] cursor-pointer bg-white/40"
-              >
-                <span class="material-symbols-outlined text-[16px]">school</span>
-                Học viên
-              </button>
-            </div>
-          </div>
         </div>
 
         <!-- Subtle Footer Links -->
