@@ -4,7 +4,7 @@
     <nav v-if="!route.meta.public" :class="[mobileMenuOpen ? 'left-0' : '-left-72 md:left-0', 'w-72 h-screen fixed top-0 bg-primary-container shadow-[0px_12px_24px_rgba(0,0,0,0.15)] flex flex-col py-base z-50 transition-all duration-300 md:flex']">
       <!-- Brand/Header -->
       <div class="px-6 py-6 mb-4 flex items-center gap-4 border-b border-white/10">
-        <div class="w-10 h-10 rounded-lg bg-on-tertiary-container flex items-center justify-center shadow-inner overflow-hidden shrink-0">
+        <div class="w-10 h-10 rounded-lg bg-white/15 flex items-center justify-center shadow-inner overflow-hidden shrink-0">
           <span class="material-symbols-outlined text-white text-[24px]">school</span>
         </div>
         <div>
@@ -26,9 +26,9 @@
               :class="[
                 'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 cursor-pointer',
                 isActive && !item.children
-                  ? 'bg-white/10 text-on-tertiary-container font-bold border-l-2 border-on-tertiary-container shadow-sm'
+                  ? 'bg-white/15 text-white font-bold border-l-2 border-sky-300 shadow-sm'
                   : (isActive && item.children)
-                    ? 'bg-white/5 text-on-tertiary-container font-bold border-l-2 border-on-tertiary-container/30'
+                    ? 'bg-white/5 text-sky-200 font-bold border-l-2 border-sky-300/30'
                     : 'text-white/70 hover:bg-white/10 hover:text-white'
               ]"
             >
@@ -55,7 +55,7 @@
                 :class="[
                   'flex items-center gap-2.5 px-3 py-2 rounded-md transition-all duration-200 cursor-pointer text-left',
                   isSubItemActive(subItem)
-                    ? 'bg-white/10 text-on-tertiary-container font-semibold shadow-sm'
+                    ? 'bg-white/10 text-white font-semibold shadow-sm'
                     : 'text-white/50 hover:bg-white/5 hover:text-white/80'
                 ]"
               >

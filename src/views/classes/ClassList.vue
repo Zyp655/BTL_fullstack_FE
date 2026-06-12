@@ -175,7 +175,7 @@
             </button>
             <button
               @click.stop="$router.push({ path: `/classes/${cls.classId}/students`, query: { tab: 'grades' } })"
-              class="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[13px] transition-all flex items-center gap-1 active:scale-95 cursor-pointer shadow-sm"
+              class="px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-[13px] transition-all flex items-center gap-1 active:scale-95 cursor-pointer shadow-sm"
               :title="authStore.isAdmin ? 'Xem điểm số thi' : 'Nhập điểm thi'"
             >
               <span class="material-symbols-outlined text-[16px]">edit_note</span>
