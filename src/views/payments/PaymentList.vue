@@ -122,7 +122,7 @@
         <div class="p-6 border-b border-white/40 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h3 class="font-title-md text-title-md text-primary font-bold">Lịch sử thanh toán</h3>
           <div class="flex flex-wrap gap-3 w-full sm:w-auto">
-            <div class="glass-input rounded-lg px-3 py-2 flex items-center gap-2 w-full sm:w-auto min-w-[240px]">
+            <div class="glass-input rounded-lg px-3 py-2 flex items-center gap-2 w-full sm:w-auto min-w-[240px] relative pr-9">
               <span class="material-symbols-outlined text-secondary text-sm">search</span>
               <input
                 :value="filters.search"
@@ -131,6 +131,14 @@
                 placeholder="Tìm học viên, mã hóa đơn..."
                 type="text"
               />
+              <button
+                v-if="filters.search"
+                @click="filters.search = ''; fetchPayments();"
+                type="button"
+                class="absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer flex items-center justify-center w-6 h-6 rounded-full hover:bg-primary-container/10"
+              >
+                <span class="material-symbols-outlined text-[16px]">close</span>
+              </button>
             </div>
             <div class="relative">
               <select

@@ -126,10 +126,18 @@
             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
             <input
               v-model="rosterSearch"
-              class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg pl-10 pr-4 py-2.5 text-body-sm font-body-sm text-on-surface"
+              class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg pl-10 pr-10 py-2.5 text-body-sm font-body-sm text-on-surface focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all"
               placeholder="Tìm học viên trong lớp theo tên..."
               type="text"
             />
+            <button
+              v-if="rosterSearch"
+              @click="rosterSearch = ''"
+              type="button"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer flex items-center justify-center w-6 h-6 rounded-full hover:bg-primary-container/10"
+            >
+              <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
           </div>
           <button
             v-if="authStore.isAdmin"
@@ -422,10 +430,18 @@
               <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
               <input
                 v-model="studentSearch"
-                class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg pl-10 pr-4 py-2 text-body-sm font-body-sm text-on-surface"
+                class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg pl-10 pr-10 py-2.5 text-body-sm font-body-sm text-on-surface focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all"
                 placeholder="Tìm kiếm học viên theo tên..."
                 type="text"
               />
+              <button
+                v-if="studentSearch"
+                @click="studentSearch = ''"
+                type="button"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer flex items-center justify-center w-6 h-6 rounded-full hover:bg-primary-container/10"
+              >
+                <span class="material-symbols-outlined text-[18px]">close</span>
+              </button>
             </div>
 
             <!-- Select Student List box -->
