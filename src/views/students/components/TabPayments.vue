@@ -221,17 +221,7 @@
                 </div>
               </div>
 
-              <!-- Sandbox Simulation (Developer Testing) -->
-              <div class="pt-2 border-t border-dashed border-outline-variant/30 mt-4">
-                <a
-                  :href="checkoutInfo.checkoutUrl"
-                  target="_blank"
-                  class="w-full py-2.5 bg-slate-800 text-slate-300 font-bold rounded-xl border border-white/10 hover:bg-slate-700 hover:text-white transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer text-center text-[12px]"
-                >
-                  <span class="material-symbols-outlined text-[16px]">developer_mode</span>
-                  GIẢ LẬP THANH TOÁN WEBHOOK SEPAY (Developer Only)
-                </a>
-              </div>
+
             </div>
           </div>
         </div>

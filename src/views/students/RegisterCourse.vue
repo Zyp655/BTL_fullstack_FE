@@ -99,7 +99,7 @@
               <!-- Pending Payment -->
               <router-link
                 v-else-if="isPendingPayment(course.courseId, course.courseName)"
-                to="/student-portal"
+                :to="{ path: '/student-portal', query: { tab: 'payments', ...(selectedStudentId ? { studentId: selectedStudentId } : {}) } }"
                 class="w-full py-2 rounded-lg bg-amber-500/10 text-amber-700 border border-amber-500/20 font-semibold text-body-sm flex items-center justify-center gap-1.5 hover:bg-amber-500/20 transition-colors cursor-pointer"
               >
                 <span class="material-symbols-outlined text-[16px]">payment</span>

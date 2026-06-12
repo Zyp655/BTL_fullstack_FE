@@ -196,7 +196,7 @@
           v-if="activeTab === 'payments'"
           :payments="payments"
           @open-payment-modal="openPaymentModal"
-          @refresh-payments="loadPortalData"
+          @refresh-payments="loadPortalData(true)"
         />
 
         <TabCredits
@@ -442,8 +442,11 @@ watch(selectedStudentId, async (newVal) => {
 })
 
 // Fetch data
-async function loadPortalData() {
-  loading.value = true
+async function loadPortalData(isBackground = false) {
+  const isBg = isBackground === true
+  if (!isBg) {
+    loading.value = true
+  }
   try {
     if (authStore.isAdmin) {
       await loadStudentsList()
@@ -453,14 +456,18 @@ async function loadPortalData() {
         selectedStudentId.value = queryStudentId
       } else {
         studentProfile.value = null
-        loading.value = false
+        if (!isBg) {
+          loading.value = false
+        }
       }
       return
     }
 
     const userId = authStore.currentUser?.userId
     if (!userId) {
-      loading.value = false
+      if (!isBg) {
+        loading.value = false
+      }
       return
     }
 
@@ -485,7 +492,9 @@ async function loadPortalData() {
           ? fetchClassSchedules(selectedClass.value.classId)
           : Promise.resolve(schedules.value = [])
 
-        examResults.value = {}
+        if (!isBg) {
+          examResults.value = {}
+        }
         const scorePromises = enrolledClasses.value.map(async (cls) => {
           try {
             const scoreRes = await api.get(`/api/v1/results/enrollment/${cls.enrollmentId}`)
@@ -495,7 +504,9 @@ async function loadPortalData() {
           }
         })
 
-        enrolledSchedulesMap.value = {}
+        if (!isBg) {
+          enrolledSchedulesMap.value = {}
+        }
         const conflictSchedulesPromises = enrolledClasses.value
           .filter(cls => !isClassUnpaid(cls.classId) && cls.status === 'DangHoc')
           .map(async (cls) => {
@@ -539,14 +550,22 @@ async function loadPortalData() {
 
     } catch (err) {
       console.error('Error fetching student summary:', err)
-      showSnackbar('Hồ sơ học tập của bạn chưa được tạo hoặc lỗi liên kết.', 'error')
+      if (!isBg) {
+        showSnackbar('Hồ sơ học tập của bạn chưa được tạo hoặc lỗi liên kết.', 'error')
+      }
     } finally {
-      loading.value = false
+      if (!isBg) {
+        loading.value = false
+      }
     }
   } catch (err) {
     console.error('Error loading portal:', err)
-    showSnackbar('Có lỗi xảy ra khi tải thông tin học vụ.', 'error')
-    loading.value = false
+    if (!isBg) {
+      showSnackbar('Có lỗi xảy ra khi tải thông tin học vụ.', 'error')
+    }
+    if (!isBg) {
+      loading.value = false
+    }
   }
 }
 

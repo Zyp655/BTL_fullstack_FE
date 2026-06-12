@@ -52,7 +52,7 @@
             <div class="relative group">
               <input 
                 v-model="username"
-                class="peer w-full bg-glass-input-bg border border-outline-variant rounded-lg px-4 pt-6 pb-2 text-body-lg font-body-lg text-on-surface placeholder-transparent focus:outline-none focus:ring-2 focus:ring-on-tertiary-container focus:border-transparent transition-all shadow-inner" 
+                class="peer w-full bg-white border border-outline-variant rounded-lg px-4 pt-6 pb-2 text-body-lg font-body-lg text-on-surface placeholder-transparent focus:outline-none focus:ring-2 focus:ring-on-tertiary-container focus:border-transparent transition-all shadow-inner" 
                 id="username" 
                 name="username" 
                 placeholder="Tên đăng nhập / Email" 
@@ -77,7 +77,7 @@
               <input 
                 v-model="password"
                 :type="passwordVisible ? 'text' : 'password'"
-                class="peer w-full bg-glass-input-bg border border-outline-variant rounded-lg pl-4 pr-12 pt-6 pb-2 text-body-lg font-body-lg text-on-surface placeholder-transparent focus:outline-none focus:ring-2 focus:ring-on-tertiary-container focus:border-transparent transition-all shadow-inner" 
+                class="peer w-full bg-white border border-outline-variant rounded-lg pl-4 pr-12 pt-6 pb-2 text-body-lg font-body-lg text-on-surface placeholder-transparent focus:outline-none focus:ring-2 focus:ring-on-tertiary-container focus:border-transparent transition-all shadow-inner" 
                 id="password" 
                 name="password" 
                 placeholder="Mật khẩu" 
@@ -92,11 +92,11 @@
               </label>
               <button 
                 aria-label="Toggle password visibility" 
-                class="absolute right-3 top-4 text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none focus:text-on-tertiary-container rounded p-1" 
+                class="absolute right-3 top-3.5 text-gray-500 hover:text-gray-700 active:text-gray-800 transition-colors focus:outline-none rounded p-1 z-10 cursor-pointer flex items-center justify-center" 
                 @click="togglePasswordVisibility" 
                 type="button"
               >
-                <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">
+                <span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 0;">
                   {{ passwordVisible ? 'visibility' : 'visibility_off' }}
                 </span>
               </button>
@@ -107,11 +107,11 @@
             </div>
 
             <!-- Options -->
-            <div class="flex justify-end items-center mt-1">
+            <div class="flex justify-end items-center mt-2 mb-1">
               <button 
                 type="button"
                 @click="openForgotPasswordModal"
-                class="font-body-sm text-body-sm text-on-tertiary-container hover:text-on-tertiary-fixed-variant font-semibold transition-colors focus:outline-none focus:underline rounded px-1 bg-transparent border-none p-0 cursor-pointer"
+                class="font-body-sm text-body-sm text-blue-600 hover:text-blue-800 hover:underline font-semibold transition-colors focus:outline-none rounded px-1 bg-transparent border-none p-0 cursor-pointer"
               >
                 Quên mật khẩu?
               </button>
@@ -155,7 +155,7 @@
         <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-xl shadow-[0_20px_40px_rgba(0,31,63,0.12)] max-w-md w-full p-6 space-y-4 animate-scale-in flex flex-col">
           <div class="flex items-center gap-3 text-primary-container border-b border-white/40 pb-3 justify-between">
             <h3 class="font-title-md text-[18px] font-bold flex items-center gap-2">
-              <span class="material-symbols-outlined text-[24px] text-on-tertiary-container">lock_reset</span>
+              <span class="material-symbols-outlined text-[24px] text-blue-600">lock_reset</span>
               Khôi phục mật khẩu
             </h3>
             <button @click="closeForgotPasswordModal" class="text-on-surface-variant hover:text-primary-container cursor-pointer bg-transparent border-none">
@@ -469,5 +469,15 @@ const resetPassword = async () => {
   outline: none;
   border-color: #2b83ff;
   box-shadow: 0 0 0 3px rgba(43, 131, 255, 0.2);
+}
+
+/* Force autofilled inputs to stay white and have dark text */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 100px white inset !important;
+  -webkit-text-fill-color: #191c1d !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 </style>
