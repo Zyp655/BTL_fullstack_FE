@@ -7,7 +7,7 @@
     background-color: #f8f9fa;
     background-image: 
         radial-gradient(at 0% 0%, hsla(213, 100%, 89%, 0.4) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, hsla(145, 100%, 93%, 0.3) 0px, transparent 50%);
+        radial-gradient(at 100% 100%, hsla(199, 100%, 93%, 0.3) 0px, transparent 50%);
     background-attachment: fixed;
     min-height: 100vh;
     margin: 0;
@@ -60,7 +60,7 @@
 
 /* Gradient Text */
 .gradient-text {
-  background: linear-gradient(135deg, #001f3f, #2b83ff);
+  background: linear-gradient(135deg, #1d4ed8, #38bdf8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
