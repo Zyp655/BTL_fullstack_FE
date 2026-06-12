@@ -9,8 +9,8 @@
     <nav class="bg-[#030712]/60 fixed top-0 w-full backdrop-blur-xl border-b border-white/5 shadow-lg z-50 transition-all duration-300">
       <div class="flex justify-between items-center px-6 md:px-12 h-20 max-w-[1400px] mx-auto">
         <router-link to="/" class="flex items-center space-x-3 group cursor-pointer">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform duration-300">
-            <span class="material-symbols-outlined text-white text-2xl font-bold">school</span>
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-sky-400 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform duration-300">
+            <span class="material-symbols-outlined text-white text-[24px] font-bold">school</span>
           </div>
           <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400 tracking-tight">
             EduManager Pro
@@ -28,9 +28,9 @@
           <router-link to="/login" class="text-slate-300 hover:text-white font-semibold px-4 py-2 hover:opacity-80 transition-all font-semibold">
             Đăng nhập
           </router-link>
-          <router-link to="/login" class="relative group overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2.5 rounded-xl font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/35 hover:-translate-y-0.5 transition-all duration-300">
+          <router-link to="/login" class="relative group overflow-hidden bg-gradient-to-r from-blue-600 to-sky-500 text-white px-6 py-2.5 rounded-xl font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/35 hover:-translate-y-0.5 transition-all duration-300">
             <span class="relative z-10">Bắt đầu ngay</span>
-            <div class="absolute inset-0 -translate-x-full group-hover:translate-x-0 bg-gradient-to-r from-indigo-600 to-blue-600 transition-transform duration-300 -z-0"></div>
+            <div class="absolute inset-0 -translate-x-full group-hover:translate-x-0 bg-gradient-to-r from-sky-500 to-blue-600 transition-transform duration-300 -z-0"></div>
           </router-link>
         </div>
         <!-- Mobile Menu Toggle -->
@@ -53,7 +53,7 @@
             <router-link to="/login" class="text-slate-300 hover:text-white font-semibold py-2.5 text-center border border-white/10 rounded-xl hover:bg-white/5 transition-all duration-200" @click="mobileMenuOpen = false">
               Đăng nhập
             </router-link>
-            <router-link to="/login" class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-semibold text-center hover:shadow-lg shadow-blue-500/20 transition-all duration-200" @click="mobileMenuOpen = false">
+            <router-link to="/login" class="bg-gradient-to-r from-blue-600 to-sky-500 text-white py-3 rounded-xl font-semibold text-center hover:shadow-lg shadow-blue-500/20 transition-all duration-200" @click="mobileMenuOpen = false">
               Bắt đầu ngay
             </router-link>
           </div>
@@ -72,7 +72,7 @@
           </div>
           <h1 class="text-4xl md:text-5xl lg:text-6xl text-white leading-tight font-extrabold tracking-tight">
             Hệ thống quản lý <br/>
-            <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400">
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-sky-400 to-sky-300">
               đào tạo toàn diện
             </span>
           </h1>
@@ -80,11 +80,11 @@
             Tối ưu hóa quy trình vận hành giảng dạy, nâng cao hiệu suất học tập của học viên và gia tăng doanh thu vượt trội với nền tảng quản trị thông minh hàng đầu.
           </p>
           <div class="flex flex-wrap gap-4 pt-4">
-            <router-link to="/login" class="relative group overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-xl font-semibold shadow-xl shadow-blue-500/20 hover:shadow-blue-500/35 hover:-translate-y-1 transition-all duration-300">
+            <router-link to="/login" class="relative group overflow-hidden bg-gradient-to-r from-blue-600 to-sky-500 text-white px-8 py-4 rounded-xl font-semibold shadow-xl shadow-blue-500/20 hover:shadow-blue-500/35 hover:-translate-y-1 transition-all duration-300">
               <span class="relative z-10 flex items-center justify-center gap-2">
                 Bắt đầu ngay <span class="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
               </span>
-              <div class="absolute inset-0 -translate-x-full group-hover:translate-x-0 bg-gradient-to-r from-indigo-600 to-blue-600 transition-transform duration-300 -z-0"></div>
+              <div class="absolute inset-0 -translate-x-full group-hover:translate-x-0 bg-gradient-to-r from-sky-500 to-blue-600 transition-transform duration-300 -z-0"></div>
             </router-link>
           </div>
         </div>
@@ -92,7 +92,7 @@
         <div class="flex-1 w-full max-w-2xl relative z-10 reveal reveal-fade-left">
           <!-- Mockup with floating glass effects -->
           <div class="relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-white/5 backdrop-blur-md p-2 shadow-blue-500/5 group hover:border-white/20 transition-all duration-500 hover:shadow-blue-500/10 mockup-float">
-            <div class="absolute inset-0 bg-gradient-to-tr from-blue-500/10 via-transparent to-purple-500/10 opacity-50 pointer-events-none"></div>
+            <div class="absolute inset-0 bg-gradient-to-tr from-blue-500/10 via-transparent to-sky-500/10 opacity-50 pointer-events-none"></div>
             <img 
               alt="Dashboard" 
               class="w-full h-auto rounded-xl shadow-inner border border-white/5 transition-transform duration-500" 
@@ -100,7 +100,7 @@
             />
           </div>
           <!-- Blur glow background behind image -->
-          <div class="absolute -inset-10 bg-gradient-to-tr from-blue-600/20 to-purple-600/20 blur-3xl -z-10 rounded-full opacity-60"></div>
+          <div class="absolute -inset-10 bg-gradient-to-tr from-blue-600/20 to-sky-600/20 blur-3xl -z-10 rounded-full opacity-60"></div>
         </div>
       </section>
       
@@ -143,12 +143,12 @@
               <p class="text-sm text-slate-400 leading-relaxed">Theo dõi công nợ học phí, xuất hóa đơn điện tử và đối soát thanh toán tự động.</p>
             </div>
             <!-- Card 4 -->
-            <div class="glass-panel p-8 rounded-2xl flex flex-col gap-4 group hover:border-indigo-500/50 hover:shadow-2xl hover:shadow-indigo-500/5 hover:-translate-y-2 transition-all duration-300 relative overflow-hidden">
-              <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-indigo-500/10 to-transparent rounded-bl-3xl pointer-events-none"></div>
-              <div class="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-indigo-500/35 transition-all duration-300">
+            <div class="glass-panel p-8 rounded-2xl flex flex-col gap-4 group hover:border-sky-500/50 hover:shadow-2xl hover:shadow-sky-500/5 hover:-translate-y-2 transition-all duration-300 relative overflow-hidden">
+              <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-sky-500/10 to-transparent rounded-bl-3xl pointer-events-none"></div>
+              <div class="w-12 h-12 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20 flex items-center justify-center group-hover:bg-sky-600 group-hover:text-white group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-sky-500/35 transition-all duration-300">
                 <span class="material-symbols-outlined text-2xl">smartphone</span>
               </div>
-              <h3 class="text-xl font-bold text-white mt-2 group-hover:text-indigo-400 transition-colors duration-300">Cổng học tập học viên</h3>
+              <h3 class="text-xl font-bold text-white mt-2 group-hover:text-sky-400 transition-colors duration-300">Cổng học tập học viên</h3>
               <p class="text-sm text-slate-400 leading-relaxed">Giao diện riêng giúp học viên chủ động thanh toán, tra cứu lịch học và bảng điểm.</p>
             </div>
           </div>
@@ -281,7 +281,7 @@ onMounted(() => {
 .orb-2 {
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(79, 70, 229, 0) 70%);
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, rgba(3, 105, 161, 0) 70%);
   bottom: 10%;
   left: -150px;
   animation: float-slow 25s infinite ease-in-out alternate-reverse;
@@ -290,7 +290,7 @@ onMounted(() => {
 .orb-3 {
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, rgba(147, 51, 234, 0) 70%);
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, rgba(14, 165, 233, 0) 70%);
   top: 40%;
   right: 10%;
   animation: float-slow 15s infinite ease-in-out alternate;
