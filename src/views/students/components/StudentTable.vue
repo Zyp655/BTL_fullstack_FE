@@ -7,10 +7,18 @@
         <input
           :value="filters.search"
           @input="$emit('update-filter', { key: 'search', value: $event.target.value })"
-          class="w-full pl-10 pr-4 py-2.5 rounded-lg glass-input font-body-sm text-body-sm text-on-surface"
+          class="w-full pl-10 pr-10 py-2.5 rounded-lg glass-input font-body-sm text-body-sm text-on-surface"
           placeholder="Tìm theo tên, email, SĐT..."
           type="text"
         />
+        <button
+          v-if="filters.search"
+          @click="$emit('update-filter', { key: 'search', value: '' })"
+          type="button"
+          class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer flex items-center justify-center w-6 h-6 rounded-full hover:bg-primary-container/10"
+        >
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
       </div>
       <!-- Class Filter -->
       <div class="relative w-full sm:w-64">

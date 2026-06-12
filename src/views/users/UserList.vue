@@ -49,17 +49,25 @@
         <input
           v-model="filters.search"
           @input="debouncedFetch"
-          class="w-full pl-10 pr-4 py-2 bg-primary-container/[0.05] border border-outline-variant/30 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-body-sm text-body-sm text-on-surface placeholder:text-outline transition-all"
+          class="w-full pl-10 pr-10 py-2.5 bg-primary-container/[0.05] border border-outline-variant/30 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-body-sm text-body-sm text-on-surface placeholder:text-outline transition-all"
           placeholder="Tìm theo tên, username..."
           type="text"
         />
+        <button
+          v-if="filters.search"
+          @click="filters.search = ''; fetchData();"
+          type="button"
+          class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer flex items-center justify-center w-6 h-6 rounded-full hover:bg-primary-container/10"
+        >
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
       </div>
       <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
         <div class="relative w-full sm:w-48">
           <select
             v-model="filters.role"
             @change="fetchData"
-            class="w-full bg-primary-container/[0.05] border border-outline-variant/30 appearance-none pl-4 pr-10 py-2 rounded-lg font-body-sm text-body-sm text-on-surface bg-transparent cursor-pointer focus:outline-none focus:border-primary transition-colors"
+            class="w-full bg-primary-container/[0.05] border border-outline-variant/30 appearance-none pl-4 pr-10 py-2.5 rounded-lg font-body-sm text-body-sm text-on-surface bg-transparent cursor-pointer focus:outline-none focus:border-primary transition-colors"
           >
             <option :value="null">Tất cả vai trò</option>
             <option value="Admin">Quản trị viên (Admin)</option>
@@ -72,7 +80,7 @@
           <select
             v-model="filters.isActive"
             @change="fetchData"
-            class="w-full bg-primary-container/[0.05] border border-outline-variant/30 appearance-none pl-4 pr-10 py-2 rounded-lg font-body-sm text-body-sm text-on-surface bg-transparent cursor-pointer focus:outline-none focus:border-primary transition-colors"
+            class="w-full bg-primary-container/[0.05] border border-outline-variant/30 appearance-none pl-4 pr-10 py-2.5 rounded-lg font-body-sm text-body-sm text-on-surface bg-transparent cursor-pointer focus:outline-none focus:border-primary transition-colors"
           >
             <option :value="null">Tất cả trạng thái</option>
             <option :value="true">Hoạt động</option>
