@@ -69,13 +69,7 @@
         </template>
       </div>
 
-      <!-- Footer CTA -->
-      <div class="px-4 mt-auto pt-4 border-t border-white/10">
-        <button class="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-colors font-title-md text-[14px]">
-          <span class="material-symbols-outlined text-[20px]">help_center</span>
-          Trung tâm hỗ trợ
-        </button>
-      </div>
+
     </nav>
 
     <!-- Mobile Drawer Overlay -->
