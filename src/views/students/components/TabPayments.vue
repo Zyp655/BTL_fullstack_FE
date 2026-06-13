@@ -37,8 +37,14 @@
           </div>
           <div class="text-left sm:text-right space-y-0.5">
             <div v-if="pay.status !== 'HoanTat'" class="text-body-sm text-on-surface-variant">Hạn chót đóng: <span class="font-semibold text-primary-container">{{ formatDate(pay.dueDate) }}</span></div>
-            <div v-if="pay.status === 'HoanTat'" class="text-body-sm font-bold text-emerald-600">
-              Hoàn tất
+            <div v-if="pay.status === 'HoanTat'">
+              <button
+                @click="openDetailModal(pay)"
+                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 text-[11px] font-bold border border-emerald-500/20 shadow-sm transition-all active:scale-95 cursor-pointer"
+              >
+                <span class="material-symbols-outlined text-[15px]">receipt_long</span>
+                Xem chi tiết
+              </button>
             </div>
             <div v-else class="text-body-sm text-on-surface-variant">
               Cần thanh toán: <span class="font-bold text-primary-container">{{ formatCurrency(pay.totalAmount) }}</span>

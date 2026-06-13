@@ -58,9 +58,9 @@
             <span
               :class="[
                 getSchedulesForDay(day.value).length > 0 
-                  ? 'bg-primary-container text-white font-bold shadow-sm' 
-                  : 'bg-primary-container/[0.05] text-on-surface-variant/80 font-semibold',
-                'px-2.5 py-1.5 rounded-full text-[10.5px] block uppercase tracking-wide border border-white/40'
+                  ? 'bg-blue-600 text-white font-bold shadow-sm' 
+                  : 'bg-blue-500/10 text-blue-700/80 font-semibold border-blue-500/20',
+                'px-2.5 py-1.5 rounded-full text-[10.5px] block uppercase tracking-wide border'
               ]"
             >
               {{ day.label }}
@@ -76,12 +76,12 @@
               class="p-3 rounded-xl border transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 duration-200 flex flex-col justify-between relative overflow-hidden"
               :class="[
                 isConflicted(s)
-                  ? 'border-blue-500/30 bg-blue-500/[0.08] hover:bg-blue-500/[0.14]'
+                  ? 'border-error/30 bg-error/[0.08] hover:bg-error/[0.14]'
                   : 'border-primary-container/10 bg-white/80 hover:bg-white'
               ]"
             >
               <!-- Alert indicator badge for conflict -->
-              <div v-if="isConflicted(s)" class="absolute right-2 top-2 flex items-center gap-0.5 text-blue-600 text-[8px] font-black uppercase tracking-wider bg-blue-500/10 px-1 rounded border border-blue-500/20 z-10">
+              <div v-if="isConflicted(s)" class="absolute right-2 top-2 flex items-center gap-0.5 text-error text-[8px] font-black uppercase tracking-wider bg-error/10 px-1 rounded border border-error/20 z-10">
                 <span class="material-symbols-outlined text-[9px] animate-pulse">warning</span>
                 Trùng
               </div>
@@ -90,7 +90,7 @@
                 <div class="flex items-center justify-between gap-1.5 pr-8">
                   <div 
                     class="text-[11px] font-extrabold leading-tight line-clamp-1 flex-1" 
-                    :class="isConflicted(s) ? 'text-blue-600' : 'text-primary'"
+                    :class="isConflicted(s) ? 'text-error' : 'text-primary'"
                     :title="s.className"
                   >
                     {{ s.className }}
@@ -102,16 +102,16 @@
                     {{ getSessionLabel(s.startTime) }}
                   </span>
                 </div>
-                <div class="text-[10px] leading-snug line-clamp-2 mt-1" :class="isConflicted(s) ? 'text-blue-600/80' : 'text-on-surface-variant'" :title="s.courseName">
+                <div class="text-[10px] leading-snug line-clamp-2 mt-1" :class="isConflicted(s) ? 'text-error/80' : 'text-on-surface-variant'" :title="s.courseName">
                   {{ s.courseName }}
                 </div>
               </div>
-              <div class="mt-2.5 pt-2 border-t flex flex-col gap-1" :class="isConflicted(s) ? 'border-blue-500/20' : 'border-outline-variant/30'">
-                <div class="text-body-xs font-bold flex items-center gap-1" :class="isConflicted(s) ? 'text-blue-600' : 'text-on-tertiary-container'">
-                  <span class="material-symbols-outlined text-[13px]" :class="isConflicted(s) ? 'text-blue-600' : 'text-on-tertiary-container'">schedule</span>
+              <div class="mt-2.5 pt-2 border-t flex flex-col gap-1" :class="isConflicted(s) ? 'border-error/20' : 'border-outline-variant/30'">
+                <div class="text-body-xs font-bold flex items-center gap-1" :class="isConflicted(s) ? 'text-error' : 'text-on-tertiary-container'">
+                  <span class="material-symbols-outlined text-[13px]" :class="isConflicted(s) ? 'text-error' : 'text-on-tertiary-container'">schedule</span>
                   {{ s.startTime.substring(0, 5) }} - {{ s.endTime.substring(0, 5) }}
                 </div>
-                <div class="text-[9px] font-bold flex items-center gap-1" :class="isConflicted(s) ? 'text-blue-600/70' : 'text-on-surface-variant/80'">
+                <div class="text-[9px] font-bold flex items-center gap-1" :class="isConflicted(s) ? 'text-error/70' : 'text-on-surface-variant/80'">
                   <span class="material-symbols-outlined text-[12px]">location_on</span>
                   {{ s.room }}
                 </div>
@@ -138,7 +138,7 @@
           class="border border-white/20 rounded-xl bg-white/25 p-4 space-y-3"
         >
           <div class="flex items-center justify-between border-b border-white/30 pb-2">
-            <span class="text-body-md font-bold text-primary-container uppercase">{{ day.label }} ({{ getDayDateString(day.value) }})</span>
+            <span class="text-body-md font-bold text-blue-600 uppercase">{{ day.label }} ({{ getDayDateString(day.value) }})</span>
             <span v-if="getSchedulesForDay(day.value).length === 0" class="text-body-xs text-on-surface-variant/60 font-medium">Nghỉ học</span>
             <span v-else class="px-2.5 py-0.5 bg-primary-container/10 text-primary-container rounded-full text-body-xs font-bold border border-primary-container/20">
               {{ getSchedulesForDay(day.value).length }} buổi học
@@ -152,16 +152,16 @@
               class="p-4 rounded-xl border shadow-sm flex items-center justify-between gap-3 transition-colors relative overflow-hidden"
               :class="[
                 isConflicted(s)
-                  ? 'border-blue-500/30 bg-blue-500/[0.08] hover:bg-blue-500/[0.14]'
+                  ? 'border-error/30 bg-error/[0.08] hover:bg-error/[0.14]'
                   : 'border-primary-container/10 bg-white/80 hover:bg-white'
               ]"
             >
               <div class="space-y-1">
-                <div class="text-body-sm font-bold flex items-center gap-2" :class="isConflicted(s) ? 'text-blue-600' : 'text-primary-container'">
+                <div class="text-body-sm font-bold flex items-center gap-2" :class="isConflicted(s) ? 'text-error' : 'text-primary-container'">
                   {{ s.className }}
                   <span 
                     v-if="isConflicted(s)" 
-                    class="px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider bg-blue-500/10 text-blue-600 border border-blue-500/25 flex items-center gap-0.5"
+                    class="px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider bg-error/10 text-error border border-error/25 flex items-center gap-0.5"
                   >
                     <span class="material-symbols-outlined text-[9px] animate-pulse">warning</span>
                     Trùng lịch
@@ -173,8 +173,8 @@
                     {{ getSessionLabel(s.startTime) }}
                   </span>
                 </div>
-                <div class="text-body-xs font-medium" :class="isConflicted(s) ? 'text-blue-600/80' : 'text-on-surface-variant/80'">{{ s.courseName }}</div>
-                <div class="text-body-xs flex items-center gap-1.5 mt-1" :class="isConflicted(s) ? 'text-blue-600/70' : 'text-on-surface-variant'">
+                <div class="text-body-xs font-medium" :class="isConflicted(s) ? 'text-error/80' : 'text-on-surface-variant/80'">{{ s.courseName }}</div>
+                <div class="text-body-xs flex items-center gap-1.5 mt-1" :class="isConflicted(s) ? 'text-error/70' : 'text-on-surface-variant'">
                   <span class="material-symbols-outlined text-[14px]">location_on</span>
                   Phòng: {{ s.room }}
                 </div>
@@ -182,7 +182,7 @@
               <div class="text-right shrink-0">
                 <span 
                   class="inline-block px-3 py-1.5 text-body-xs font-bold rounded-lg"
-                  :class="isConflicted(s) ? 'bg-blue-500/15 text-blue-600' : 'bg-on-tertiary-container/10 text-on-tertiary-container'"
+                  :class="isConflicted(s) ? 'bg-error/15 text-error' : 'bg-on-tertiary-container/10 text-on-tertiary-container'"
                 >
                   {{ s.startTime.substring(0, 5) }} - {{ s.endTime.substring(0, 5) }}
                 </span>

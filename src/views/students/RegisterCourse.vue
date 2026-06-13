@@ -1,18 +1,6 @@
 <template>
   <div class="space-y-6 animate-fade-in">
-    <!-- Title / Header -->
-    <div class="relative overflow-hidden bg-white/70 backdrop-blur-[20px] rounded-2xl p-container-padding flex flex-col md:flex-row items-center md:items-start justify-between gap-gutter border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)]">
-      <div class="absolute -right-16 -top-16 w-48 h-48 rounded-full bg-primary-container/10 blur-3xl pointer-events-none"></div>
-      <div class="absolute -left-16 -bottom-16 w-48 h-48 rounded-full bg-on-tertiary-container/10 blur-3xl pointer-events-none"></div>
 
-      <div class="space-y-2">
-        <h2 class="font-headline-lg text-headline-lg text-primary-container flex items-center gap-2">
-          <span class="material-symbols-outlined text-[28px] text-on-tertiary-container">import_contacts</span>
-          Đăng ký môn học
-        </h2>
-        <p class="text-body-sm text-on-surface-variant">Lựa chọn các môn học và đăng ký vào danh sách hàng chờ xếp lớp mới</p>
-      </div>
-    </div>
 
     <!-- Student Selector (Admin Only) -->
     <div v-if="authStore.isAdmin" class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl p-5 shadow-[0_12px_24px_rgba(0,0,0,0.05)] flex flex-col sm:flex-row items-center justify-between gap-4">
