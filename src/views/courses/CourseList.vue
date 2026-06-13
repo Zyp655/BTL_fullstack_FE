@@ -356,16 +356,52 @@
                 </button>
               </div>
 
-              <!-- Custom URL Input -->
-              <div class="relative mt-2">
-                <input
-                  v-model="customImageUrl"
-                  @input="onCustomImageUrlInput"
-                  class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all"
-                  placeholder="Hoặc nhập Link ảnh tùy chỉnh bên ngoài..."
-                  type="text"
-                />
+              <!-- Custom Upload / URL Selection -->
+              <div class="flex flex-col gap-2 mt-2">
+                <div class="flex gap-3 items-center">
+                  <!-- Upload Button -->
+                  <button
+                    type="button"
+                    @click="triggerCourseImageSelect"
+                    class="px-4 py-2.5 rounded-lg border border-primary-container/20 bg-primary-container/5 hover:bg-primary-container/10 text-primary font-semibold text-body-sm transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shrink-0"
+                  >
+                    <span class="material-symbols-outlined text-[20px]">upload_file</span>
+                    Tải ảnh từ máy...
+                  </button>
+                  
+                  <!-- Custom URL Input -->
+                  <div class="relative flex-1">
+                    <input
+                      v-model="customImageUrl"
+                      @input="onCustomImageUrlInput"
+                      class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all"
+                      placeholder="Hoặc nhập Link ảnh tùy chỉnh bên ngoài..."
+                      type="text"
+                    />
+                  </div>
+                </div>
+
+                <!-- Preview of uploaded/custom image -->
+                <div v-if="isCustomImageActive" class="flex items-center gap-3 p-3 bg-primary-container/[0.03] border border-primary-container/10 rounded-xl">
+                  <div class="w-16 h-12 rounded-lg overflow-hidden border border-outline-variant/30 shrink-0">
+                    <img :src="formData.imageUrl" class="w-full h-full object-cover" />
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <div class="text-body-xs font-bold text-primary-container">Ảnh tự chọn đang kích hoạt</div>
+                    <div class="text-[10px] text-on-surface-variant truncate">
+                      {{ formData.imageUrl.startsWith('data:') ? 'Ảnh tải lên từ thiết bị' : formData.imageUrl }}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    @click="clearCustomImage"
+                    class="text-error hover:text-error/80 cursor-pointer flex items-center justify-center"
+                  >
+                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                  </button>
+                </div>
               </div>
+              <input ref="courseImageInput" type="file" class="hidden" accept="image/*" @change="onCourseImageUpload" />
             </div>
 
             <!-- Category and Level -->
@@ -780,6 +816,12 @@ const vipLaunchForm = ref({
 })
 
 const customImageUrl = ref('')
+const courseImageInput = ref(null)
+
+const isCustomImageActive = computed(() => {
+  const val = formData.value.imageUrl
+  return val && !['preset_foreign_language', 'preset_it', 'preset_skills', 'preset_default'].includes(val)
+})
 
 function onCustomImageUrlInput() {
   formData.value.imageUrl = customImageUrl.value
@@ -788,6 +830,33 @@ function onCustomImageUrlInput() {
 function selectPresetImage(preset) {
   formData.value.imageUrl = preset
   customImageUrl.value = ''
+}
+
+function triggerCourseImageSelect() {
+  courseImageInput.value.click()
+}
+
+function onCourseImageUpload(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  if (file.size > 2 * 1024 * 1024) {
+    showSnackbar('Ảnh kích thước quá lớn, vui lòng chọn ảnh dưới 2MB', 'error')
+    return
+  }
+  const reader = new FileReader()
+  reader.onload = () => {
+    formData.value.imageUrl = reader.result
+    customImageUrl.value = ''
+  }
+  reader.readAsDataURL(file)
+}
+
+function clearCustomImage() {
+  formData.value.imageUrl = 'preset_default'
+  customImageUrl.value = ''
+  if (courseImageInput.value) {
+    courseImageInput.value.value = ''
+  }
 }
 
 const formData = ref({
@@ -905,7 +974,7 @@ function openEditDialog(item) {
   isEdit.value = true
   formData.value = { ...item }
   const presets = ['preset_foreign_language', 'preset_it', 'preset_skills', 'preset_default']
-  if (presets.includes(item.imageUrl)) {
+  if (presets.includes(item.imageUrl) || (item.imageUrl && item.imageUrl.startsWith('data:'))) {
     customImageUrl.value = ''
   } else {
     customImageUrl.value = item.imageUrl || ''

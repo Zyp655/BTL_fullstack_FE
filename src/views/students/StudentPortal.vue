@@ -25,45 +25,48 @@
 
     <template v-if="studentProfile">
       <!-- Hero Profile Section -->
-      <section class="glass-panel rounded-xl p-stack-md flex flex-col md:flex-row gap-stack-md items-start md:items-center relative overflow-hidden">
+      <section class="glass-panel rounded-xl p-[21px] flex flex-col md:flex-row gap-[21px] items-start md:items-center relative overflow-hidden">
         <!-- Background decorative gradients -->
         <div class="absolute -right-16 -top-16 w-48 h-48 rounded-full bg-primary/10 blur-3xl pointer-events-none"></div>
         <div class="absolute -left-16 -bottom-16 w-48 h-48 rounded-full bg-on-tertiary-container/10 blur-3xl pointer-events-none"></div>
 
         <div class="flex-shrink-0">
-          <div class="w-24 h-24 rounded-full bg-gradient-to-br from-tertiary-container to-primary-container flex items-center justify-center font-display-lg text-display-lg text-on-primary shadow-lg shadow-primary-container/20 border-4 border-white">
-            {{ (studentProfile?.fullName || authStore.currentUser?.fullName || 'P').charAt(0).toUpperCase() }}
+          <div class="w-[93px] h-[93px] rounded-full bg-gradient-to-br from-tertiary-container to-primary-container flex items-center justify-center font-display-lg text-[45px] text-on-primary shadow-lg shadow-primary-container/20 border-4 border-white overflow-hidden">
+            <img v-if="studentAvatar" :src="studentAvatar" class="w-full h-full object-cover" alt="Student Avatar" />
+            <template v-else>
+              {{ (studentProfile?.fullName || authStore.currentUser?.fullName || 'P').charAt(0).toUpperCase() }}
+            </template>
           </div>
         </div>
         <div class="flex-1 space-y-4">
           <div>
             <div class="flex flex-wrap items-center gap-3">
-              <h2 class="font-headline-lg text-headline-lg text-primary-container">{{ studentProfile?.fullName || authStore.currentUser?.fullName }}</h2>
-              <span class="px-3 py-1 bg-surface-tint/10 text-surface-tint rounded-full font-label-caps text-label-caps border border-surface-tint/20">
+              <h2 class="font-headline-lg text-[29px] text-primary-container leading-tight">{{ studentProfile?.fullName || authStore.currentUser?.fullName }}</h2>
+              <span class="px-3 py-1 bg-surface-tint/10 text-surface-tint rounded-full font-label-caps text-[9px] uppercase tracking-wider border border-surface-tint/20">
                 Mã HV: {{ studentProfile?.studentId ? `HV-${String(studentProfile.studentId).padStart(4, '0')}` : 'HV-0000' }}
               </span>
             </div>
-            <p class="text-on-surface-variant font-title-md text-title-md font-normal mt-1">Cổng thông tin học tập & học phí cá nhân</p>
+            <p class="text-on-surface-variant text-[17px] font-normal mt-0.5">Cổng thông tin học tập & học phí cá nhân</p>
           </div>
-          <div class="flex flex-wrap gap-x-6 gap-y-2 text-body-sm font-body-sm text-on-surface-variant">
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-[18px]">mail</span>
+          <div class="flex flex-wrap gap-x-6 gap-y-2 text-[11px] font-medium text-on-surface-variant">
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[15px]">mail</span>
               {{ studentProfile?.email || authStore.currentUser?.email || 'Chưa cập nhật email' }}
             </div>
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-[18px]">phone</span>
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[15px]">phone</span>
               {{ studentProfile?.phone || authStore.currentUser?.phone || 'Chưa cập nhật SĐT' }}
             </div>
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-[18px]">person</span>
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[15px]">person</span>
               {{ studentProfile?.gender || 'Chưa cập nhật' }}
             </div>
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-[18px]">cake</span>
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[15px]">cake</span>
               {{ formatDate(studentProfile?.dateOfBirth) }}
             </div>
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-[18px]">location_on</span>
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[15px]">location_on</span>
               {{ studentProfile?.address || 'Chưa cập nhật địa chỉ' }}
             </div>
           </div>
@@ -144,8 +147,11 @@
               'pb-3 border-b-2 font-title-md text-title-md flex items-center gap-2 transition-colors cursor-pointer'
             ]"
           >
-            <span class="material-symbols-outlined" :style="activeTab === tab.value ? 'font-variation-settings: \'FILL\' 1;' : ''">{{ tab.icon }}</span>
+            <span class="material-symbols-outlined" :class="{ 'text-error animate-pulse': tab.value === 'conflicts' && currentConflicts.length > 0 }" :style="activeTab === tab.value ? 'font-variation-settings: \'FILL\' 1;' : ''">{{ tab.icon }}</span>
             {{ tab.label }}
+            <span v-if="tab.value === 'conflicts' && currentConflicts.length > 0" class="px-1.5 py-0.5 text-[10px] font-bold bg-error text-white rounded-full animate-bounce">
+              {{ currentConflicts.length }}
+            </span>
           </button>
         </nav>
       </div>
@@ -168,12 +174,20 @@
           :payments="payments"
           :my-support-messages="mySupportMessages"
           :current-conflicts="currentConflicts"
+          :attendance-summaries="attendanceSummaries"
           @select-class="selectClass"
           @open-support-conflict="({ targetClass, conflictClass }) => openSupportDialogWithConflict(targetClass, conflictClass)"
           @open-transfer-modal="openTransferModal"
           @change-enrollment-status="({ cls, newStatus }) => changeEnrollmentStatus(cls, newStatus)"
           @open-support-dialog="openSupportDialog"
           @switch-tab="selectTab"
+          @change-attendance-status="({ session, newStatus }) => changeAttendanceStatus(session, newStatus)"
+        />
+
+        <TabCalendar
+          v-if="activeTab === 'calendar'"
+          :enrolled-classes="enrolledClasses"
+          :enrolled-schedules-map="enrolledSchedulesMap"
         />
 
         <TabGrades
@@ -182,13 +196,6 @@
           :enrolled-classes="enrolledClasses"
           :exam-results="examResults"
           @open-grading-dialog="openGradingDialog"
-        />
-
-        <TabAttendance
-          v-slot="{ session }"
-          v-if="activeTab === 'attendance'"
-          :attendance-summaries="attendanceSummaries"
-          @change-attendance-status="({ session, newStatus }) => changeAttendanceStatus(session, newStatus)"
         />
 
         <TabPayments
@@ -203,6 +210,13 @@
           v-slot="{ credit }"
           v-if="activeTab === 'credits'"
           :credit-summary="creditSummary"
+        />
+
+        <TabConflicts
+          v-slot="{ conflict }"
+          v-if="activeTab === 'conflicts'"
+          :current-conflicts="currentConflicts"
+          @open-support-conflict="({ targetClass, conflictClass }) => openSupportDialogWithConflict(targetClass, conflictClass)"
         />
       </div>
 
@@ -337,9 +351,10 @@ import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr'
 
 import TabClassesSchedules from './components/TabClassesSchedules.vue'
 import TabGrades from './components/TabGrades.vue'
-import TabAttendance from './components/TabAttendance.vue'
 import TabPayments from './components/TabPayments.vue'
 import TabCredits from './components/TabCredits.vue'
+import TabConflicts from './components/TabConflicts.vue'
+import TabCalendar from './components/TabCalendar.vue'
 import ModalTransferClass from './components/ModalTransferClass.vue'
 import ModalGrading from './components/ModalGrading.vue'
 import ModalPaymentRecord from './components/ModalPaymentRecord.vue'
@@ -365,6 +380,15 @@ const attendanceSummaries = ref([])
 const payments = ref([])
 const creditSummary = ref(null)
 
+const studentAvatar = computed(() => {
+  const uId = studentProfile.value?.userId || authStore.currentUser?.userId
+  if (!uId) return null
+  if (uId === authStore.currentUser?.userId) {
+    return authStore.avatar
+  }
+  return localStorage.getItem('avatar_' + uId)
+})
+
 const enrolledSchedulesMap = ref({})
 const supportMessageText = ref('')
 const submittingSupport = ref(false)
@@ -380,10 +404,11 @@ const loadingSupportAlternativeClasses = ref(false)
 const activeTab = ref(route.query.tab || 'classes')
 const tabs = [
   { label: 'Lớp học & Lịch học', value: 'classes', icon: 'school' },
+  { label: 'Lịch học tuần', value: 'calendar', icon: 'calendar_month' },
   { label: 'Bảng điểm của tôi', value: 'grades', icon: 'history_edu' },
-  { label: 'Nhật ký chuyên cần', value: 'attendance', icon: 'how_to_reg' },
   { label: 'Học phí & Thanh toán', value: 'payments', icon: 'receipt_long' },
-  { label: 'Ví bảo lưu', value: 'credits', icon: 'account_balance_wallet' }
+  { label: 'Ví bảo lưu', value: 'credits', icon: 'account_balance_wallet' },
+  { label: 'Trùng lịch học', value: 'conflicts', icon: 'warning' }
 ]
 
 const selectTab = (tabValue) => {
