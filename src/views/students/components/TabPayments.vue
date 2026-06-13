@@ -36,7 +36,7 @@
             <div class="text-body-sm text-on-surface-variant/70">Mã hóa đơn: <span class="font-mono font-bold">PAY{{ pay.paymentId }}</span></div>
           </div>
           <div class="text-left sm:text-right space-y-0.5">
-            <div class="text-body-sm text-on-surface-variant">Hạn chót đóng: <span class="font-semibold text-primary-container">{{ formatDate(pay.dueDate) }}</span></div>
+            <div v-if="pay.status !== 'HoanTat'" class="text-body-sm text-on-surface-variant">Hạn chót đóng: <span class="font-semibold text-primary-container">{{ formatDate(pay.dueDate) }}</span></div>
             <div v-if="pay.status === 'HoanTat'" class="text-body-sm font-bold text-emerald-600">
               Hoàn tất
             </div>
@@ -89,7 +89,7 @@
         <!-- Transaction list for this payment -->
         <div class="p-4 border-t border-white/40 bg-primary-container/[0.01]">
           <button
-            @click="toggleExpand(pay.paymentId)"
+            @click="openDetailModal(pay)"
             class="w-full flex items-center justify-between text-body-sm font-semibold text-primary-container hover:text-primary-container/80 transition-colors cursor-pointer py-1"
           >
             <div class="flex items-center gap-1.5">
@@ -97,36 +97,12 @@
               Chi tiết đóng tiền
             </div>
             <div class="flex items-center gap-1 text-body-xs text-on-surface-variant font-normal">
-              <span>{{ expandedPayments[pay.paymentId] ? 'Thu gọn' : 'Xem chi tiết' }}</span>
-              <span class="material-symbols-outlined text-[18px] transition-transform duration-200" :class="{ 'rotate-180': expandedPayments[pay.paymentId] }">
-                expand_more
+              <span>Xem chi tiết</span>
+              <span class="material-symbols-outlined text-[18px]">
+                chevron_right
               </span>
             </div>
           </button>
-          
-          <div v-show="expandedPayments[pay.paymentId]" class="mt-3 space-y-2 animate-fade-in">
-            <div v-if="pay.transactions.length === 0" class="text-center py-4 text-body-sm text-on-surface-variant">
-              Chưa ghi nhận giao dịch thanh toán nào cho hóa đơn này.
-            </div>
-            
-            <div v-else class="space-y-2">
-              <div
-                v-for="tx in pay.transactions"
-                :key="tx.transactionId"
-                class="bg-white/50 backdrop-blur-[10px] p-3 rounded-lg border border-white/40 flex justify-between items-center text-body-sm"
-              >
-                <div class="space-y-0.5">
-                  <div class="font-bold text-primary-container">Số tiền: {{ formatCurrency(tx.amount) }}</div>
-                  <div class="text-on-surface-variant">Phương thức: {{ formatPaymentMethod(tx.paymentMethod) }}</div>
-                  <div class="text-on-surface-variant/80">Thời gian: {{ formatDateTime(tx.paidAt) }}</div>
-                  <div v-if="tx.note" class="text-on-surface-variant/70 italic">Ghi chú: {{ tx.note }}</div>
-                </div>
-                <div class="text-right text-emerald-600 font-bold bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
-                  Đã thu
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -263,6 +239,88 @@
       </div>
     </div>
   </teleport>
+
+  <!-- Dialog: Chi tiết đóng tiền (Lịch sử giao dịch) -->
+  <teleport to="body">
+    <div v-if="showDetailModal && detailPayment" class="fixed inset-0 glass-backdrop z-[9999] flex items-center justify-center p-4">
+      <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-2xl shadow-[0_20px_40px_rgba(0,31,63,0.12)] max-w-xl w-full overflow-hidden animate-scale-in flex flex-col">
+        <!-- Modal Header -->
+        <div class="px-6 py-4 border-b border-white/40 flex items-center justify-between bg-primary-container/5">
+          <h3 class="font-title-md text-[18px] font-bold text-primary-container flex items-center gap-2">
+            <span class="material-symbols-outlined text-[24px] text-amber-500 font-bold">history</span>
+            Chi tiết đóng tiền
+          </h3>
+          <button @click="closeDetailModal" class="text-on-surface-variant hover:text-primary-container cursor-pointer">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6 flex-grow flex flex-col space-y-4">
+          <!-- Thông tin hóa đơn/lớp học -->
+          <div class="p-4 bg-primary-container/5 rounded-xl border border-white/40 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-body-sm font-semibold text-primary-container">{{ detailPayment.className }}</span>
+              <span :class="[getPaymentStatusClass(detailPayment.status), 'status-badge text-[10px] font-bold']">
+                {{ getPaymentStatusLabel(detailPayment.status) }}
+              </span>
+            </div>
+            <div class="text-body-sm text-on-surface-variant">Môn học: {{ detailPayment.courseName }}</div>
+            <div class="text-body-sm text-on-surface-variant/70">Mã hóa đơn: <span class="font-mono font-bold">PAY{{ detailPayment.paymentId }}</span></div>
+            <div class="border-t border-outline-variant/20 pt-2 grid grid-cols-2 gap-2 text-body-sm">
+              <div>
+                <span class="text-on-surface-variant/70 block text-[11px]">Tổng học phí:</span>
+                <span class="font-bold text-primary-container">{{ formatCurrency(detailPayment.totalAmount) }}</span>
+              </div>
+              <div v-if="detailPayment.status !== 'HoanTat'">
+                <span class="text-on-surface-variant/70 block text-[11px]">Còn nợ:</span>
+                <span class="font-bold text-error">{{ formatCurrency(detailPayment.remainingAmount) }}</span>
+              </div>
+              <div v-else>
+                <span class="text-on-surface-variant/70 block text-[11px]">Trạng thái:</span>
+                <span class="font-bold text-emerald-600">Đã hoàn thành</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lịch sử giao dịch -->
+          <div class="flex-grow overflow-y-auto max-h-[300px] space-y-3">
+            <h4 class="font-bold text-primary-container text-body-md">Lịch sử giao dịch</h4>
+            <div v-if="detailPayment.transactions.length === 0" class="text-center py-6 text-body-sm text-on-surface-variant bg-white/50 rounded-lg border border-outline-variant/10">
+              Chưa ghi nhận giao dịch thanh toán nào cho hóa đơn này.
+            </div>
+            <div v-else class="space-y-2">
+              <div
+                v-for="tx in detailPayment.transactions"
+                :key="tx.transactionId"
+                class="bg-white/50 backdrop-blur-[10px] p-3 rounded-lg border border-outline-variant/10 flex justify-between items-center text-body-sm"
+              >
+                <div class="space-y-0.5">
+                  <div class="font-bold text-primary-container">Số tiền: {{ formatCurrency(tx.amount) }}</div>
+                  <div class="text-on-surface-variant">Phương thức: {{ formatPaymentMethod(tx.paymentMethod) }}</div>
+                  <div class="text-on-surface-variant/80">Thời gian: {{ formatDateTime(tx.paidAt) }}</div>
+                  <div v-if="tx.note" class="text-on-surface-variant/70 italic">Ghi chú: {{ tx.note }}</div>
+                </div>
+                <div class="text-right text-emerald-600 font-bold bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
+                  Đã thu
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-6 py-4 border-t border-white/40 flex justify-end bg-white/20">
+          <button
+            @click="closeDetailModal"
+            class="px-5 py-2.5 rounded-lg bg-transparent text-on-surface-variant border border-outline-variant font-semibold text-[13px] hover:bg-surface-container transition-colors cursor-pointer"
+          >
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+  </teleport>
 </template>
 
 <script setup>
@@ -283,10 +341,17 @@ const activePayment = ref(null)
 const timeLeft = ref(600)
 let timerInterval = null
 
-const expandedPayments = ref({})
+const showDetailModal = ref(false)
+const detailPayment = ref(null)
 
-const toggleExpand = (paymentId) => {
-  expandedPayments.value[paymentId] = !expandedPayments.value[paymentId]
+const openDetailModal = (payment) => {
+  detailPayment.value = payment
+  showDetailModal.value = true
+}
+
+const closeDetailModal = () => {
+  showDetailModal.value = false
+  detailPayment.value = null
 }
 
 const emit = defineEmits(['open-payment-modal', 'refresh-payments'])
@@ -402,6 +467,12 @@ watch(() => props.payments, (newPayments) => {
       if (showSnackbar) {
         showSnackbar('Thanh toán học phí thành công! Lớp học đã được kích hoạt.', 'success')
       }
+    }
+  }
+  if (showDetailModal.value && detailPayment.value) {
+    const updatedPayment = newPayments.find(p => p.paymentId === detailPayment.value.paymentId)
+    if (updatedPayment) {
+      detailPayment.value = updatedPayment
     }
   }
 }, { deep: true })
