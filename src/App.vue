@@ -146,7 +146,7 @@
     <!-- Main Content Wrapper -->
     <div :class="[route.meta.public ? 'ml-0' : 'main-content-layout', 'flex-1 flex flex-col min-h-screen']">
       <!-- TopNavBar -->
-      <header v-if="!route.meta.public" class="flex justify-between items-center px-container-padding h-20 bg-white/70 backdrop-blur-[20px] border-b border-white/40 shadow-sm sticky top-0 z-40 w-full">
+      <header v-if="!route.meta.public" class="flex md:hidden justify-between items-center px-container-padding h-16 bg-white/70 backdrop-blur-[20px] border-b border-white/40 shadow-sm sticky top-0 z-40 w-full">
         <!-- Title / Page Name -->
         <div class="flex items-center">
           <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-on-surface-variant hover:text-on-tertiary-container mr-3 flex items-center" title="Menu">
