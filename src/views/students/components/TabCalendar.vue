@@ -81,9 +81,12 @@
               ]"
             >
               <!-- Alert indicator badge for conflict -->
-              <div v-if="isConflicted(s)" class="absolute right-2 top-2 flex items-center gap-0.5 text-error text-[8px] font-black uppercase tracking-wider bg-error/10 px-1 rounded border border-error/20 z-10">
-                <span class="material-symbols-outlined text-[9px] animate-pulse">warning</span>
-                Trùng
+              <div 
+                v-if="isConflicted(s)" 
+                class="absolute right-1.5 top-1.5 text-error bg-error/10 p-1.5 rounded-full border border-error/20 z-10 flex items-center justify-center cursor-help transition-all hover:bg-error/20 hover:scale-110" 
+                title="Trùng lịch học"
+              >
+                <span class="material-symbols-outlined text-[13px] animate-pulse" style="font-variation-settings: 'FILL' 1;">warning</span>
               </div>
 
               <div>
@@ -160,10 +163,10 @@
                   {{ s.className }}
                   <span 
                     v-if="isConflicted(s)" 
-                    class="px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider bg-error/10 text-error border border-error/25 flex items-center gap-0.5"
+                    class="p-1 rounded-full bg-error/10 text-error border border-error/25 flex items-center justify-center cursor-help"
+                    title="Trùng lịch học"
                   >
-                    <span class="material-symbols-outlined text-[9px] animate-pulse">warning</span>
-                    Trùng lịch
+                    <span class="material-symbols-outlined text-[11px] animate-pulse" style="font-variation-settings: 'FILL' 1;">warning</span>
                   </span>
                   <span 
                     v-else
