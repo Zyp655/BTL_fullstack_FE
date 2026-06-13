@@ -927,26 +927,38 @@ const submitResolutions = async () => {
         endDate: null
       }
       
-      const newCls = await classStore.createClass(newClassPayload)
-      const newClassId = newCls.classId
-      
-      // 2. Build resolutions where everyone transfers to the new class
-      const vipResolutions = resolveStudents.value.map(s => ({
-        studentId: s.studentId,
-        action: 'ChuyenLop',
-        newClassId: newClassId
-      }))
-      
-      // Save resolutions to StudentService
-      await api.post('/api/v1/enrollments/resolve-cancelled-class', {
-        classId: classId,
-        resolutions: vipResolutions
-      })
-      
-      // 3. Cancel the original class
-      await classStore.updateClassStatus(classId, 'Cancelled')
-      
-      showSnackbar(`Đã hủy lớp cũ và tự động chuyển học viên sang lớp VIP mới: ${vipFormData.value.className} (${vipFormData.value.totalSessions} buổi)`, 'success')
+      let newClassId = null
+      try {
+        const newCls = await classStore.createClass(newClassPayload)
+        newClassId = newCls.classId
+        
+        // 2. Build resolutions where everyone transfers to the new class
+        const vipResolutions = resolveStudents.value.map(s => ({
+          studentId: s.studentId,
+          action: 'ChuyenLop',
+          newClassId: newClassId
+        }))
+        
+        // Save resolutions to StudentService
+        await api.post('/api/v1/enrollments/resolve-cancelled-class', {
+          classId: classId,
+          resolutions: vipResolutions
+        })
+        
+        // 3. Cancel the original class
+        await classStore.updateClassStatus(classId, 'Cancelled')
+        
+        showSnackbar(`Đã hủy lớp cũ và tự động chuyển học viên sang lớp VIP mới: ${vipFormData.value.className} (${vipFormData.value.totalSessions} buổi)`, 'success')
+      } catch (err) {
+        if (newClassId) {
+          try {
+            await classStore.deleteClass(newClassId)
+          } catch (rollbackError) {
+            console.error('Failed to rollback class creation:', rollbackError)
+          }
+        }
+        throw err
+      }
     }
 
     // Close dialog and refresh data
