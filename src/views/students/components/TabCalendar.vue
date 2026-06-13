@@ -15,18 +15,33 @@
         </div>
 
         <!-- Week Switcher Controls -->
-        <div class="flex items-center gap-1.5 bg-white/60 border border-outline-variant/30 px-3 py-1.5 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+        <div class="flex flex-wrap items-center gap-2 bg-white/60 border border-outline-variant/30 px-3 py-2 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
           <button @click="prevWeek" class="w-8 h-8 rounded-lg hover:bg-primary-container/5 text-primary-container flex items-center justify-center cursor-pointer transition-colors active:scale-90" title="Tuần trước">
             <span class="material-symbols-outlined text-[20px]">chevron_left</span>
           </button>
+          
+          <div class="flex items-center gap-1.5 bg-primary-container/[0.03] border border-outline-variant/20 rounded-lg px-2 py-1 hover:bg-primary-container/[0.07] transition-all cursor-pointer">
+            <span class="material-symbols-outlined text-[16px] text-primary-container">event</span>
+            <input 
+              type="date" 
+              v-model="selectedDatePickerDate" 
+              class="bg-transparent text-[11px] font-bold text-primary-container outline-none border-none cursor-pointer font-mono p-0"
+              style="color-scheme: light;"
+              title="Chọn ngày"
+            />
+          </div>
+
           <span class="text-[12px] font-bold text-primary-container px-2 min-w-[170px] text-center tracking-wide font-mono">
             {{ formattedWeekRange }}
           </span>
+
           <button @click="nextWeek" class="w-8 h-8 rounded-lg hover:bg-primary-container/5 text-primary-container flex items-center justify-center cursor-pointer transition-colors active:scale-90" title="Tuần sau">
             <span class="material-symbols-outlined text-[20px]">chevron_right</span>
           </button>
-          <button @click="goToToday" class="ml-1 px-3 py-1 rounded-lg bg-primary-container text-white text-[10px] font-extrabold uppercase hover:bg-primary transition-colors cursor-pointer active:scale-95">
-            Hiện tại
+
+          <button @click="goToToday" class="ml-1 px-3 py-1.5 rounded-lg bg-primary-container text-white text-[10px] font-extrabold uppercase hover:bg-primary transition-colors cursor-pointer active:scale-95 flex items-center gap-1">
+            <span class="material-symbols-outlined text-[12px] text-white">today</span>
+            {{ todayLabel }}
           </button>
         </div>
 
@@ -58,27 +73,45 @@
             <div
               v-for="s in getSchedulesForDay(day.value)"
               :key="s.scheduleId"
-              class="p-3 rounded-xl border border-primary-container/10 bg-white/80 hover:bg-white transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 duration-200 flex flex-col justify-between"
+              class="p-3 rounded-xl border transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 duration-200 flex flex-col justify-between relative overflow-hidden"
+              :class="[
+                isConflicted(s)
+                  ? 'border-blue-500/30 bg-blue-500/[0.08] hover:bg-blue-500/[0.14]'
+                  : 'border-primary-container/10 bg-white/80 hover:bg-white'
+              ]"
             >
+              <!-- Alert indicator badge for conflict -->
+              <div v-if="isConflicted(s)" class="absolute right-2 top-2 flex items-center gap-0.5 text-blue-600 text-[8px] font-black uppercase tracking-wider bg-blue-500/10 px-1 rounded border border-blue-500/20 z-10">
+                <span class="material-symbols-outlined text-[9px] animate-pulse">warning</span>
+                Trùng
+              </div>
+
               <div>
-                <div class="flex items-center justify-between gap-1.5">
-                  <div class="text-[11px] font-extrabold text-primary leading-tight line-clamp-1 flex-1" :title="s.className">
+                <div class="flex items-center justify-between gap-1.5 pr-8">
+                  <div 
+                    class="text-[11px] font-extrabold leading-tight line-clamp-1 flex-1" 
+                    :class="isConflicted(s) ? 'text-blue-600' : 'text-primary'"
+                    :title="s.className"
+                  >
                     {{ s.className }}
                   </div>
-                  <span :class="[getSessionClass(s.startTime), 'px-1 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider shrink-0']">
+                  <span 
+                    v-if="!isConflicted(s)"
+                    :class="[getSessionClass(s.startTime), 'px-1 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider shrink-0']"
+                  >
                     {{ getSessionLabel(s.startTime) }}
                   </span>
                 </div>
-                <div class="text-[10px] text-on-surface-variant leading-snug line-clamp-2 mt-1" :title="s.courseName">
+                <div class="text-[10px] leading-snug line-clamp-2 mt-1" :class="isConflicted(s) ? 'text-blue-600/80' : 'text-on-surface-variant'" :title="s.courseName">
                   {{ s.courseName }}
                 </div>
               </div>
-              <div class="mt-2.5 pt-2 border-t border-outline-variant/30 flex flex-col gap-1">
-                <div class="text-body-xs font-bold text-on-tertiary-container flex items-center gap-1">
-                  <span class="material-symbols-outlined text-[13px] text-on-tertiary-container">schedule</span>
+              <div class="mt-2.5 pt-2 border-t flex flex-col gap-1" :class="isConflicted(s) ? 'border-blue-500/20' : 'border-outline-variant/30'">
+                <div class="text-body-xs font-bold flex items-center gap-1" :class="isConflicted(s) ? 'text-blue-600' : 'text-on-tertiary-container'">
+                  <span class="material-symbols-outlined text-[13px]" :class="isConflicted(s) ? 'text-blue-600' : 'text-on-tertiary-container'">schedule</span>
                   {{ s.startTime.substring(0, 5) }} - {{ s.endTime.substring(0, 5) }}
                 </div>
-                <div class="text-[9px] font-bold text-on-surface-variant/80 flex items-center gap-1">
+                <div class="text-[9px] font-bold flex items-center gap-1" :class="isConflicted(s) ? 'text-blue-600/70' : 'text-on-surface-variant/80'">
                   <span class="material-symbols-outlined text-[12px]">location_on</span>
                   {{ s.room }}
                 </div>
@@ -116,23 +149,41 @@
             <div
               v-for="s in getSchedulesForDay(day.value)"
               :key="s.scheduleId"
-              class="p-4 rounded-xl border border-primary-container/10 bg-white/80 shadow-sm flex items-center justify-between gap-3 hover:bg-white transition-colors"
+              class="p-4 rounded-xl border shadow-sm flex items-center justify-between gap-3 transition-colors relative overflow-hidden"
+              :class="[
+                isConflicted(s)
+                  ? 'border-blue-500/30 bg-blue-500/[0.08] hover:bg-blue-500/[0.14]'
+                  : 'border-primary-container/10 bg-white/80 hover:bg-white'
+              ]"
             >
               <div class="space-y-1">
-                <div class="text-body-sm font-bold text-primary-container flex items-center gap-2">
+                <div class="text-body-sm font-bold flex items-center gap-2" :class="isConflicted(s) ? 'text-blue-600' : 'text-primary-container'">
                   {{ s.className }}
-                  <span :class="[getSessionClass(s.startTime), 'px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider shrink-0']">
+                  <span 
+                    v-if="isConflicted(s)" 
+                    class="px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider bg-blue-500/10 text-blue-600 border border-blue-500/25 flex items-center gap-0.5"
+                  >
+                    <span class="material-symbols-outlined text-[9px] animate-pulse">warning</span>
+                    Trùng lịch
+                  </span>
+                  <span 
+                    v-else
+                    :class="[getSessionClass(s.startTime), 'px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider shrink-0']"
+                  >
                     {{ getSessionLabel(s.startTime) }}
                   </span>
                 </div>
-                <div class="text-body-xs text-on-surface-variant/80 font-medium">{{ s.courseName }}</div>
-                <div class="text-body-xs text-on-surface-variant flex items-center gap-1.5 mt-1">
+                <div class="text-body-xs font-medium" :class="isConflicted(s) ? 'text-blue-600/80' : 'text-on-surface-variant/80'">{{ s.courseName }}</div>
+                <div class="text-body-xs flex items-center gap-1.5 mt-1" :class="isConflicted(s) ? 'text-blue-600/70' : 'text-on-surface-variant'">
                   <span class="material-symbols-outlined text-[14px]">location_on</span>
                   Phòng: {{ s.room }}
                 </div>
               </div>
               <div class="text-right shrink-0">
-                <span class="inline-block px-3 py-1.5 bg-on-tertiary-container/10 text-on-tertiary-container text-body-xs font-bold rounded-lg">
+                <span 
+                  class="inline-block px-3 py-1.5 text-body-xs font-bold rounded-lg"
+                  :class="isConflicted(s) ? 'bg-blue-500/15 text-blue-600' : 'bg-on-tertiary-container/10 text-on-tertiary-container'"
+                >
                   {{ s.startTime.substring(0, 5) }} - {{ s.endTime.substring(0, 5) }}
                 </span>
               </div>
@@ -181,6 +232,25 @@ function nextWeek() {
 function goToToday() {
   currentDate.value = new Date()
 }
+
+const selectedDatePickerDate = computed({
+  get() {
+    const d = currentDate.value
+    const formatNum = (num) => String(num).padStart(2, '0')
+    return `${d.getFullYear()}-${formatNum(d.getMonth() + 1)}-${formatNum(d.getDate())}`
+  },
+  set(val) {
+    if (val) {
+      currentDate.value = new Date(val)
+    }
+  }
+})
+
+const todayLabel = computed(() => {
+  const today = new Date()
+  const formatNum = (num) => String(num).padStart(2, '0')
+  return `Hôm nay: ${formatNum(today.getDate())}/${formatNum(today.getMonth() + 1)}/${today.getFullYear()}`
+})
 
 const currentWeekRange = computed(() => {
   const today = new Date(currentDate.value)
@@ -255,5 +325,20 @@ const combinedSchedules = computed(() => {
 
 function getSchedulesForDay(dayValue) {
   return combinedSchedules.value.filter(s => s.dayOfWeek === dayValue)
+}
+
+function isConflicted(schedule) {
+  const sameDaySchedules = combinedSchedules.value.filter(s => 
+    s.dayOfWeek === schedule.dayOfWeek && 
+    s !== schedule && 
+    s.scheduleId !== schedule.scheduleId
+  )
+  return sameDaySchedules.some(s => {
+    const startA = schedule.startTime
+    const endA = schedule.endTime
+    const startB = s.startTime
+    const endB = s.endTime
+    return startA < endB && startB < endA
+  })
 }
 </script>

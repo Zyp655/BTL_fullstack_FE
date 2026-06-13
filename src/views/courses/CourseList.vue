@@ -186,16 +186,19 @@
                   <span class="text-on-surface-variant font-medium">Học phí:</span>
                   <span class="font-bold text-on-tertiary-container">{{ formatCurrency(course.fee) }}</span>
                 </div>
-                <div v-if="authStore.isTeacher || getCourseStudentCount(course.courseId) === 0" class="flex justify-between items-center text-body-sm">
-                  <template v-if="authStore.isTeacher">
-                    <span class="text-on-surface-variant font-medium">Số học viên:</span>
-                    <span class="text-primary-container font-bold">{{ getCourseStudentCount(course.courseId) }} học viên</span>
-                  </template>
-                  <template v-else>
-                    <span class="text-on-surface-variant font-medium">Chờ ghép lớp:</span>
-                    <span class="text-on-tertiary-container font-bold">{{ getQueueCount(course.courseId) }}/5 học viên</span>
-                  </template>
+                <!-- For teachers, show total students in their classes -->
+                <div v-if="authStore.isTeacher" class="flex justify-between items-center text-body-sm">
+                  <span class="text-on-surface-variant font-medium">Số học viên:</span>
+                  <span class="text-primary-container font-bold">{{ getCourseStudentCount(course.courseId) }} học viên</span>
                 </div>
+                
+                <!-- For students and admins, show waitlist queue status -->
+                <div v-if="!authStore.isTeacher" class="flex justify-between items-center text-body-sm">
+                  <span class="text-on-surface-variant font-medium">Chờ ghép lớp:</span>
+                  <span class="text-on-tertiary-container font-bold">{{ getQueueCount(course.courseId) }}/5 học viên</span>
+                </div>
+
+                <!-- For admins, show total students studying across all active classes -->
                 <div v-if="authStore.isAdmin" class="flex justify-between items-center text-body-sm">
                   <span class="text-on-surface-variant font-medium">Số học viên đang học:</span>
                   <span class="text-primary-container font-bold">{{ getCourseStudentCount(course.courseId) }} học viên</span>
@@ -270,7 +273,7 @@
           </div>
 
           <!-- Dialog Body -->
-          <div class="p-6 space-y-4">
+          <div class="p-6 space-y-4 overflow-y-auto max-h-[65vh]">
             <!-- Course Name -->
             <div class="space-y-1">
               <label class="text-body-sm font-semibold text-primary">Tên môn học *</label>
@@ -298,7 +301,8 @@
               <label class="text-body-sm font-semibold text-primary">Ảnh bìa môn học</label>
               
               <!-- Presets Grid -->
-              <div class="grid grid-cols-4 gap-2">
+              <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                <!-- Preset Foreign Language -->
                 <button
                   type="button"
                   @click="selectPresetImage('preset_foreign_language')"
@@ -313,6 +317,7 @@
                   </div>
                 </button>
 
+                <!-- Preset IT -->
                 <button
                   type="button"
                   @click="selectPresetImage('preset_it')"
@@ -327,6 +332,7 @@
                   </div>
                 </button>
 
+                <!-- Preset Skills -->
                 <button
                   type="button"
                   @click="selectPresetImage('preset_skills')"
@@ -341,6 +347,37 @@
                   </div>
                 </button>
 
+                <!-- Preset Art -->
+                <button
+                  type="button"
+                  @click="selectPresetImage('preset_art')"
+                  :class="[formData.imageUrl === 'preset_art' ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant/30']"
+                  class="border rounded-lg overflow-hidden h-14 relative focus:outline-none cursor-pointer hover:border-primary transition-all"
+                  title="Mỹ thuật & Thiết kế"
+                >
+                  <img :src="artImg" class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-black/10 hover:bg-transparent transition-colors"></div>
+                  <div v-if="formData.imageUrl === 'preset_art'" class="absolute right-1 top-1 bg-primary text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow">
+                    <span class="material-symbols-outlined text-[10px] font-bold">check</span>
+                  </div>
+                </button>
+
+                <!-- Preset Science -->
+                <button
+                  type="button"
+                  @click="selectPresetImage('preset_science')"
+                  :class="[formData.imageUrl === 'preset_science' ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant/30']"
+                  class="border rounded-lg overflow-hidden h-14 relative focus:outline-none cursor-pointer hover:border-primary transition-all"
+                  title="Khoa học & Toán"
+                >
+                  <img :src="scienceImg" class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-black/10 hover:bg-transparent transition-colors"></div>
+                  <div v-if="formData.imageUrl === 'preset_science'" class="absolute right-1 top-1 bg-primary text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow">
+                    <span class="material-symbols-outlined text-[10px] font-bold">check</span>
+                  </div>
+                </button>
+
+                <!-- Preset Default -->
                 <button
                   type="button"
                   @click="selectPresetImage('preset_default')"
@@ -368,17 +405,6 @@
                     <span class="material-symbols-outlined text-[20px]">upload_file</span>
                     Tải ảnh từ máy...
                   </button>
-                  
-                  <!-- Custom URL Input -->
-                  <div class="relative flex-1">
-                    <input
-                      v-model="customImageUrl"
-                      @input="onCustomImageUrlInput"
-                      class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all"
-                      placeholder="Hoặc nhập Link ảnh tùy chỉnh bên ngoài..."
-                      type="text"
-                    />
-                  </div>
                 </div>
 
                 <!-- Preview of uploaded/custom image -->
@@ -719,7 +745,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject } from 'vue'
+import { ref, computed, onMounted, inject, watch, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCourseStore, useAuthStore, useStudentStore, useCategoryStore, useClassStore } from '../../stores'
 import api from '../../services/api'
@@ -727,6 +753,8 @@ import foreignLanguageImg from '../../assets/course_foreign_language.png'
 import itImg from '../../assets/course_it.png'
 import skillsImg from '../../assets/course_skills.png'
 import defaultImg from '../../assets/course_default.png'
+import artImg from '../../assets/course_art.png'
+import scienceImg from '../../assets/course_science.png'
 
 const store = useCourseStore()
 
@@ -734,6 +762,8 @@ function getCourseImage(imageUrl, cat) {
   if (imageUrl === 'preset_foreign_language') return foreignLanguageImg
   if (imageUrl === 'preset_it') return itImg
   if (imageUrl === 'preset_skills') return skillsImg
+  if (imageUrl === 'preset_art') return artImg
+  if (imageUrl === 'preset_science') return scienceImg
   if (imageUrl === 'preset_default') return defaultImg
   
   if (imageUrl && imageUrl.trim().length > 0 && !imageUrl.startsWith('preset_')) {
@@ -820,7 +850,7 @@ const courseImageInput = ref(null)
 
 const isCustomImageActive = computed(() => {
   const val = formData.value.imageUrl
-  return val && !['preset_foreign_language', 'preset_it', 'preset_skills', 'preset_default'].includes(val)
+  return val && !['preset_foreign_language', 'preset_it', 'preset_skills', 'preset_art', 'preset_science', 'preset_default'].includes(val)
 })
 
 function onCustomImageUrlInput() {
@@ -973,7 +1003,7 @@ function openCreateDialog() {
 function openEditDialog(item) {
   isEdit.value = true
   formData.value = { ...item }
-  const presets = ['preset_foreign_language', 'preset_it', 'preset_skills', 'preset_default']
+  const presets = ['preset_foreign_language', 'preset_it', 'preset_skills', 'preset_art', 'preset_science', 'preset_default']
   if (presets.includes(item.imageUrl) || (item.imageUrl && item.imageUrl.startsWith('data:'))) {
     customImageUrl.value = ''
   } else {
@@ -1288,6 +1318,19 @@ onMounted(async () => {
   await fetchData()
   await fetchQueueStatuses()
   await fetchCurrentStudentProfile()
+})
+
+// Watch any active dialog to block body scroll
+watch([dialog, deleteDialog, enrollQueueDialog, vipLaunchDialog], ([d, del, eq, vip]) => {
+  if (d || del || eq || vip) {
+    document.body.style.overflow = 'hidden'
+  } else {
+    document.body.style.overflow = ''
+  }
+})
+
+onUnmounted(() => {
+  document.body.style.overflow = ''
 })
 </script>
 

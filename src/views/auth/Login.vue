@@ -52,16 +52,16 @@
             <div class="relative group">
               <input 
                 v-model="username"
-                class="peer w-full bg-slate-50/50 border border-slate-300 rounded-lg px-4 pt-6 pb-2 text-body-lg font-body-lg text-on-surface placeholder-transparent focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 hover:bg-slate-50/85 focus:bg-white transition-all shadow-inner" 
+                class="floating-input peer w-full bg-slate-50/50 border border-slate-300 rounded-lg px-4 pt-6 pb-2 text-body-lg font-body-lg text-on-surface focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 hover:bg-slate-50/85 focus:bg-white transition-all shadow-inner" 
                 id="username" 
                 name="username" 
-                placeholder="Tên đăng nhập / Email" 
+                placeholder=" " 
                 required 
                 type="text"
                 @input="errors.username = ''"
               />
               <label 
-                class="absolute left-4 top-2 text-label-caps font-label-caps text-on-surface-variant transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-body-lg peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-slate-400 peer-focus:top-2 peer-focus:text-label-caps peer-focus:font-label-caps peer-focus:text-blue-600 pointer-events-none" 
+                class="floating-label absolute left-4 text-slate-400 text-body-lg transition-all pointer-events-none" 
                 for="username"
               >
                 Tên đăng nhập / Email
@@ -77,15 +77,15 @@
               <input 
                 v-model="password"
                 :type="passwordVisible ? 'text' : 'password'"
-                class="peer w-full bg-slate-50/50 border border-slate-300 rounded-lg pl-4 pr-12 pt-6 pb-2 text-body-lg font-body-lg text-on-surface placeholder-transparent focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 hover:bg-slate-50/85 focus:bg-white transition-all shadow-inner" 
+                class="floating-input peer w-full bg-slate-50/50 border border-slate-300 rounded-lg pl-4 pr-12 pt-6 pb-2 text-body-lg font-body-lg text-on-surface focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 hover:bg-slate-50/85 focus:bg-white transition-all shadow-inner" 
                 id="password" 
                 name="password" 
-                placeholder="Mật khẩu" 
+                placeholder=" " 
                 required 
                 @input="errors.password = ''"
               />
               <label 
-                class="absolute left-4 top-2 text-label-caps font-label-caps text-on-surface-variant transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-body-lg peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-slate-400 peer-focus:top-2 peer-focus:text-label-caps peer-focus:font-label-caps peer-focus:text-blue-600 pointer-events-none" 
+                class="floating-label absolute left-4 text-slate-400 text-body-lg transition-all pointer-events-none" 
                 for="password"
               >
                 Mật khẩu
@@ -481,5 +481,28 @@ input:-webkit-autofill:active {
   -webkit-text-fill-color: #191c1d !important;
   border: 1px solid #cbd5e1 !important;
   transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Floating Label CSS Engine */
+.floating-label {
+  top: 18px;
+  font-size: 16px;
+  color: #94a3b8;
+}
+
+/* Float states: focus, non-empty, autofilled */
+.floating-input:focus ~ .floating-label,
+.floating-input:not(:placeholder-shown) ~ .floating-label,
+.floating-input:-webkit-autofill ~ .floating-label {
+  top: 6px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #7024c4 !important; /* matches tertiary theme color */
+}
+
+/* Normal filled/autofilled but unfocused state is slate color */
+.floating-input:not(:focus):not(:placeholder-shown) ~ .floating-label,
+.floating-input:not(:focus):-webkit-autofill ~ .floating-label {
+  color: #64748b !important;
 }
 </style>

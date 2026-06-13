@@ -85,25 +85,6 @@
             Hoàn tất
           </span>
         </div>
-
-        <!-- Transaction list for this payment -->
-        <div class="p-4 border-t border-white/40 bg-primary-container/[0.01]">
-          <button
-            @click="openDetailModal(pay)"
-            class="w-full flex items-center justify-between text-body-sm font-semibold text-primary-container hover:text-primary-container/80 transition-colors cursor-pointer py-1"
-          >
-            <div class="flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-[18px]">history</span>
-              Chi tiết đóng tiền
-            </div>
-            <div class="flex items-center gap-1 text-body-xs text-on-surface-variant font-normal">
-              <span>Xem chi tiết</span>
-              <span class="material-symbols-outlined text-[18px]">
-                chevron_right
-              </span>
-            </div>
-          </button>
-        </div>
       </div>
     </div>
   </div>
@@ -455,11 +436,29 @@ function checkTransaction() {
   }, 2000)
 }
 
+
+const hasAutoOpened = ref(false)
+
 const props = defineProps({
-  payments: { type: Array, required: true }
+  payments: { type: Array, required: true },
+  autoPayCourseName: { type: String, default: null },
+  autoPayCourseId: { type: [String, Number], default: null }
 })
 
 watch(() => props.payments, (newPayments) => {
+  // Auto-open QR modal if matched unpaid payment found
+  if (newPayments && newPayments.length > 0 && !hasAutoOpened.value && (props.autoPayCourseName || props.autoPayCourseId)) {
+    const matchingPayment = newPayments.find(p => 
+      p.status !== 'HoanTat' && 
+      ((props.autoPayCourseName && p.courseName === props.autoPayCourseName) ||
+       (props.autoPayCourseId && String(p.courseId) === String(props.autoPayCourseId)))
+    )
+    if (matchingPayment && !showQrModal.value && !activePayment.value) {
+      hasAutoOpened.value = true
+      openPaymentQr(matchingPayment)
+    }
+  }
+
   if (showQrModal.value && activePayment.value) {
     const updatedPayment = newPayments.find(p => p.paymentId === activePayment.value.paymentId)
     if (updatedPayment && updatedPayment.status === 'HoanTat') {
@@ -475,7 +474,7 @@ watch(() => props.payments, (newPayments) => {
       detailPayment.value = updatedPayment
     }
   }
-}, { deep: true })
+}, { immediate: true, deep: true })
 
 function formatDate(dateStr) {
   if (!dateStr) return '—'
