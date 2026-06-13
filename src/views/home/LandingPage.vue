@@ -92,18 +92,15 @@
         </div>
         
         <div class="flex-1 w-full max-w-2xl relative z-10 reveal reveal-fade-left">
-          <!-- Mockup with floating glass and 3D mouse tilt effects -->
+          <!-- Static premium Mockup card -->
           <div 
-            ref="mockupContainer"
-            @mousemove="handleTilt"
-            @mouseleave="resetTilt"
-            :style="tiltStyle"
-            class="relative rounded-2xl overflow-hidden shadow-xl border border-slate-200 bg-white/60 backdrop-blur-md p-2 shadow-blue-500/[0.03] group hover:border-slate-350 transition-all duration-500 hover:shadow-blue-500/[0.08]"
+            class="relative rounded-2xl overflow-hidden shadow-xl border border-slate-200 bg-white/60 backdrop-blur-md p-2 shadow-blue-500/[0.03] border-slate-300 hover:shadow-blue-500/[0.08] transition-shadow duration-300"
+            style="transform: perspective(1000px) rotateX(4deg) rotateY(-6deg) scale3d(1, 1, 1); transform-style: preserve-3d; backface-visibility: hidden;"
           >
             <div class="absolute inset-0 bg-gradient-to-tr from-blue-500/5 via-transparent to-sky-500/5 opacity-50 pointer-events-none"></div>
             <img 
               alt="Dashboard" 
-              class="w-full h-auto rounded-xl shadow-inner border border-slate-100 transition-transform duration-500" 
+              class="w-full h-auto rounded-xl shadow-inner border border-slate-100" 
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFGTE67V0VwVRVcE6c32UytIhoBeeDkY2BaxB9QI3zXLAD-WoUufa4aiFrHMQojjw5BkowZWXva1ONDooFBqMRkNDGzySry3I6XbrgB7IHXDdUvMcweqlIF1eHArn3IVlN2HC81whyjqPCAEzNaCLlZWdPpQw4K5ogkGNBAGL0yQ63AMkK4wxgqmT3_5mm5nljBh2Qjiom5_VlObetu-RLoho21wqHngK3dMpl8zYDR_KzJ7HKgUd-pQ6EwlhkwvrPhwhYOxOWLIyg"
             />
           </div>
@@ -351,41 +348,7 @@ const toggleMobileMenu = () => {
 const words = ['đào tạo toàn diện', 'vận hành tối ưu', 'học vụ thông minh']
 const currentWordIndex = ref(0)
 
-// 3D Mockup Tilt variables
-const mockupContainer = ref(null)
-const tiltStyle = ref({
-  transform: 'perspective(1000px) rotateX(4deg) rotateY(-6deg) scale3d(1, 1, 1)',
-  transition: 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)'
-})
-
-function handleTilt(e) {
-  const el = mockupContainer.value
-  if (!el) return
-  
-  const rect = el.getBoundingClientRect()
-  const x = e.clientX - rect.left
-  const y = e.clientY - rect.top
-  
-  const xc = rect.width / 2
-  const yc = rect.height / 2
-  const dx = (x - xc) / xc
-  const dy = (y - yc) / yc
-  
-  const rotateX = (-dy * 10).toFixed(2)
-  const rotateY = (dx * 10).toFixed(2)
-  
-  tiltStyle.value = {
-    transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`,
-    transition: 'transform 0.1s cubic-bezier(0.25, 1, 0.5, 1)'
-  }
-}
-
-function resetTilt() {
-  tiltStyle.value = {
-    transform: 'perspective(1000px) rotateX(4deg) rotateY(-6deg) scale3d(1, 1, 1)',
-    transition: 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)'
-  }
-}
+// Static Mockup configurations (no reactive animations)
 
 onMounted(() => {
   // Intersection Observer for Scroll Reveal
@@ -415,15 +378,23 @@ onMounted(() => {
   background-color: #fbf9f4; /* Organic Soft-Tech background */
   background-image: 
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E"),
-    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.05) 0%, transparent 50%);
+    radial-gradient(circle at 10% 10%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 90% 90%, rgba(99, 102, 241, 0.06) 0%, transparent 50%);
   background-attachment: fixed;
+  background-size: 200% 200%;
+  animation: bg-gradient-shift 22s ease infinite alternate;
 }
 
-/* 3D Mockup Container Base Angle */
-[ref="mockupContainer"] {
-  transform-style: preserve-3d;
-  backface-visibility: hidden;
+@keyframes bg-gradient-shift {
+  0% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  100% {
+    background-position: 50% 0%;
+  }
 }
 
 /* Background Floating Particles */
@@ -433,32 +404,42 @@ onMounted(() => {
   overflow: hidden;
   pointer-events: none;
   z-index: 0;
+  height: 100%;
 }
 
 .particle {
   position: absolute;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 70%);
-  filter: blur(4px);
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.14) 0%, transparent 70%);
+  filter: blur(6px);
   pointer-events: none;
-  animation: float-up infinite linear alternate;
+  animation: float-drift infinite linear;
+  bottom: -150px;
 }
 
-.particle-1 { width: 100px; height: 100px; left: 8%; top: 22%; animation-duration: 14s; }
-.particle-2 { width: 80px; height: 80px; right: 12%; top: 32%; animation-duration: 16s; }
-.particle-3 { width: 120px; height: 120px; left: 22%; bottom: 12%; animation-duration: 18s; }
-.particle-4 { width: 90px; height: 90px; right: 28%; bottom: 22%; animation-duration: 15s; }
-.particle-5 { width: 70px; height: 70px; left: 42%; top: 12%; animation-duration: 22s; }
-.particle-6 { width: 110px; height: 110px; right: 4%; bottom: 48%; animation-duration: 17s; }
-.particle-7 { width: 60px; height: 60px; left: 4%; bottom: 42%; animation-duration: 13s; }
-.particle-8 { width: 100px; height: 100px; right: 38%; top: 58%; animation-duration: 19s; }
+.particle-1 { width: 100px; height: 100px; left: 8%; animation-duration: 26s; animation-delay: 0s; }
+.particle-2 { width: 80px; height: 80px; left: 35%; animation-duration: 32s; animation-delay: -5s; }
+.particle-3 { width: 120px; height: 120px; left: 65%; animation-duration: 38s; animation-delay: -12s; }
+.particle-4 { width: 90px; height: 90px; left: 88%; animation-duration: 29s; animation-delay: -3s; }
+.particle-5 { width: 70px; height: 70px; left: 22%; animation-duration: 34s; animation-delay: -18s; }
+.particle-6 { width: 110px; height: 110px; left: 50%; animation-duration: 28s; animation-delay: -8s; }
+.particle-7 { width: 60px; height: 60px; left: 78%; animation-duration: 24s; animation-delay: -15s; }
+.particle-8 { width: 100px; height: 100px; left: 93%; animation-duration: 33s; animation-delay: -22s; }
 
-@keyframes float-up {
+@keyframes float-drift {
   0% {
-    transform: translateY(0px) translateX(0px);
+    transform: translateY(0px) translateX(0px) scale(0.8);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.75;
+  }
+  85% {
+    opacity: 0.75;
   }
   100% {
-    transform: translateY(-40px) translateX(20px);
+    transform: translateY(-110vh) translateX(50px) scale(1.15);
+    opacity: 0;
   }
 }
 
