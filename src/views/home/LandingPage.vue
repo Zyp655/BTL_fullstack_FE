@@ -5,6 +5,11 @@
     <div class="ambient-orb orb-2"></div>
     <div class="ambient-orb orb-3"></div>
     
+    <!-- Background Floating Particles -->
+    <div class="floating-particles">
+      <div v-for="i in 8" :key="i" class="particle" :class="'particle-' + i"></div>
+    </div>
+    
     <!-- TopNavBar Component -->
     <nav class="bg-white/70 fixed top-0 w-full backdrop-blur-xl border-b border-slate-200/50 shadow-sm z-50 transition-all duration-300">
       <div class="flex justify-between items-center px-6 md:px-12 h-20 max-w-[1400px] mx-auto">
@@ -65,8 +70,12 @@
           </div>
           <h1 class="text-4xl md:text-5xl lg:text-6xl text-slate-900 leading-tight font-extrabold tracking-tight">
             Hệ thống quản lý <br/>
-            <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-sky-600 to-sky-500">
-              đào tạo toàn diện
+            <span class="inline-flex flex-col h-[1.2em] overflow-hidden relative select-none align-bottom py-1">
+              <span class="carousel-word-wrapper" :style="{ transform: `translateY(-${currentWordIndex * 100}%)` }">
+                <span v-for="word in words" :key="word" class="carousel-word bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-sky-600 to-sky-500 block">
+                  {{ word }}
+                </span>
+              </span>
             </span>
           </h1>
           <p class="text-lg text-slate-600 max-w-xl leading-relaxed">
@@ -83,8 +92,14 @@
         </div>
         
         <div class="flex-1 w-full max-w-2xl relative z-10 reveal reveal-fade-left">
-          <!-- Mockup with floating glass effects -->
-          <div class="relative rounded-2xl overflow-hidden shadow-xl border border-slate-200 bg-white/60 backdrop-blur-md p-2 shadow-blue-500/[0.03] group hover:border-slate-300 transition-all duration-500 hover:shadow-blue-500/[0.08] mockup-float">
+          <!-- Mockup with floating glass and 3D mouse tilt effects -->
+          <div 
+            ref="mockupContainer"
+            @mousemove="handleTilt"
+            @mouseleave="resetTilt"
+            :style="tiltStyle"
+            class="relative rounded-2xl overflow-hidden shadow-xl border border-slate-200 bg-white/60 backdrop-blur-md p-2 shadow-blue-500/[0.03] group hover:border-slate-350 transition-all duration-500 hover:shadow-blue-500/[0.08]"
+          >
             <div class="absolute inset-0 bg-gradient-to-tr from-blue-500/5 via-transparent to-sky-500/5 opacity-50 pointer-events-none"></div>
             <img 
               alt="Dashboard" 
@@ -332,7 +347,48 @@ const toggleMobileMenu = () => {
   mobileMenuOpen.value = !mobileMenuOpen.value
 }
 
+// Word Carousel variables
+const words = ['đào tạo toàn diện', 'vận hành tối ưu', 'học vụ thông minh']
+const currentWordIndex = ref(0)
+
+// 3D Mockup Tilt variables
+const mockupContainer = ref(null)
+const tiltStyle = ref({
+  transform: 'perspective(1000px) rotateX(4deg) rotateY(-6deg) scale3d(1, 1, 1)',
+  transition: 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)'
+})
+
+function handleTilt(e) {
+  const el = mockupContainer.value
+  if (!el) return
+  
+  const rect = el.getBoundingClientRect()
+  const x = e.clientX - rect.left
+  const y = e.clientY - rect.top
+  
+  const xc = rect.width / 2
+  const yc = rect.height / 2
+  const dx = (x - xc) / xc
+  const dy = (y - yc) / yc
+  
+  const rotateX = (-dy * 10).toFixed(2)
+  const rotateY = (dx * 10).toFixed(2)
+  
+  tiltStyle.value = {
+    transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`,
+    transition: 'transform 0.1s cubic-bezier(0.25, 1, 0.5, 1)'
+  }
+}
+
+function resetTilt() {
+  tiltStyle.value = {
+    transform: 'perspective(1000px) rotateX(4deg) rotateY(-6deg) scale3d(1, 1, 1)',
+    transition: 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)'
+  }
+}
+
 onMounted(() => {
+  // Intersection Observer for Scroll Reveal
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
@@ -346,6 +402,11 @@ onMounted(() => {
   document.querySelectorAll('.reveal').forEach((el) => {
     observer.observe(el)
   })
+
+  // Start word carousel interval
+  setInterval(() => {
+    currentWordIndex.value = (currentWordIndex.value + 1) % words.length
+  }, 3000)
 })
 </script>
 
@@ -359,12 +420,89 @@ onMounted(() => {
   background-attachment: fixed;
 }
 
+/* 3D Mockup Container Base Angle */
+[ref="mockupContainer"] {
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+
+/* Background Floating Particles */
+.floating-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 70%);
+  filter: blur(4px);
+  pointer-events: none;
+  animation: float-up infinite linear alternate;
+}
+
+.particle-1 { width: 100px; height: 100px; left: 8%; top: 22%; animation-duration: 14s; }
+.particle-2 { width: 80px; height: 80px; right: 12%; top: 32%; animation-duration: 16s; }
+.particle-3 { width: 120px; height: 120px; left: 22%; bottom: 12%; animation-duration: 18s; }
+.particle-4 { width: 90px; height: 90px; right: 28%; bottom: 22%; animation-duration: 15s; }
+.particle-5 { width: 70px; height: 70px; left: 42%; top: 12%; animation-duration: 22s; }
+.particle-6 { width: 110px; height: 110px; right: 4%; bottom: 48%; animation-duration: 17s; }
+.particle-7 { width: 60px; height: 60px; left: 4%; bottom: 42%; animation-duration: 13s; }
+.particle-8 { width: 100px; height: 100px; right: 38%; top: 58%; animation-duration: 19s; }
+
+@keyframes float-up {
+  0% {
+    transform: translateY(0px) translateX(0px);
+  }
+  100% {
+    transform: translateY(-40px) translateX(20px);
+  }
+}
+
+/* Word Carousel styling */
+.carousel-word-wrapper {
+  transition: transform 0.8s cubic-bezier(0.76, 0, 0.24, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.carousel-word {
+  height: 1.2em;
+  line-height: 1.2em;
+}
+
+/* Glass panel premium card hover shimmers */
 .glass-panel {
   background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-shadow: 0 4px 30px rgba(19, 51, 75, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.6);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-panel::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.35),
+    transparent
+  );
+  transition: all 0.7s ease-in-out;
+}
+
+.glass-panel:hover::after {
+  left: 150%;
 }
 
 .ambient-orb {
@@ -411,21 +549,6 @@ onMounted(() => {
   }
   100% {
     transform: translateY(20px) scale(0.95) rotate(-10deg);
-  }
-}
-
-.mockup-float {
-  animation: float-mockup 6s infinite ease-in-out;
-}
-
-@keyframes float-mockup {
-  0%, 100% {
-    transform: translateY(0px) rotate-y(-6deg) rotate-x(4deg);
-    box-shadow: 0 25px 50px -12px rgba(59, 130, 246, 0.08);
-  }
-  50% {
-    transform: translateY(-15px) rotate-y(-2deg) rotate-x(2deg);
-    box-shadow: 0 35px 60px -10px rgba(59, 130, 246, 0.12);
   }
 }
 

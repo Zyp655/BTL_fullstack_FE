@@ -46,13 +46,36 @@
 
       <!-- Courses Grid -->
       <div v-else class="space-y-4">
+        <!-- Search bar -->
+        <div v-if="courses.length > 0" class="flex items-center gap-4 justify-between bg-white/70 backdrop-blur-[20px] p-4 rounded-xl border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)]">
+          <div class="relative flex-1 max-w-md">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+            <input
+              v-model="searchQuery"
+              class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg pl-10 pr-10 py-2 text-body-sm text-primary placeholder-on-surface-variant/50 focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all"
+              placeholder="Tìm kiếm môn học theo tên hoặc mô tả..."
+              type="text"
+            />
+            <button
+              v-if="searchQuery"
+              @click="searchQuery = ''"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer flex items-center justify-center w-6 h-6 rounded-full hover:bg-primary-container/10"
+            >
+              <span class="material-symbols-outlined text-[16px]">close</span>
+            </button>
+          </div>
+        </div>
+
         <div v-if="courses.length === 0" class="bg-white/70 backdrop-blur-[20px] p-8 text-center rounded-xl border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] text-on-surface-variant">
           Hiện tại trung tâm chưa mở môn học nào.
+        </div>
+        <div v-else-if="filteredCourses.length === 0" class="bg-white/70 backdrop-blur-[20px] p-8 text-center rounded-xl border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] text-on-surface-variant">
+          Không tìm thấy môn học nào khớp với từ khóa tìm kiếm.
         </div>
 
         <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
           <div
-            v-for="course in courses"
+            v-for="course in filteredCourses"
             :key="course.courseId"
             class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl overflow-hidden flex flex-col justify-between group hover:-translate-y-1 hover:shadow-md transition-all duration-300 relative cursor-pointer"
           >
@@ -74,6 +97,16 @@
                   {{ getCategoryLabel(course.category) }}
                 </span>
               </div>
+
+              <!-- Floating Info Button in top-right -->
+              <button
+                @click.stop="openCourseDetail(course)"
+                type="button"
+                class="absolute right-3 top-3 w-8 h-8 rounded-full bg-white/80 hover:bg-white text-primary-container flex items-center justify-center shadow-md border border-white/50 backdrop-blur-sm transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer z-10"
+                title="Xem chi tiết môn học"
+              >
+                <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">info</span>
+              </button>
             </div>
 
             <!-- Card Content Body -->
@@ -143,7 +176,7 @@
                   v-else
                   @click="openEnrollConfirmation(course)"
                   :disabled="submittingEnroll"
-                  class="w-full py-2 rounded-lg bg-primary-container text-white font-semibold text-body-sm hover:bg-primary transition-colors active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5"
+                  class="w-full py-2 rounded-lg bg-sky-500 text-white font-semibold text-body-sm hover:bg-sky-600 transition-colors active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   <span class="material-symbols-outlined text-[16px]">how_to_reg</span>
                   Đăng ký vào hàng chờ
@@ -190,10 +223,101 @@
               <button
                 @click="submitEnrollment"
                 :disabled="submittingEnroll"
-                class="px-4 py-2 rounded-lg bg-primary-container text-white font-semibold text-body-sm hover:bg-primary transition-colors disabled:opacity-50 flex items-center gap-1 cursor-pointer"
+                class="px-4 py-2 rounded-lg bg-sky-500 text-white font-semibold text-body-sm hover:bg-sky-600 transition-colors disabled:opacity-50 flex items-center gap-1 cursor-pointer"
               >
                 <span v-if="submittingEnroll" class="animate-spin w-4.5 h-4.5 border-2 border-on-primary border-t-transparent rounded-full mr-1"></span>
                 Đăng ký ghi danh
+              </button>
+            </div>
+          </div>
+        </div>
+      </teleport>
+
+      <!-- Course Detail Modal -->
+      <teleport to="body">
+        <div v-if="detailModal" class="fixed inset-0 glass-backdrop z-[9999] flex items-center justify-center p-4">
+          <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-2xl shadow-[0_20px_40px_rgba(0,31,63,0.12)] max-w-lg w-full overflow-hidden animate-scale-in flex flex-col">
+            <!-- Modal Banner -->
+            <div class="h-48 w-full overflow-hidden relative">
+              <img
+                :src="getCourseImage(selectedCourseForDetail?.imageUrl, selectedCourseForDetail?.category)"
+                class="w-full h-full object-cover"
+                alt="Course cover image"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+              
+              <!-- Category Badge inside Banner -->
+              <div class="absolute left-6 bottom-4 flex items-center gap-2">
+                <div :class="[getCategoryBgClass(selectedCourseForDetail?.category), 'w-9 h-9 rounded-xl flex items-center justify-center border shadow-md bg-white/90']">
+                  <span class="material-symbols-outlined text-[20px]">{{ getCategoryIcon(selectedCourseForDetail?.category) }}</span>
+                </div>
+                <span class="text-white text-[15px] font-bold drop-shadow-md">
+                  {{ getCategoryLabel(selectedCourseForDetail?.category) }}
+                </span>
+              </div>
+
+              <!-- Close Button -->
+              <button
+                @click="detailModal = false"
+                class="absolute right-4 top-4 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <span class="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="p-6 space-y-5">
+              <div class="space-y-1">
+                <div class="flex justify-between items-start gap-3 flex-wrap">
+                  <h3 class="font-headline-sm text-headline-sm text-primary-container font-bold">{{ selectedCourseForDetail?.courseName }}</h3>
+                  <span class="bg-primary-container/10 text-primary-container border border-primary-container/20 rounded-full px-3 py-1 text-body-sm font-semibold">
+                    Trình độ: {{ getLevelLabel(selectedCourseForDetail?.level) }}
+                  </span>
+                </div>
+                <p class="text-body-sm text-on-surface-variant font-medium">Mã môn học: <span class="font-mono text-primary">CS-{{ String(selectedCourseForDetail?.courseId).padStart(4, '0') }}</span></p>
+              </div>
+
+              <!-- Details Grid -->
+              <div class="grid grid-cols-2 gap-4 bg-primary-container/[0.03] p-4 rounded-xl border border-primary-container/5">
+                <div class="space-y-0.5">
+                  <div class="text-[11px] font-bold text-on-surface-variant/70 uppercase">Tổng số buổi học</div>
+                  <div class="text-body-lg font-bold text-primary-container flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[20px] text-on-tertiary-container">menu_book</span>
+                    {{ selectedCourseForDetail?.totalSessions }} buổi
+                  </div>
+                </div>
+                <div class="space-y-0.5">
+                  <div class="text-[11px] font-bold text-on-surface-variant/70 uppercase">Học phí khóa học</div>
+                  <div class="text-body-lg font-bold text-on-tertiary-container flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[20px] text-on-tertiary-container">payments</span>
+                    {{ formatCurrency(selectedCourseForDetail?.fee) }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Detailed Description -->
+              <div class="space-y-2">
+                <h4 class="text-body-md font-bold text-primary-container flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[18px]">description</span>
+                  Mô tả môn học
+                </h4>
+                <div class="text-body-sm text-on-surface-variant leading-relaxed max-h-40 overflow-y-auto pr-1">
+                  {{ selectedCourseForDetail?.description || 'Chưa có mô tả chi tiết cho môn học này.' }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer Action -->
+            <div class="px-6 py-4 border-t border-white/40 flex justify-between items-center bg-white/20">
+              <!-- Waitlist Count if any -->
+              <div class="text-body-xs text-on-surface-variant font-medium">
+                Số học viên đang chờ ghép lớp: <strong class="text-on-tertiary-container">{{ getCourseQueueCount(selectedCourseForDetail?.courseId) }}</strong>
+              </div>
+              <button
+                @click="detailModal = false"
+                class="px-5 py-2.5 rounded-lg bg-primary-container text-white font-semibold text-body-sm hover:bg-primary transition-colors cursor-pointer active:scale-95 shadow-sm"
+              >
+                Đóng
               </button>
             </div>
           </div>
@@ -211,7 +335,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject, watch } from 'vue'
+import { ref, onMounted, inject, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore, useCourseStore } from '../../stores'
 import api from '../../services/api'
@@ -275,6 +399,29 @@ const studentQueueCourseIds = ref([])
 const enrollModal = ref(false)
 const selectedCourseToEnroll = ref(null)
 const submittingEnroll = ref(false)
+
+const searchQuery = ref('')
+const detailModal = ref(false)
+const selectedCourseForDetail = ref(null)
+
+const filteredCourses = computed(() => {
+  if (!searchQuery.value.trim()) return courses.value
+  const query = searchQuery.value.toLowerCase()
+  return courses.value.filter(c =>
+    c.courseName?.toLowerCase().includes(query) ||
+    c.description?.toLowerCase().includes(query)
+  )
+})
+
+function openCourseDetail(course) {
+  selectedCourseForDetail.value = course
+  detailModal.value = true
+}
+
+function getLevelLabel(level) {
+  const map = { Beginner: 'Cơ bản', Intermediate: 'Trung cấp', Advanced: 'Nâng cao' }
+  return map[level] || level
+}
 
 async function loadStudentsList() {
   try {

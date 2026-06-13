@@ -298,7 +298,6 @@ const navItems = computed(() => {
         children: [
           { title: 'Lớp học & Lịch học', icon: 'school', path: '/student-portal', query: { tab: 'classes' } },
           { title: 'Bảng điểm của tôi', icon: 'history_edu', path: '/student-portal', query: { tab: 'grades' } },
-          { title: 'Nhật ký chuyên cần', icon: 'how_to_reg', path: '/student-portal', query: { tab: 'attendance' } },
           { title: 'Học phí & Thanh toán', icon: 'receipt_long', path: '/student-portal', query: { tab: 'payments' } },
           { title: 'Ví bảo lưu', icon: 'account_balance_wallet', path: '/student-portal', query: { tab: 'credits' } }
         ]
@@ -321,7 +320,6 @@ const navItems = computed(() => {
       children: [
         { title: 'Lớp học & Lịch học', icon: 'school', path: '/student-portal', query: { tab: 'classes' } },
         { title: 'Bảng điểm của tôi', icon: 'history_edu', path: '/student-portal', query: { tab: 'grades' } },
-        { title: 'Nhật ký chuyên cần', icon: 'how_to_reg', path: '/student-portal', query: { tab: 'attendance' } },
         { title: 'Học phí & Thanh toán', icon: 'receipt_long', path: '/student-portal', query: { tab: 'payments' } },
         { title: 'Ví bảo lưu', icon: 'account_balance_wallet', path: '/student-portal', query: { tab: 'credits' } }
       ]

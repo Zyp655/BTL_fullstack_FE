@@ -1,38 +1,24 @@
 <template>
   <div class="space-y-4">
-    <!-- Schedule Conflict Warning Banner -->
-    <div v-if="currentConflicts.length > 0" class="bg-error/10 text-error p-4 rounded-xl border border-error/20 flex flex-col gap-3 shadow-sm animate-scale-in">
-      <div class="flex items-center gap-2 font-bold text-body-lg">
-        <span class="material-symbols-outlined text-[24px]">warning</span>
-        Cảnh báo trùng lịch học!
-      </div>
-      <div class="space-y-3 text-body-sm font-semibold">
-        <div v-for="(conf, idx) in currentConflicts" :key="idx" class="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3 bg-white/40 border border-error/10 rounded-xl">
-          <div class="min-w-0">
-            • Lớp <strong class="text-primary-container">{{ conf.classA.className }}</strong> và lớp <strong class="text-primary-container">{{ conf.classB.className }}</strong> bị trùng lịch vào 
-            <strong>Thứ {{ formatDayOfWeek(conf.sessionA.dayOfWeek) }} ({{ conf.sessionA.startTime.substring(0,5) }} - {{ conf.sessionA.endTime.substring(0,5) }})</strong>.
-          </div>
-          <div class="flex flex-wrap items-center gap-2 shrink-0">
-            <button
-              @click="$emit('open-support-conflict', { targetClass: conf.classA, conflictClass: conf.classB })"
-              class="px-3 py-1.5 rounded-lg bg-error hover:bg-error/95 text-white font-semibold text-[12px] transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-sm"
-            >
-              <span class="material-symbols-outlined text-[16px]">sync_alt</span>
-              Đổi lớp {{ conf.classA.className }}
-            </button>
-            <button
-              @click="$emit('open-support-conflict', { targetClass: conf.classB, conflictClass: conf.classA })"
-              class="px-3 py-1.5 rounded-lg bg-error hover:bg-error/95 text-white font-semibold text-[12px] transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-sm"
-            >
-              <span class="material-symbols-outlined text-[16px]">sync_alt</span>
-              Đổi lớp {{ conf.classB.className }}
-            </button>
-          </div>
+    <!-- Compact Schedule Conflict Warning Banner -->
+    <div
+      v-if="currentConflicts.length > 0"
+      @click="$emit('switch-tab', 'conflicts')"
+      class="bg-error/10 hover:bg-error/15 text-error p-4 rounded-xl border border-error/20 flex items-center justify-between gap-3 shadow-sm cursor-pointer transition-colors group animate-scale-in"
+    >
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-[24px] text-error shrink-0 animate-pulse" style="font-variation-settings: 'FILL' 1;">warning</span>
+        <div>
+          <p class="font-bold text-body-md">Cảnh báo trùng lịch học!</p>
+          <p class="text-body-sm text-on-surface-variant font-medium">
+            Có <span class="text-error font-bold">{{ currentConflicts.length }}</span> cặp lớp học đang bị trùng lịch biểu.
+          </p>
         </div>
       </div>
-      <p class="text-body-xs font-semibold text-on-surface-variant">
-        Bạn bị trùng lịch học giữa các lớp. Hãy chọn đổi một trong hai lớp học bị trùng ở trên để gửi tin nhắn hỗ trợ đổi lớp tới Admin.
-      </p>
+      <div class="flex items-center gap-1.5 text-body-sm font-semibold text-error shrink-0 group-hover:translate-x-1 transition-transform">
+        Xem chi tiết và đổi lớp
+        <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
@@ -100,55 +86,154 @@
         </div>
       </div>
 
-      <!-- Schedule Viewer for selected class -->
-      <div class="space-y-3">
-        <h3 class="font-title-md text-body-lg font-semibold text-primary-container flex items-center gap-2">
-          <span class="material-symbols-outlined text-[20px] text-on-tertiary-container">calendar_today</span>
-          Lịch học chi tiết {{ selectedClass ? `— ${selectedClass.className}` : '' }}
-        </h3>
+      <!-- Details View: Schedule & Attendance for selected class -->
+      <div class="space-y-4">
+        <!-- 1. Schedule section -->
+        <div class="space-y-3">
+          <h3 class="font-title-md text-body-lg font-semibold text-primary-container flex items-center gap-2">
+            <span class="material-symbols-outlined text-[20px] text-on-tertiary-container">calendar_today</span>
+            Lịch học chi tiết {{ selectedClass ? `— ${selectedClass.className}` : '' }}
+          </h3>
 
-        <div v-if="!selectedClass" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-12 text-center rounded-xl text-on-surface-variant flex flex-col items-center justify-center">
-          <span class="material-symbols-outlined text-[48px] text-primary-container/30 mb-2">click_to_shrink</span>
-          Chọn một lớp bên trái để xem thời khóa biểu chi tiết.
-        </div>
+          <div v-if="!selectedClass" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-12 text-center rounded-xl text-on-surface-variant flex flex-col items-center justify-center">
+            <span class="material-symbols-outlined text-[48px] text-primary-container/30 mb-2">click_to_shrink</span>
+            Chọn một lớp bên trái để xem lịch học &amp; chuyên cần.
+          </div>
 
-        <!-- Lock schedule if class tuition is unpaid -->
-        <div v-else-if="isClassUnpaid(selectedClass.classId)" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-8 text-center rounded-xl text-error flex flex-col items-center justify-center gap-3">
-          <span class="material-symbols-outlined text-[48px] text-error/40 animate-pulse">lock</span>
-          <div class="font-semibold text-body-lg text-primary-container">Lịch học đã bị khóa</div>
-          <p class="text-body-sm text-on-surface-variant max-w-xs mx-auto">
-            Bạn chưa hoàn thành đóng học phí cho lớp học này. Vui lòng thanh toán học phí tại tab "Học phí & Thanh toán" để mở khóa xem lịch học.
-          </p>
-          <button @click="$emit('switch-tab', 'payments')" class="mt-2 px-4 py-2 rounded-lg bg-primary-container text-white font-semibold text-body-sm hover:bg-primary transition-colors flex items-center gap-1.5 cursor-pointer active:scale-95">
-            <span class="material-symbols-outlined text-[18px]">receipt_long</span>
-            Đóng học phí ngay
-          </button>
-        </div>
+          <!-- Lock schedule if class tuition is unpaid -->
+          <div v-else-if="isClassUnpaid(selectedClass.classId)" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-8 text-center rounded-xl text-error flex flex-col items-center justify-center gap-3">
+            <span class="material-symbols-outlined text-[48px] text-error/40 animate-pulse">lock</span>
+            <div class="font-semibold text-body-lg text-primary-container">Lịch học đã bị khóa</div>
+            <p class="text-body-sm text-on-surface-variant max-w-xs mx-auto">
+              Bạn chưa hoàn thành đóng học phí cho lớp học này. Vui lòng thanh toán học phí tại tab "Học phí & Thanh toán" để mở khóa xem lịch học.
+            </p>
+            <button @click="$emit('switch-tab', 'payments')" class="mt-2 px-4 py-2 rounded-lg bg-primary-container text-white font-semibold text-body-sm hover:bg-primary transition-colors flex items-center gap-1.5 cursor-pointer active:scale-95">
+              <span class="material-symbols-outlined text-[18px]">receipt_long</span>
+              Đóng học phí ngay
+            </button>
+          </div>
 
-        <div v-else-if="loadingSchedules" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-12 text-center rounded-xl text-primary-container flex flex-col items-center justify-center">
-          <div class="w-8 h-8 border-2 border-primary-container/30 border-t-primary-container rounded-full animate-spin mb-2"></div>
-          Đang tải lịch học...
-        </div>
+          <div v-else-if="loadingSchedules" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-12 text-center rounded-xl text-primary-container flex flex-col items-center justify-center">
+            <div class="w-8 h-8 border-2 border-primary-container/30 border-t-primary-container rounded-full animate-spin mb-2"></div>
+            Đang tải lịch học...
+          </div>
 
-        <div v-else-if="schedules.length === 0" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-8 text-center rounded-xl text-on-surface-variant">
-          Không tìm thấy thời khóa biểu cho lớp học này.
-        </div>
+          <div v-else-if="schedules.length === 0" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-8 text-center rounded-xl text-on-surface-variant">
+            Không tìm thấy thời khóa biểu cho lớp học này.
+          </div>
 
-        <div v-else class="space-y-2 max-h-[400px] overflow-y-auto pr-1">
-          <div
-            v-for="schedule in schedules"
-            :key="schedule.scheduleId"
-            class="bg-white/70 backdrop-blur-[20px] border border-white/40 p-3.5 rounded-xl flex justify-between items-center hover:bg-white/50 transition-colors"
-          >
-            <div class="space-y-1">
-              <div class="font-semibold text-primary-container text-body-lg">Thứ {{ formatDayOfWeek(schedule.dayOfWeek) }}</div>
-              <div class="text-body-sm text-on-surface-variant">
-                Phòng học: <span class="font-semibold text-primary-container">{{ schedule.classroom }}</span>
+          <div v-else class="space-y-2">
+            <div
+              v-for="schedule in schedules"
+              :key="schedule.scheduleId"
+              class="bg-white/70 backdrop-blur-[20px] border border-white/40 p-3.5 rounded-xl flex justify-between items-center hover:bg-white/50 transition-colors"
+            >
+              <div class="space-y-1">
+                <div class="font-semibold text-primary-container text-body-lg">Thứ {{ formatDayOfWeek(schedule.dayOfWeek) }}</div>
+                <div class="text-body-sm text-on-surface-variant">
+                  Phòng học: <span class="font-semibold text-primary-container">{{ schedule.classroom }}</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="font-semibold text-on-tertiary-container text-body-sm bg-on-tertiary-container/10 px-2.5 py-1 rounded-lg">
+                  {{ schedule.startTime.substring(0, 5) }} - {{ schedule.endTime.substring(0, 5) }}
+                </div>
               </div>
             </div>
-            <div class="text-right">
-              <div class="font-semibold text-on-tertiary-container text-body-sm bg-on-tertiary-container/10 px-2.5 py-1 rounded-lg">
-                {{ schedule.startTime.substring(0, 5) }} - {{ schedule.endTime.substring(0, 5) }}
+          </div>
+        </div>
+
+        <!-- 2. Attendance section -->
+        <div v-if="selectedClass && !isClassUnpaid(selectedClass.classId) && !loadingSchedules && schedules.length > 0" class="space-y-3 pt-4 border-t border-dashed border-outline-variant/30 animate-fade-in">
+          <h3 class="font-title-md text-body-lg font-semibold text-primary-container flex items-center gap-2">
+            <span class="material-symbols-outlined text-[20px] text-emerald-600">how_to_reg</span>
+            Tỷ lệ chuyên cần &amp; Lịch sử điểm danh
+          </h3>
+
+          <div v-if="!selectedClassAttendanceSummary" class="bg-white/70 backdrop-blur-[20px] border border-white/40 p-6 text-center rounded-xl text-body-sm text-on-surface-variant">
+            Chưa có dữ liệu chuyên cần cho lớp học này.
+          </div>
+
+          <div v-else class="bg-white/70 backdrop-blur-[20px] border border-white/40 p-5 rounded-xl space-y-4 shadow-[0_8px_16px_rgba(0,0,0,0.03)]">
+            <!-- Attendance Summary Header -->
+            <div class="flex justify-between items-center">
+              <div>
+                <p class="text-body-sm text-on-surface-variant">Tổng số buổi đã học: <strong class="text-primary-container">{{ selectedClassAttendanceSummary.totalSessions }} buổi</strong></p>
+              </div>
+              <div>
+                <span :class="[selectedClassAttendanceSummary.attendanceRate >= 80 ? 'status-inprogress' : 'status-cancelled', 'status-badge text-[11px] font-extrabold']">
+                  {{ selectedClassAttendanceSummary.attendanceRate.toFixed(1) }}%
+                </span>
+              </div>
+            </div>
+
+            <!-- Progress bar -->
+            <div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden border border-outline-variant/15">
+              <div
+                :class="[selectedClassAttendanceSummary.attendanceRate >= 80 ? 'bg-emerald-500' : 'bg-red-500', 'h-full rounded-full']"
+                :style="`width: ${selectedClassAttendanceSummary.attendanceRate}%`"
+              ></div>
+            </div>
+
+            <!-- Stats grid -->
+            <div class="grid grid-cols-4 gap-2 text-center text-body-sm">
+              <div class="p-2 rounded-lg bg-emerald-500/5 border border-emerald-500/10 text-emerald-600">
+                <div class="font-extrabold text-[15px]">{{ selectedClassAttendanceSummary.present }}</div>
+                <div class="text-[9px] font-bold">Đi học</div>
+              </div>
+              <div class="p-2 rounded-lg bg-amber-500/5 border border-amber-500/10 text-amber-600">
+                <div class="font-extrabold text-[15px]">{{ selectedClassAttendanceSummary.late }}</div>
+                <div class="text-[9px] font-bold">Đi muộn</div>
+              </div>
+              <div class="p-2 rounded-lg bg-blue-500/5 border border-blue-500/10 text-blue-600">
+                <div class="font-extrabold text-[15px]">{{ selectedClassAttendanceSummary.excused }}</div>
+                <div class="text-[9px] font-bold">Có phép</div>
+              </div>
+              <div class="p-2 rounded-lg bg-red-500/5 border border-red-500/10 text-red-500">
+                <div class="font-extrabold text-[15px]">{{ selectedClassAttendanceSummary.absent }}</div>
+                <div class="text-[9px] font-bold">Vắng mặt</div>
+              </div>
+            </div>
+
+            <!-- Session details list -->
+            <div class="pt-3.5 border-t border-outline-variant/20 space-y-2">
+              <div class="text-body-sm font-semibold text-primary-container flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px] text-on-tertiary-container">history</span>
+                Nhật ký điểm danh chi tiết
+              </div>
+
+              <div v-if="!selectedClassAttendanceSummary.sessions || selectedClassAttendanceSummary.sessions.length === 0" class="text-center py-4 text-body-sm text-on-surface-variant/70 italic">
+                Chưa có lịch sử điểm danh nào.
+              </div>
+
+              <div v-else class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                <div 
+                  v-for="session in selectedClassAttendanceSummary.sessions" 
+                  :key="session.attendanceId"
+                  class="flex justify-between items-center bg-white/40 p-2 rounded-lg text-body-sm border border-white/20 hover:bg-white/60 transition-colors"
+                >
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="material-symbols-outlined text-[15px] text-on-surface-variant/70 shrink-0">calendar_today</span>
+                    <span class="font-semibold text-primary-container shrink-0">{{ formatDate(session.sessionDate) }}</span>
+                    <span v-if="session.note" class="text-body-xs text-on-surface-variant/70 italic truncate" :title="session.note">
+                      - {{ session.note }}
+                    </span>
+                  </div>
+                  <select
+                    v-if="authStore.isAdmin"
+                    :value="session.status"
+                    @change="$emit('change-attendance-status', { session, newStatus: $event.target.value })"
+                    class="bg-white/80 border border-outline-variant/30 rounded px-1.5 py-0.5 text-[11px] font-semibold text-primary cursor-pointer focus:outline-none"
+                  >
+                    <option value="CoMat">Đi học</option>
+                    <option value="Vang">Vắng mặt</option>
+                    <option value="DiTre">Đi muộn</option>
+                    <option value="CoPhep">Có phép</option>
+                  </select>
+                  <span v-else :class="[getAttendanceStatusClass(session.status), 'px-2 py-0.5 rounded text-[9px] font-bold shrink-0']">
+                    {{ getAttendanceStatusLabel(session.status) }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -204,6 +289,7 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useAuthStore } from '../../../stores'
 
 const authStore = useAuthStore()
@@ -215,7 +301,8 @@ const props = defineProps({
   loadingSchedules: { type: Boolean, default: false },
   payments: { type: Array, required: true },
   mySupportMessages: { type: Array, required: true },
-  currentConflicts: { type: Array, required: true }
+  currentConflicts: { type: Array, required: true },
+  attendanceSummaries: { type: Array, default: () => [] }
 })
 
 defineEmits([
@@ -224,8 +311,34 @@ defineEmits([
   'open-transfer-modal',
   'change-enrollment-status',
   'open-support-dialog',
-  'switch-tab'
+  'switch-tab',
+  'change-attendance-status'
 ])
+
+const selectedClassAttendanceSummary = computed(() => {
+  if (!props.selectedClass || !props.attendanceSummaries) return null
+  return props.attendanceSummaries.find(s => s.classId === props.selectedClass.classId)
+})
+
+function getAttendanceStatusClass(status) {
+  const map = {
+    CoMat: 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20',
+    Vang: 'bg-red-500/10 text-red-500 border border-red-500/20',
+    DiTre: 'bg-amber-500/10 text-amber-600 border border-amber-500/20',
+    CoPhep: 'bg-blue-500/10 text-blue-600 border border-blue-500/20'
+  }
+  return map[status] || 'bg-outline-variant/10 text-on-surface-variant'
+}
+
+function getAttendanceStatusLabel(status) {
+  const map = {
+    CoMat: 'Đi học',
+    Vang: 'Vắng mặt',
+    DiTre: 'Đi muộn',
+    CoPhep: 'Có phép'
+  }
+  return map[status] || status
+}
 
 function isClassUnpaid(classId) {
   if (!props.payments) return false

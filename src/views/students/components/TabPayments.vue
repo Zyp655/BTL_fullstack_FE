@@ -37,10 +37,13 @@
           </div>
           <div class="text-left sm:text-right space-y-0.5">
             <div class="text-body-sm text-on-surface-variant">Hạn chót đóng: <span class="font-semibold text-primary-container">{{ formatDate(pay.dueDate) }}</span></div>
-            <div class="text-body-sm text-on-surface-variant">
+            <div v-if="pay.status === 'HoanTat'" class="text-body-sm font-bold text-emerald-600">
+              Hoàn tất
+            </div>
+            <div v-else class="text-body-sm text-on-surface-variant">
               Cần thanh toán: <span class="font-bold text-primary-container">{{ formatCurrency(pay.totalAmount) }}</span>
             </div>
-            <div v-if="pay.remainingAmount > 0" class="text-body-sm font-bold text-error">
+            <div v-if="pay.status !== 'HoanTat' && pay.remainingAmount > 0" class="text-body-sm font-bold text-error">
               Còn nợ: {{ formatCurrency(pay.remainingAmount) }}
             </div>
           </div>
@@ -84,30 +87,43 @@
         </div>
 
         <!-- Transaction list for this payment -->
-        <div class="p-4 space-y-2">
-          <div class="text-body-sm font-semibold text-primary-container mb-2 flex items-center gap-1.5">
-            <span class="material-symbols-outlined text-[18px]">history</span>
-            Chi tiết đóng tiền
-          </div>
+        <div class="p-4 border-t border-white/40 bg-primary-container/[0.01]">
+          <button
+            @click="toggleExpand(pay.paymentId)"
+            class="w-full flex items-center justify-between text-body-sm font-semibold text-primary-container hover:text-primary-container/80 transition-colors cursor-pointer py-1"
+          >
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[18px]">history</span>
+              Chi tiết đóng tiền
+            </div>
+            <div class="flex items-center gap-1 text-body-xs text-on-surface-variant font-normal">
+              <span>{{ expandedPayments[pay.paymentId] ? 'Thu gọn' : 'Xem chi tiết' }}</span>
+              <span class="material-symbols-outlined text-[18px] transition-transform duration-200" :class="{ 'rotate-180': expandedPayments[pay.paymentId] }">
+                expand_more
+              </span>
+            </div>
+          </button>
           
-          <div v-if="pay.transactions.length === 0" class="text-center py-4 text-body-sm text-on-surface-variant">
-            Chưa ghi nhận giao dịch thanh toán nào cho hóa đơn này.
-          </div>
-          
-          <div v-else class="space-y-2">
-            <div
-              v-for="tx in pay.transactions"
-              :key="tx.transactionId"
-              class="bg-white/50 backdrop-blur-[10px] p-3 rounded-lg border border-white/40 flex justify-between items-center text-body-sm"
-            >
-              <div class="space-y-0.5">
-                <div class="font-bold text-primary-container">Số tiền: {{ formatCurrency(tx.amount) }}</div>
-                <div class="text-on-surface-variant">Phương thức: {{ formatPaymentMethod(tx.paymentMethod) }}</div>
-                <div class="text-on-surface-variant/80">Thời gian: {{ formatDateTime(tx.paidAt) }}</div>
-                <div v-if="tx.note" class="text-on-surface-variant/70 italic">Ghi chú: {{ tx.note }}</div>
-              </div>
-              <div class="text-right text-emerald-600 font-bold bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
-                Đã thu
+          <div v-show="expandedPayments[pay.paymentId]" class="mt-3 space-y-2 animate-fade-in">
+            <div v-if="pay.transactions.length === 0" class="text-center py-4 text-body-sm text-on-surface-variant">
+              Chưa ghi nhận giao dịch thanh toán nào cho hóa đơn này.
+            </div>
+            
+            <div v-else class="space-y-2">
+              <div
+                v-for="tx in pay.transactions"
+                :key="tx.transactionId"
+                class="bg-white/50 backdrop-blur-[10px] p-3 rounded-lg border border-white/40 flex justify-between items-center text-body-sm"
+              >
+                <div class="space-y-0.5">
+                  <div class="font-bold text-primary-container">Số tiền: {{ formatCurrency(tx.amount) }}</div>
+                  <div class="text-on-surface-variant">Phương thức: {{ formatPaymentMethod(tx.paymentMethod) }}</div>
+                  <div class="text-on-surface-variant/80">Thời gian: {{ formatDateTime(tx.paidAt) }}</div>
+                  <div v-if="tx.note" class="text-on-surface-variant/70 italic">Ghi chú: {{ tx.note }}</div>
+                </div>
+                <div class="text-right text-emerald-600 font-bold bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
+                  Đã thu
+                </div>
               </div>
             </div>
           </div>
@@ -266,6 +282,12 @@ const showQrModal = ref(false)
 const activePayment = ref(null)
 const timeLeft = ref(600)
 let timerInterval = null
+
+const expandedPayments = ref({})
+
+const toggleExpand = (paymentId) => {
+  expandedPayments.value[paymentId] = !expandedPayments.value[paymentId]
+}
 
 const emit = defineEmits(['open-payment-modal', 'refresh-payments'])
 
