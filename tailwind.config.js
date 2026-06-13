@@ -72,14 +72,14 @@ export default {
         "gutter": "24px"
       },
       fontFamily: {
-        sans: ["Inter", "sans-serif"],
-        "headline-lg": ["Inter"],
-        "headline-lg-mobile": ["Inter"],
-        "title-md": ["Inter"],
-        "display-lg": ["Inter"],
-        "body-sm": ["Inter"],
-        "body-lg": ["Inter"],
-        "label-caps": ["Inter"]
+        sans: ["'Plus Jakarta Sans'", "sans-serif"],
+        "headline-lg": ["'Plus Jakarta Sans'"],
+        "headline-lg-mobile": ["'Plus Jakarta Sans'"],
+        "title-md": ["'Plus Jakarta Sans'"],
+        "display-lg": ["'Plus Jakarta Sans'"],
+        "body-sm": ["'Plus Jakarta Sans'"],
+        "body-lg": ["'Plus Jakarta Sans'"],
+        "label-caps": ["'Plus Jakarta Sans'"]
       },
       fontSize: {
         "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
