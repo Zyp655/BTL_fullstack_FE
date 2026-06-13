@@ -828,7 +828,9 @@ const isCourseFormValid = computed(() => {
 })
 
 const isVipLaunchFormValid = computed(() => {
-  return vipLaunchForm.value.className.trim().length > 0 && vipLaunchForm.value.totalSessions > 0
+  return vipLaunchForm.value.className.trim().length > 0 &&
+         vipLaunchForm.value.totalSessions > 0 &&
+         vipLaunchStudents.value.length > 0
 })
 
 const stats = computed(() => [
@@ -1162,6 +1164,7 @@ const openVipLaunchModal = async (course) => {
 const submitVipLaunch = async () => {
   if (!isVipLaunchFormValid.value) return
   submittingVipLaunch.value = true
+  let newClassId = null
   try {
     const courseId = vipLaunchTargetCourse.value.courseId
     
@@ -1179,7 +1182,7 @@ const submitVipLaunch = async () => {
     }
     
     const newCls = await classStore.createClass(newClassPayload)
-    const newClassId = newCls.classId
+    newClassId = newCls.classId
 
     // 2. Launch Class from waitlist in StudentService
     const studentIds = vipLaunchStudents.value.map(s => s.studentId)
@@ -1197,6 +1200,13 @@ const submitVipLaunch = async () => {
     await fetchData()
     router.push('/classes')
   } catch (error) {
+    if (newClassId) {
+      try {
+        await classStore.deleteClass(newClassId)
+      } catch (rollbackError) {
+        console.error('Failed to rollback class creation:', rollbackError)
+      }
+    }
     showSnackbar(error.response?.data?.message || 'Lỗi khi khai giảng lớp học', 'error')
   } finally {
     submittingVipLaunch.value = false
