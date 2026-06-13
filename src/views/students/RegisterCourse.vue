@@ -46,8 +46,9 @@
 
       <!-- Courses Grid -->
       <div v-else class="space-y-4">
-        <!-- Search bar -->
-        <div v-if="courses.length > 0" class="flex items-center gap-4 justify-between bg-white/70 backdrop-blur-[20px] p-4 rounded-xl border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)]">
+        <!-- Search and Filters row -->
+        <div v-if="courses.length > 0" class="flex flex-col md:flex-row items-stretch md:items-center gap-4 justify-between bg-white/70 backdrop-blur-[20px] p-4 rounded-xl border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)]">
+          <!-- Search input -->
           <div class="relative flex-1 max-w-md">
             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
             <input
@@ -64,6 +65,38 @@
               <span class="material-symbols-outlined text-[16px]">close</span>
             </button>
           </div>
+
+          <!-- Filters (Category & Status) -->
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Filter by Category -->
+            <div class="relative min-w-[150px]">
+              <select
+                v-model="selectedCategory"
+                class="w-full bg-primary-container/[0.03] border border-outline-variant/30 rounded-lg appearance-none pl-3 pr-9 py-2 text-body-sm text-primary-container bg-transparent cursor-pointer focus:outline-none focus:border-on-tertiary-container/30 transition-colors font-semibold"
+              >
+                <option value="all">Tất cả danh mục</option>
+                <option value="NgoaiNgu">Ngoại ngữ</option>
+                <option value="TinHoc">Tin học</option>
+                <option value="KyNang">Kỹ năng</option>
+              </select>
+              <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
+            </div>
+
+            <!-- Filter by Status -->
+            <div class="relative min-w-[170px]">
+              <select
+                v-model="selectedStatus"
+                class="w-full bg-primary-container/[0.03] border border-outline-variant/30 rounded-lg appearance-none pl-3 pr-9 py-2 text-body-sm text-primary-container bg-transparent cursor-pointer focus:outline-none focus:border-on-tertiary-container/30 transition-colors font-semibold"
+              >
+                <option value="all">Tất cả trạng thái</option>
+                <option value="DangHoc">Đang học</option>
+                <option value="PendingPayment">Chờ thanh toán</option>
+                <option value="InQueue">Chờ xếp lớp</option>
+                <option value="NotRegistered">Chưa đăng ký</option>
+              </select>
+              <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
+            </div>
+          </div>
         </div>
 
         <div v-if="courses.length === 0" class="bg-white/70 backdrop-blur-[20px] p-8 text-center rounded-xl border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] text-on-surface-variant">
@@ -77,6 +110,7 @@
           <div
             v-for="course in filteredCourses"
             :key="course.courseId"
+            @click="openCourseDetail(course)"
             class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl overflow-hidden flex flex-col justify-between group hover:-translate-y-1 hover:shadow-md transition-all duration-300 relative cursor-pointer"
           >
             <!-- Card Banner Image -->
@@ -97,16 +131,6 @@
                   {{ getCategoryLabel(course.category) }}
                 </span>
               </div>
-
-              <!-- Floating Info Button in top-right -->
-              <button
-                @click.stop="openCourseDetail(course)"
-                type="button"
-                class="absolute right-3 top-3 w-8 h-8 rounded-full bg-white/80 hover:bg-white text-primary-container flex items-center justify-center shadow-md border border-white/50 backdrop-blur-sm transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer z-10"
-                title="Xem chi tiết môn học"
-              >
-                <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">info</span>
-              </button>
             </div>
 
             <!-- Card Content Body -->
@@ -145,6 +169,7 @@
                 <button
                   v-if="isEnrolledActive(course.courseId, course.courseName)"
                   disabled
+                  @click.stop
                   class="w-full py-2 rounded-lg bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 font-semibold text-body-sm flex items-center justify-center gap-1.5 cursor-default"
                 >
                   <span class="material-symbols-outlined text-[16px]">check_circle</span>
@@ -154,7 +179,8 @@
                 <!-- Pending Payment -->
                 <router-link
                   v-else-if="isPendingPayment(course.courseId, course.courseName)"
-                  :to="{ path: '/student-portal', query: { tab: 'payments', ...(selectedStudentId ? { studentId: selectedStudentId } : {}) } }"
+                  :to="{ path: '/student-portal', query: { tab: 'payments', courseId: course.courseId, courseName: course.courseName, ...(selectedStudentId ? { studentId: selectedStudentId } : {}) } }"
+                  @click.stop
                   class="w-full py-2 rounded-lg bg-amber-500/10 text-amber-700 border border-amber-500/20 font-semibold text-body-sm flex items-center justify-center gap-1.5 hover:bg-amber-500/20 transition-colors cursor-pointer"
                 >
                   <span class="material-symbols-outlined text-[16px]">payment</span>
@@ -165,6 +191,7 @@
                 <button
                   v-else-if="isInQueue(course.courseId)"
                   disabled
+                  @click.stop
                   class="w-full py-2 rounded-lg bg-blue-500/10 text-blue-700 border border-blue-500/20 font-semibold text-body-sm flex items-center justify-center gap-1.5 cursor-default"
                 >
                   <span class="material-symbols-outlined text-[16px]">hourglass_empty</span>
@@ -174,7 +201,7 @@
                 <!-- Regular Register -->
                 <button
                   v-else
-                  @click="openEnrollConfirmation(course)"
+                  @click.stop="openEnrollConfirmation(course)"
                   :disabled="submittingEnroll"
                   class="w-full py-2 rounded-lg bg-sky-500 text-white font-semibold text-body-sm hover:bg-sky-600 transition-colors active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5"
                 >
@@ -401,16 +428,45 @@ const selectedCourseToEnroll = ref(null)
 const submittingEnroll = ref(false)
 
 const searchQuery = ref('')
+const selectedCategory = ref('all')
+const selectedStatus = ref('all')
 const detailModal = ref(false)
 const selectedCourseForDetail = ref(null)
 
 const filteredCourses = computed(() => {
-  if (!searchQuery.value.trim()) return courses.value
-  const query = searchQuery.value.toLowerCase()
-  return courses.value.filter(c =>
-    c.courseName?.toLowerCase().includes(query) ||
-    c.description?.toLowerCase().includes(query)
-  )
+  let list = courses.value
+
+  // 1. Search Query filter
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase()
+    list = list.filter(c =>
+      c.courseName?.toLowerCase().includes(query) ||
+      c.description?.toLowerCase().includes(query)
+    )
+  }
+
+  // 2. Category filter
+  if (selectedCategory.value !== 'all') {
+    list = list.filter(c => c.category === selectedCategory.value)
+  }
+
+  // 3. Status filter
+  if (selectedStatus.value !== 'all') {
+    list = list.filter(c => {
+      const isEnrolled = isEnrolledActive(c.courseId, c.courseName)
+      const isPending = isPendingPayment(c.courseId, c.courseName)
+      const isQueued = isInQueue(c.courseId)
+
+      if (selectedStatus.value === 'DangHoc') return isEnrolled
+      if (selectedStatus.value === 'PendingPayment') return isPending
+      if (selectedStatus.value === 'InQueue') return isQueued
+      if (selectedStatus.value === 'NotRegistered') return !isEnrolled && !isPending && !isQueued
+      
+      return true
+    })
+  }
+
+  return list
 })
 
 function openCourseDetail(course) {
@@ -433,6 +489,8 @@ async function loadStudentsList() {
 }
 
 watch(selectedStudentId, async (newVal) => {
+  selectedCategory.value = 'all'
+  selectedStatus.value = 'all'
   if (newVal) {
     router.replace({ path: route.path, query: { ...route.query, studentId: newVal } })
     const student = students.value.find(s => s.studentId === newVal)

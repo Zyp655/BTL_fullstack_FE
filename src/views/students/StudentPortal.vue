@@ -74,7 +74,7 @@
       </section>
 
       <!-- Stats Row -->
-      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-gutter">
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
         <!-- Stat 1 -->
         <div class="glass-panel rounded-lg p-4 flex items-center gap-4 glass-panel-hover">
           <div class="w-12 h-12 rounded-full bg-primary-container/10 flex items-center justify-center text-primary-container">
@@ -97,19 +97,7 @@
             </p>
           </div>
         </div>
-        <!-- Stat 3 -->
-        <div class="glass-panel rounded-lg p-4 flex items-center gap-4 glass-panel-hover">
-          <div class="w-12 h-12 rounded-full bg-[#059669]/10 flex items-center justify-center text-[#059669]">
-            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
-          </div>
-          <div>
-            <p class="text-on-surface-variant text-body-sm font-body-sm">Chuyên cần chung</p>
-            <p class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">
-              {{ averageAttendanceRate > 0 ? averageAttendanceRate.toFixed(1) + '%' : '—' }}
-            </p>
-          </div>
-        </div>
-        <!-- Stat 4 -->
+        <!-- Stat 3 (formerly 4) -->
         <div class="glass-panel rounded-lg p-4 flex items-center gap-4 glass-panel-hover">
           <div class="w-12 h-12 rounded-full bg-error/10 flex items-center justify-center text-error">
             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">payments</span>
@@ -119,7 +107,7 @@
             <p class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">{{ formatCurrency(totalDebt) }}</p>
           </div>
         </div>
-        <!-- Stat 5 -->
+        <!-- Stat 4 (formerly 5) -->
         <div class="glass-panel rounded-lg p-4 flex items-center gap-4 glass-panel-hover">
           <div class="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-600">
             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
@@ -202,6 +190,8 @@
           v-slot="{ pay }"
           v-if="activeTab === 'payments'"
           :payments="payments"
+          :auto-pay-course-name="route.query.courseName"
+          :auto-pay-course-id="route.query.courseId"
           @open-payment-modal="openPaymentModal"
           @refresh-payments="loadPortalData(true)"
         />
@@ -747,12 +737,6 @@ function getAverageScoreForClass(enrollmentId) {
   })
   return total / scores.length
 }
-
-const averageAttendanceRate = computed(() => {
-  if (attendanceSummaries.value.length === 0) return 0
-  const total = attendanceSummaries.value.reduce((acc, curr) => acc + curr.attendanceRate, 0)
-  return total / attendanceSummaries.value.length
-})
 
 const totalDebt = computed(() => {
   if (payments.value.length === 0) return 0

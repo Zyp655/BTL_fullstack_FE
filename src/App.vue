@@ -69,6 +69,74 @@
         </template>
       </div>
 
+      <!-- Profile Section (Bottom of Sidebar) -->
+      <div class="p-4 border-t border-white/10 mt-auto relative">
+        <!-- Profile Dropdown Menu Backdrop -->
+        <div
+          v-if="profileDropdownOpen"
+          @click="profileDropdownOpen = false"
+          class="fixed inset-0 z-40 bg-transparent"
+        ></div>
+
+        <div
+          @click="toggleProfileDropdown"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/10 active:scale-[0.98] transition-all cursor-pointer select-none group"
+        >
+          <!-- Avatar -->
+          <div class="w-10 h-10 rounded-full border-2 border-white/20 shadow-sm bg-white/10 flex items-center justify-center font-bold text-white transition-transform overflow-hidden shrink-0">
+            <img v-if="authStore.avatar" :src="authStore.avatar" class="w-full h-full object-cover" alt="Avatar" />
+            <template v-else>
+              {{ (authStore.currentUser?.fullName || 'N').charAt(0).toUpperCase() }}
+            </template>
+          </div>
+          <!-- Info -->
+          <div class="flex-1 text-left min-w-0">
+            <p class="font-title-md text-[14px] text-white font-semibold truncate group-hover:text-purple-200 transition-colors" :title="authStore.currentUser?.fullName">
+              {{ authStore.currentUser?.fullName || 'Người dùng' }}
+            </p>
+            <p class="font-body-sm text-[11px] text-white/50 truncate">
+              {{ getRoleLabel(authStore.currentUser?.role) }}
+            </p>
+          </div>
+          <!-- Dropdown Icon -->
+          <span class="material-symbols-outlined text-white/50 group-hover:text-white transition-colors text-[20px] shrink-0" :class="{ 'rotate-180': profileDropdownOpen }">
+            unfold_more
+          </span>
+        </div>
+
+        <!-- Profile Dropdown Menu -->
+        <transition name="fade">
+          <div
+            v-if="profileDropdownOpen"
+            class="absolute left-4 bottom-20 w-[256px] bg-white border border-outline-variant/60 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.15)] py-2 z-50 animate-scale-in"
+          >
+            <router-link
+              to="/profile"
+              @click="profileDropdownOpen = false"
+              class="w-full px-4 py-2.5 text-left text-body-sm font-semibold text-primary hover:bg-primary-container/10 transition-colors flex items-center gap-2"
+            >
+              <span class="material-symbols-outlined text-[18px] text-on-tertiary-container">person</span>
+              Trang cá nhân
+            </router-link>
+            <div class="border-t border-outline-variant/40 my-1"></div>
+            <button
+              @click="openChangePasswordModal"
+              class="w-full px-4 py-2.5 text-left text-body-sm font-semibold text-primary hover:bg-primary-container/10 transition-colors flex items-center gap-2"
+            >
+              <span class="material-symbols-outlined text-[18px] text-on-tertiary-container">key</span>
+              Đổi mật khẩu
+            </button>
+            <div class="border-t border-outline-variant/40 my-1"></div>
+            <button
+              @click="triggerLogout"
+              class="w-full px-4 py-2.5 text-left text-body-sm font-semibold text-error hover:bg-error/10 transition-colors flex items-center gap-2"
+            >
+              <span class="material-symbols-outlined text-[18px]">logout</span>
+              Đăng xuất
+            </button>
+          </div>
+        </transition>
+      </div>
 
     </nav>
 
@@ -85,69 +153,6 @@
             <span class="material-symbols-outlined text-[26px]">{{ mobileMenuOpen ? 'close' : 'menu' }}</span>
           </button>
           <h2 class="text-xl font-bold text-primary">{{ currentTitle }}</h2>
-        </div>
-
-        <!-- Actions (Right) -->
-        <div class="flex items-center gap-6">
-          <!-- Profile -->
-          <div class="relative flex items-center gap-3">
-            <div
-              @click="toggleProfileDropdown"
-              class="flex items-center gap-3 cursor-pointer select-none group"
-            >
-              <div class="text-right hidden sm:block">
-                <p class="font-title-md text-[14px] text-primary group-hover:text-on-tertiary-container transition-colors">{{ authStore.currentUser?.fullName || 'Người dùng' }}</p>
-                <p class="font-body-sm text-[12px] text-on-surface-variant">{{ getRoleLabel(authStore.currentUser?.role) }}</p>
-              </div>
-              <div class="w-10 h-10 rounded-full border-2 border-white shadow-sm bg-primary-container/20 flex items-center justify-center font-bold text-primary transition-transform group-active:scale-95 overflow-hidden">
-                <img v-if="authStore.avatar" :src="authStore.avatar" class="w-full h-full object-cover" alt="Avatar" />
-                <template v-else>
-                  {{ (authStore.currentUser?.fullName || 'N').charAt(0).toUpperCase() }}
-                </template>
-              </div>
-              <span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors text-[20px]">expand_more</span>
-            </div>
-
-            <!-- Profile Dropdown Menu Backdrop -->
-            <div
-              v-if="profileDropdownOpen"
-              @click="profileDropdownOpen = false"
-              class="fixed inset-0 z-40 bg-transparent"
-            ></div>
-
-            <!-- Profile Dropdown Menu -->
-            <transition name="fade">
-              <div
-                v-if="profileDropdownOpen"
-                class="absolute right-0 top-12 mt-2 w-48 bg-white border border-outline-variant/60 rounded-xl shadow-lg py-2 z-50 animate-scale-in"
-              >
-                <router-link
-                  to="/profile"
-                  @click="profileDropdownOpen = false"
-                  class="w-full px-4 py-2.5 text-left text-body-sm font-semibold text-primary hover:bg-primary-container/10 transition-colors flex items-center gap-2"
-                >
-                  <span class="material-symbols-outlined text-[18px] text-on-tertiary-container">person</span>
-                  Trang cá nhân
-                </router-link>
-                <div class="border-t border-outline-variant/40 my-1"></div>
-                <button
-                  @click="openChangePasswordModal"
-                  class="w-full px-4 py-2.5 text-left text-body-sm font-semibold text-primary hover:bg-primary-container/10 transition-colors flex items-center gap-2"
-                >
-                  <span class="material-symbols-outlined text-[18px] text-on-tertiary-container">key</span>
-                  Đổi mật khẩu
-                </button>
-                <div class="border-t border-outline-variant/40 my-1"></div>
-                <button
-                  @click="triggerLogout"
-                  class="w-full px-4 py-2.5 text-left text-body-sm font-semibold text-error hover:bg-error/10 transition-colors flex items-center gap-2"
-                >
-                  <span class="material-symbols-outlined text-[18px]">logout</span>
-                  Đăng xuất
-                </button>
-              </div>
-            </transition>
-          </div>
         </div>
       </header>
 
