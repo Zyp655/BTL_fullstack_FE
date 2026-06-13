@@ -3,7 +3,7 @@
     <!-- Split Layout Container -->
     <main class="flex w-full min-h-screen">
       <!-- Left Pane: Brand & Graphic (Hidden on small screens) -->
-      <section class="hidden lg:flex lg:w-1/2 bg-primary-container relative overflow-hidden flex-col justify-between p-stack-lg">
+      <section class="hidden xl:flex xl:w-3/4 bg-primary-container relative overflow-hidden flex-col justify-between p-stack-lg">
         <!-- Graphic Background -->
         <div class="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
           <img 
@@ -30,16 +30,16 @@
       </section>
 
       <!-- Right Pane: Form Interface -->
-      <section class="w-full lg:w-1/2 flex flex-col justify-center items-center bg-surface-container-lowest relative p-container-padding">
+      <section class="w-full xl:w-1/4 flex flex-col justify-center items-center bg-surface-container-lowest relative p-container-padding">
         <!-- Mobile Brand Header (Visible only on mobile) -->
-        <router-link to="/" class="lg:hidden flex items-center gap-base absolute top-container-padding left-container-padding cursor-pointer hover:opacity-90 transition-all no-underline hover:scale-[1.02] active:scale-[0.98]">
+        <router-link to="/" class="xl:hidden flex items-center gap-base absolute top-container-padding left-container-padding cursor-pointer hover:opacity-90 transition-all no-underline hover:scale-[1.02] active:scale-[0.98]">
           <span class="material-symbols-outlined text-headline-lg-mobile text-primary">school</span>
           <span class="font-title-md text-title-md text-primary tracking-tight">EduManager Pro</span>
         </router-link>
         
         <!-- Login Container (Glassmorphism) -->
         <div 
-          class="glass-panel w-full max-w-[420px] rounded-xl p-stack-md flex flex-col gap-stack-md relative z-10 mt-12 lg:mt-0"
+          class="glass-panel w-full max-w-[420px] rounded-xl p-stack-md flex flex-col gap-stack-md relative z-10 mt-12 xl:mt-0"
           :class="{ 'shake': shouldShake }"
         >
           <div class="text-center mb-base">
