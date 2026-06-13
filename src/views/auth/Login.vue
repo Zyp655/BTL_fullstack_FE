@@ -52,7 +52,7 @@
             <div class="relative group">
               <input 
                 v-model="username"
-                class="peer w-full bg-white border border-outline-variant rounded-lg px-4 pt-6 pb-2 text-body-lg font-body-lg text-on-surface placeholder-transparent focus:outline-none focus:ring-2 focus:ring-on-tertiary-container focus:border-transparent transition-all shadow-inner" 
+                class="peer w-full bg-slate-50/50 border border-slate-300 rounded-lg px-4 pt-6 pb-2 text-body-lg font-body-lg text-on-surface placeholder-transparent focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 hover:bg-slate-50/85 focus:bg-white transition-all shadow-inner" 
                 id="username" 
                 name="username" 
                 placeholder="Tên đăng nhập / Email" 
@@ -61,7 +61,7 @@
                 @input="errors.username = ''"
               />
               <label 
-                class="absolute left-4 top-2 text-label-caps font-label-caps text-on-surface-variant transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-body-lg peer-placeholder-shown:font-body-lg peer-focus:top-2 peer-focus:text-label-caps peer-focus:font-label-caps peer-focus:text-on-tertiary-container pointer-events-none" 
+                class="absolute left-4 top-2 text-label-caps font-label-caps text-on-surface-variant transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-body-lg peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-slate-400 peer-focus:top-2 peer-focus:text-label-caps peer-focus:font-label-caps peer-focus:text-blue-600 pointer-events-none" 
                 for="username"
               >
                 Tên đăng nhập / Email
@@ -77,7 +77,7 @@
               <input 
                 v-model="password"
                 :type="passwordVisible ? 'text' : 'password'"
-                class="peer w-full bg-white border border-outline-variant rounded-lg pl-4 pr-12 pt-6 pb-2 text-body-lg font-body-lg text-on-surface placeholder-transparent focus:outline-none focus:ring-2 focus:ring-on-tertiary-container focus:border-transparent transition-all shadow-inner" 
+                class="peer w-full bg-slate-50/50 border border-slate-300 rounded-lg pl-4 pr-12 pt-6 pb-2 text-body-lg font-body-lg text-on-surface placeholder-transparent focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 hover:bg-slate-50/85 focus:bg-white transition-all shadow-inner" 
                 id="password" 
                 name="password" 
                 placeholder="Mật khẩu" 
@@ -85,14 +85,14 @@
                 @input="errors.password = ''"
               />
               <label 
-                class="absolute left-4 top-2 text-label-caps font-label-caps text-on-surface-variant transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-body-lg peer-placeholder-shown:font-body-lg peer-focus:top-2 peer-focus:text-label-caps peer-focus:font-label-caps peer-focus:text-on-tertiary-container pointer-events-none" 
+                class="absolute left-4 top-2 text-label-caps font-label-caps text-on-surface-variant transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-body-lg peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-slate-400 peer-focus:top-2 peer-focus:text-label-caps peer-focus:font-label-caps peer-focus:text-blue-600 pointer-events-none" 
                 for="password"
               >
                 Mật khẩu
               </label>
               <button 
                 aria-label="Toggle password visibility" 
-                class="absolute right-3 top-3.5 text-gray-500 hover:text-gray-700 active:text-gray-800 transition-colors focus:outline-none rounded p-1 z-10 cursor-pointer flex items-center justify-center" 
+                class="absolute right-3 top-3.5 text-slate-400 hover:text-slate-600 active:text-slate-800 transition-colors focus:outline-none rounded p-1 z-10 cursor-pointer flex items-center justify-center" 
                 @click="togglePasswordVisibility" 
                 type="button"
               >
@@ -461,23 +461,25 @@ const resetPassword = async () => {
 }
 
 .glass-input {
-  background: rgba(0, 31, 63, 0.05);
-  border: 1px solid rgba(0, 31, 63, 0.1);
+  background: rgba(0, 31, 63, 0.03);
+  border: 1px solid #cbd5e1;
   transition: all 0.2s;
 }
 .glass-input:focus {
   outline: none;
-  border-color: #2b83ff;
-  box-shadow: 0 0 0 3px rgba(43, 131, 255, 0.2);
+  background: #ffffff;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
 }
 
-/* Force autofilled inputs to stay white and have dark text */
+/* Force autofilled inputs to stay white and have dark text and visible border */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus, 
 input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 100px white inset !important;
   -webkit-text-fill-color: #191c1d !important;
+  border: 1px solid #cbd5e1 !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 </style>

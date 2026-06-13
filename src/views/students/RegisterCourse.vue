@@ -54,78 +54,101 @@
           <div
             v-for="course in courses"
             :key="course.courseId"
-            class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl p-gutter shadow-[0_12px_24px_rgba(0,0,0,0.05)] flex flex-col justify-between"
+            class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl overflow-hidden flex flex-col justify-between group hover:-translate-y-1 hover:shadow-md transition-all duration-300 relative cursor-pointer"
           >
-            <div class="space-y-3">
-              <div class="flex justify-between items-start gap-2">
-                <h4 class="font-title-md text-title-md text-primary-container truncate" :title="course.courseName">{{ course.courseName }}</h4>
-                <span class="bg-on-tertiary-container/10 text-on-tertiary-container rounded-full px-2 py-0.5 text-label-caps whitespace-nowrap">
-                  {{ course.totalSessions }} buổi
+            <!-- Card Banner Image -->
+            <div class="h-40 w-full overflow-hidden relative">
+              <img
+                :src="getCourseImage(course.imageUrl, course.category)"
+                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                alt="Course cover image"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+              
+              <!-- Floating Category Badge -->
+              <div class="absolute left-4 bottom-3 flex items-center gap-1.5">
+                <div :class="[getCategoryBgClass(course.category), 'w-8 h-8 rounded-lg flex items-center justify-center border shadow-md backdrop-blur-sm bg-white/70']">
+                  <span class="material-symbols-outlined text-[18px]">{{ getCategoryIcon(course.category) }}</span>
+                </div>
+                <span class="text-white text-[13px] font-bold drop-shadow-md">
+                  {{ getCategoryLabel(course.category) }}
                 </span>
-              </div>
-              <p class="text-body-sm text-on-surface-variant line-clamp-3 min-h-[50px]">{{ course.description || 'Chưa có mô tả chi tiết cho môn học này.' }}</p>
-              <div class="pt-3 border-t border-outline-variant/20 flex justify-between items-center">
-                <span class="text-body-sm text-on-surface-variant">Học phí khóa:</span>
-                <span class="text-on-tertiary-container font-semibold text-body-lg">{{ formatCurrency(course.fee) }}</span>
               </div>
             </div>
 
-            <div class="mt-4 space-y-2">
-              <!-- Queue progress bar -->
-              <div v-if="getCourseQueueCount(course.courseId) > 0 && !isEnrolledActive(course.courseId, course.courseName)" class="space-y-1">
-                <div class="flex justify-between items-center">
-                  <span class="text-body-sm text-on-surface-variant">Hàng chờ</span>
-                  <span class="text-body-sm font-semibold text-on-tertiary-container">{{ getCourseQueueCount(course.courseId) }}/5</span>
+            <!-- Card Content Body -->
+            <div class="p-gutter flex-1 flex flex-col justify-between">
+              <div class="space-y-3">
+                <div class="flex justify-between items-start gap-2">
+                  <h4 class="font-bold text-lg text-primary-container truncate" :title="course.courseName">{{ course.courseName }}</h4>
+                  <span class="bg-on-tertiary-container/10 text-on-tertiary-container rounded-full px-2 py-0.5 text-label-caps whitespace-nowrap">
+                    {{ course.totalSessions }} buổi
+                  </span>
                 </div>
-                <div class="w-full h-1.5 bg-outline-variant/20 rounded-full overflow-hidden">
-                  <div
-                    class="h-full rounded-full transition-all duration-500"
-                    :class="isInQueue(course.courseId) ? 'bg-amber-500' : 'bg-on-tertiary-container'"
-                    :style="{ width: (getCourseQueueCount(course.courseId) / 5 * 100) + '%' }"
-                  ></div>
+                <p class="text-body-sm text-on-surface-variant line-clamp-3 min-h-[50px]">{{ course.description || 'Chưa có mô tả chi tiết cho môn học này.' }}</p>
+                <div class="pt-3 border-t border-outline-variant/20 flex justify-between items-center">
+                  <span class="text-body-sm text-on-surface-variant">Học phí khóa:</span>
+                  <span class="text-on-tertiary-container font-semibold text-body-lg">{{ formatCurrency(course.fee) }}</span>
                 </div>
               </div>
 
-              <!-- Active Enrollment -->
-              <button
-                v-if="isEnrolledActive(course.courseId, course.courseName)"
-                disabled
-                class="w-full py-2 rounded-lg bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 font-semibold text-body-sm flex items-center justify-center gap-1.5 cursor-default"
-              >
-                <span class="material-symbols-outlined text-[16px]">check_circle</span>
-                Đang học khóa này
-              </button>
+              <div class="mt-4 space-y-2">
+                <!-- Queue progress bar -->
+                <div v-if="getCourseQueueCount(course.courseId) > 0 && !isEnrolledActive(course.courseId, course.courseName)" class="space-y-1">
+                  <div class="flex justify-between items-center">
+                    <span class="text-body-sm text-on-surface-variant">Hàng chờ</span>
+                    <span class="text-body-sm font-semibold text-on-tertiary-container">{{ getCourseQueueCount(course.courseId) }}/5</span>
+                  </div>
+                  <div class="w-full h-1.5 bg-outline-variant/20 rounded-full overflow-hidden">
+                    <div
+                      class="h-full rounded-full transition-all duration-500"
+                      :class="isInQueue(course.courseId) ? 'bg-amber-500' : 'bg-on-tertiary-container'"
+                      :style="{ width: (getCourseQueueCount(course.courseId) / 5 * 100) + '%' }"
+                    ></div>
+                  </div>
+                </div>
 
-              <!-- Pending Payment -->
-              <router-link
-                v-else-if="isPendingPayment(course.courseId, course.courseName)"
-                :to="{ path: '/student-portal', query: { tab: 'payments', ...(selectedStudentId ? { studentId: selectedStudentId } : {}) } }"
-                class="w-full py-2 rounded-lg bg-amber-500/10 text-amber-700 border border-amber-500/20 font-semibold text-body-sm flex items-center justify-center gap-1.5 hover:bg-amber-500/20 transition-colors cursor-pointer"
-              >
-                <span class="material-symbols-outlined text-[16px]">payment</span>
-                Chờ thanh toán học phí
-              </router-link>
+                <!-- Active Enrollment -->
+                <button
+                  v-if="isEnrolledActive(course.courseId, course.courseName)"
+                  disabled
+                  class="w-full py-2 rounded-lg bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 font-semibold text-body-sm flex items-center justify-center gap-1.5 cursor-default"
+                >
+                  <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                  Đang học khóa này
+                </button>
 
-              <!-- In Queue Waitlist -->
-              <button
-                v-else-if="isInQueue(course.courseId)"
-                disabled
-                class="w-full py-2 rounded-lg bg-blue-500/10 text-blue-700 border border-blue-500/20 font-semibold text-body-sm flex items-center justify-center gap-1.5 cursor-default"
-              >
-                <span class="material-symbols-outlined text-[16px]">hourglass_empty</span>
-                Đang chờ ghép lớp
-              </button>
+                <!-- Pending Payment -->
+                <router-link
+                  v-else-if="isPendingPayment(course.courseId, course.courseName)"
+                  :to="{ path: '/student-portal', query: { tab: 'payments', ...(selectedStudentId ? { studentId: selectedStudentId } : {}) } }"
+                  class="w-full py-2 rounded-lg bg-amber-500/10 text-amber-700 border border-amber-500/20 font-semibold text-body-sm flex items-center justify-center gap-1.5 hover:bg-amber-500/20 transition-colors cursor-pointer"
+                >
+                  <span class="material-symbols-outlined text-[16px]">payment</span>
+                  Chờ thanh toán học phí
+                </router-link>
 
-              <!-- Regular Register -->
-              <button
-                v-else
-                @click="openEnrollConfirmation(course)"
-                :disabled="submittingEnroll"
-                class="w-full py-2 rounded-lg bg-primary-container text-white font-semibold text-body-sm hover:bg-primary transition-colors active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                <span class="material-symbols-outlined text-[16px]">how_to_reg</span>
-                Đăng ký vào hàng chờ
-              </button>
+                <!-- In Queue Waitlist -->
+                <button
+                  v-else-if="isInQueue(course.courseId)"
+                  disabled
+                  class="w-full py-2 rounded-lg bg-blue-500/10 text-blue-700 border border-blue-500/20 font-semibold text-body-sm flex items-center justify-center gap-1.5 cursor-default"
+                >
+                  <span class="material-symbols-outlined text-[16px]">hourglass_empty</span>
+                  Đang chờ ghép lớp
+                </button>
+
+                <!-- Regular Register -->
+                <button
+                  v-else
+                  @click="openEnrollConfirmation(course)"
+                  :disabled="submittingEnroll"
+                  class="w-full py-2 rounded-lg bg-primary-container text-white font-semibold text-body-sm hover:bg-primary transition-colors active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <span class="material-symbols-outlined text-[16px]">how_to_reg</span>
+                  Đăng ký vào hàng chờ
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -192,6 +215,47 @@ import { ref, onMounted, inject, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore, useCourseStore } from '../../stores'
 import api from '../../services/api'
+import foreignLanguageImg from '../../assets/course_foreign_language.png'
+import itImg from '../../assets/course_it.png'
+import skillsImg from '../../assets/course_skills.png'
+import defaultImg from '../../assets/course_default.png'
+
+function getCourseImage(imageUrl, cat) {
+  if (imageUrl === 'preset_foreign_language') return foreignLanguageImg
+  if (imageUrl === 'preset_it') return itImg
+  if (imageUrl === 'preset_skills') return skillsImg
+  if (imageUrl === 'preset_default') return defaultImg
+  
+  if (imageUrl && imageUrl.trim().length > 0 && !imageUrl.startsWith('preset_')) {
+    return imageUrl
+  }
+
+  const map = {
+    NgoaiNgu: foreignLanguageImg,
+    TinHoc: itImg,
+    KyNang: skillsImg
+  }
+  return map[cat] || defaultImg
+}
+
+function getCategoryIcon(cat) {
+  const map = { NgoaiNgu: 'translate', TinHoc: 'laptop_mac', KyNang: 'psychology' }
+  return map[cat] || 'school'
+}
+
+function getCategoryBgClass(cat) {
+  const map = { 
+    NgoaiNgu: 'bg-sky-500/10 text-sky-600 border-sky-500/20', 
+    TinHoc: 'bg-amber-500/10 text-amber-600 border-amber-500/20', 
+    KyNang: 'bg-purple-500/10 text-purple-600 border-purple-500/20' 
+  }
+  return map[cat] || 'bg-primary-container/10 text-primary-container border-primary-container/20'
+}
+
+function getCategoryLabel(cat) {
+  const map = { NgoaiNgu: 'Ngoại ngữ', TinHoc: 'Tin học', KyNang: 'Kỹ năng' }
+  return map[cat] || cat
+}
 
 const route = useRoute()
 const router = useRouter()
