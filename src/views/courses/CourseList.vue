@@ -120,15 +120,30 @@
         <div
           v-for="course in filteredCourses"
           :key="course.courseId"
-          class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl p-5 flex flex-col group hover:-translate-y-1 hover:shadow-md transition-all duration-300 relative cursor-pointer"
+          class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl overflow-hidden flex flex-col group hover:-translate-y-1 hover:shadow-md transition-all duration-300 relative cursor-pointer"
           @click="authStore.isAdmin && openEditDialog(course)"
         >
-          <!-- Card Top Row -->
-          <div class="flex justify-between items-start mb-4">
-            <div :class="[getCategoryBgClass(course.category), 'w-10 h-10 rounded-lg flex items-center justify-center border']">
-              <span class="material-symbols-outlined">{{ getCategoryIcon(course.category) }}</span>
+          <!-- Card Banner Image -->
+          <div class="h-40 w-full overflow-hidden relative">
+            <img
+              :src="getCourseImage(course.imageUrl, course.category)"
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              alt="Course cover image"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+            
+            <!-- Floating Category Badge -->
+            <div class="absolute left-4 bottom-3 flex items-center gap-1.5">
+              <div :class="[getCategoryBgClass(course.category), 'w-8 h-8 rounded-lg flex items-center justify-center border shadow-md backdrop-blur-sm bg-white/70']">
+                <span class="material-symbols-outlined text-[18px]">{{ getCategoryIcon(course.category) }}</span>
+              </div>
+              <span class="text-white text-[13px] font-bold drop-shadow-md">
+                {{ getCategoryLabel(course.category) }}
+              </span>
             </div>
-            <div v-if="authStore.isAdmin" class="flex items-center gap-1 transition-opacity" @click.stop>
+
+            <!-- Floating Admin Controls -->
+            <div v-if="authStore.isAdmin" class="absolute right-3 top-3 flex items-center gap-1 bg-white/80 backdrop-blur-md p-1 rounded-lg shadow-md" @click.stop>
               <button
                 @click="openEditDialog(course)"
                 class="w-8 h-8 rounded-lg hover:bg-on-tertiary-container/10 flex items-center justify-center text-on-tertiary-container transition-colors cursor-pointer"
@@ -146,82 +161,81 @@
             </div>
           </div>
 
-          <!-- Course Title & Description -->
-          <h3 class="font-bold text-lg text-primary-container mb-2">{{ course.courseName }}</h3>
-          <p class="text-body-sm text-on-surface-variant line-clamp-2 mb-4" :title="course.description">
-            {{ course.description || 'Chưa có mô tả' }}
-          </p>
+          <!-- Card Content Body -->
+          <div class="p-5 flex-1 flex flex-col justify-between">
+            <div>
+              <!-- Course Title & Description -->
+              <h3 class="font-bold text-lg text-primary-container mb-2 line-clamp-1" :title="course.courseName">{{ course.courseName }}</h3>
+              <p class="text-body-sm text-on-surface-variant line-clamp-2 mb-4 h-10" :title="course.description">
+                {{ course.description || 'Chưa có mô tả' }}
+              </p>
 
-          <!-- Course Details -->
-          <div class="space-y-2 mb-4">
-            <div class="flex justify-between items-center text-body-sm">
-              <span class="text-on-surface-variant font-medium">Danh mục:</span>
-              <span :class="[getCategoryBgClass(course.category), 'px-2.5 py-0.5 rounded-full text-[12px] font-semibold border']">
-                {{ getCategoryLabel(course.category) }}
-              </span>
-            </div>
-            <div class="flex justify-between items-center text-body-sm">
-              <span class="text-on-surface-variant font-medium">Trình độ:</span>
-              <span :class="[getLevelBorderClass(course.level), 'px-2.5 py-0.5 rounded-full text-[12px] font-semibold border']">
-                {{ getLevelLabel(course.level) }}
-              </span>
-            </div>
-            <div class="flex justify-between items-center text-body-sm">
-              <span class="text-on-surface-variant font-medium">Số buổi học:</span>
-              <span class="font-bold text-primary-container">{{ course.totalSessions }} buổi</span>
-            </div>
-            <div class="flex justify-between items-center text-body-sm">
-              <span class="text-on-surface-variant font-medium">Học phí:</span>
-              <span class="font-bold text-on-tertiary-container">{{ formatCurrency(course.fee) }}</span>
-            </div>
-            <div v-if="authStore.isTeacher || getCourseStudentCount(course.courseId) === 0" class="flex justify-between items-center text-body-sm">
-              <template v-if="authStore.isTeacher">
-                <span class="text-on-surface-variant font-medium">Số học viên:</span>
-                <span class="text-primary-container font-bold">{{ getCourseStudentCount(course.courseId) }} học viên</span>
-              </template>
-              <template v-else>
-                <span class="text-on-surface-variant font-medium">Chờ ghép lớp:</span>
-                <span class="text-on-tertiary-container font-bold">{{ getQueueCount(course.courseId) }}/5 học viên</span>
-              </template>
-            </div>
-            <div v-if="authStore.isAdmin" class="flex justify-between items-center text-body-sm">
-              <span class="text-on-surface-variant font-medium">Số học viên đang học:</span>
-              <span class="text-primary-container font-bold">{{ getCourseStudentCount(course.courseId) }} học viên</span>
-            </div>
-            <div class="mt-3 flex justify-between items-center">
-              <span :class="[course.isActive ? 'status-opened' : 'status-cancelled', 'status-badge']">
-                <span :class="[course.isActive ? 'bg-emerald-600' : 'bg-error', 'w-1.5 h-1.5 rounded-full mr-1.5']"></span>
-                {{ course.isActive ? 'Đang hoạt động' : 'Đã đóng' }}
-              </span>
-            </div>
+              <!-- Course Details -->
+              <div class="space-y-2 mb-4">
+                <div class="flex justify-between items-center text-body-sm">
+                  <span class="text-on-surface-variant font-medium">Trình độ:</span>
+                  <span :class="[getLevelBorderClass(course.level), 'px-2.5 py-0.5 rounded-full text-[12px] font-semibold border']">
+                    {{ getLevelLabel(course.level) }}
+                  </span>
+                </div>
+                <div class="flex justify-between items-center text-body-sm">
+                  <span class="text-on-surface-variant font-medium">Số buổi học:</span>
+                  <span class="font-bold text-primary-container">{{ course.totalSessions }} buổi</span>
+                </div>
+                <div class="flex justify-between items-center text-body-sm">
+                  <span class="text-on-surface-variant font-medium">Học phí:</span>
+                  <span class="font-bold text-on-tertiary-container">{{ formatCurrency(course.fee) }}</span>
+                </div>
+                <div v-if="authStore.isTeacher || getCourseStudentCount(course.courseId) === 0" class="flex justify-between items-center text-body-sm">
+                  <template v-if="authStore.isTeacher">
+                    <span class="text-on-surface-variant font-medium">Số học viên:</span>
+                    <span class="text-primary-container font-bold">{{ getCourseStudentCount(course.courseId) }} học viên</span>
+                  </template>
+                  <template v-else>
+                    <span class="text-on-surface-variant font-medium">Chờ ghép lớp:</span>
+                    <span class="text-on-tertiary-container font-bold">{{ getQueueCount(course.courseId) }}/5 học viên</span>
+                  </template>
+                </div>
+                <div v-if="authStore.isAdmin" class="flex justify-between items-center text-body-sm">
+                  <span class="text-on-surface-variant font-medium">Số học viên đang học:</span>
+                  <span class="text-primary-container font-bold">{{ getCourseStudentCount(course.courseId) }} học viên</span>
+                </div>
+                <div class="mt-3 flex justify-between items-center">
+                  <span :class="[course.isActive ? 'status-opened' : 'status-cancelled', 'status-badge']">
+                    <span :class="[course.isActive ? 'bg-emerald-600' : 'bg-error', 'w-1.5 h-1.5 rounded-full mr-1.5']"></span>
+                    {{ course.isActive ? 'Đang hoạt động' : 'Đã đóng' }}
+                  </span>
+                </div>
 
-            <!-- Waitlist / VIP buttons -->
-            <div v-if="course.isActive && (authStore.isStudent || authStore.isAdmin)" class="mt-3 pt-2 w-full space-y-2" @click.stop>
-              <button
-                @click="handleEnrollQueue(course)"
-                class="w-full bg-on-tertiary-container/10 hover:bg-on-tertiary-container/20 text-on-tertiary-container border border-on-tertiary-container/20 hover:border-on-tertiary-container/30 py-2 rounded-lg font-semibold text-body-sm transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
-              >
-                <span class="material-symbols-outlined text-[18px]">group_add</span>
-                {{ authStore.isStudent ? 'Đăng ký ghép lớp' : 'Ghép lớp học viên' }}
-              </button>
+                <!-- Waitlist / VIP buttons -->
+                <div v-if="course.isActive && (authStore.isStudent || authStore.isAdmin)" class="mt-3 pt-2 w-full space-y-2" @click.stop>
+                  <button
+                    @click="handleEnrollQueue(course)"
+                    class="w-full bg-on-tertiary-container/10 hover:bg-on-tertiary-container/20 text-on-tertiary-container border border-on-tertiary-container/20 hover:border-on-tertiary-container/30 py-2 rounded-lg font-semibold text-body-sm transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                  >
+                    <span class="material-symbols-outlined text-[18px]">group_add</span>
+                    {{ authStore.isStudent ? 'Đăng ký ghép lớp' : 'Ghép lớp học viên' }}
+                  </button>
 
-              <button
-                v-if="authStore.isAdmin && getQueueCount(course.courseId) >= 1 && getQueueCount(course.courseId) < 5"
-                @click="openVipLaunchModal(course)"
-                class="w-full bg-amber-500 hover:bg-amber-600 text-white py-2 rounded-lg font-semibold text-body-sm transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 shadow-sm"
-              >
-                <span class="material-symbols-outlined text-[18px]">workspace_premium</span>
-                Khai giảng nhóm nhỏ (VIP)
-              </button>
+                  <button
+                    v-if="authStore.isAdmin && getQueueCount(course.courseId) >= 1 && getQueueCount(course.courseId) < 5"
+                    @click="openVipLaunchModal(course)"
+                    class="w-full bg-amber-500 hover:bg-amber-600 text-white py-2 rounded-lg font-semibold text-body-sm transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 shadow-sm"
+                  >
+                    <span class="material-symbols-outlined text-[18px]">workspace_premium</span>
+                    Khai giảng nhóm nhỏ (VIP)
+                  </button>
 
-              <button
-                v-if="authStore.isAdmin && getQueueCount(course.courseId) >= 5"
-                @click="openStandardLaunchModal(course)"
-                class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-semibold text-body-sm transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 shadow-sm"
-              >
-                <span class="material-symbols-outlined text-[18px]">rocket_launch</span>
-                Khai giảng lớp học (Đủ 5+ học viên)
-              </button>
+                  <button
+                    v-if="authStore.isAdmin && getQueueCount(course.courseId) >= 5"
+                    @click="openStandardLaunchModal(course)"
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-semibold text-body-sm transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 shadow-sm"
+                  >
+                    <span class="material-symbols-outlined text-[18px]">rocket_launch</span>
+                    Khai giảng lớp học (Đủ 5+ học viên)
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -277,6 +291,81 @@
                 class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all resize-none"
                 placeholder="Nhập mô tả chi tiết môn học..."
               ></textarea>
+            </div>
+
+            <!-- Course Image Selection -->
+            <div class="space-y-2">
+              <label class="text-body-sm font-semibold text-primary">Ảnh bìa môn học</label>
+              
+              <!-- Presets Grid -->
+              <div class="grid grid-cols-4 gap-2">
+                <button
+                  type="button"
+                  @click="selectPresetImage('preset_foreign_language')"
+                  :class="[formData.imageUrl === 'preset_foreign_language' ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant/30']"
+                  class="border rounded-lg overflow-hidden h-14 relative focus:outline-none cursor-pointer hover:border-primary transition-all"
+                  title="Ngoại ngữ"
+                >
+                  <img :src="foreignLanguageImg" class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-black/10 hover:bg-transparent transition-colors"></div>
+                  <div v-if="formData.imageUrl === 'preset_foreign_language'" class="absolute right-1 top-1 bg-primary text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow">
+                    <span class="material-symbols-outlined text-[10px] font-bold">check</span>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  @click="selectPresetImage('preset_it')"
+                  :class="[formData.imageUrl === 'preset_it' ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant/30']"
+                  class="border rounded-lg overflow-hidden h-14 relative focus:outline-none cursor-pointer hover:border-primary transition-all"
+                  title="Tin học"
+                >
+                  <img :src="itImg" class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-black/10 hover:bg-transparent transition-colors"></div>
+                  <div v-if="formData.imageUrl === 'preset_it'" class="absolute right-1 top-1 bg-primary text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow">
+                    <span class="material-symbols-outlined text-[10px] font-bold">check</span>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  @click="selectPresetImage('preset_skills')"
+                  :class="[formData.imageUrl === 'preset_skills' ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant/30']"
+                  class="border rounded-lg overflow-hidden h-14 relative focus:outline-none cursor-pointer hover:border-primary transition-all"
+                  title="Kỹ năng"
+                >
+                  <img :src="skillsImg" class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-black/10 hover:bg-transparent transition-colors"></div>
+                  <div v-if="formData.imageUrl === 'preset_skills'" class="absolute right-1 top-1 bg-primary text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow">
+                    <span class="material-symbols-outlined text-[10px] font-bold">check</span>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  @click="selectPresetImage('preset_default')"
+                  :class="[formData.imageUrl === 'preset_default' ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant/30']"
+                  class="border rounded-lg overflow-hidden h-14 relative focus:outline-none cursor-pointer hover:border-primary transition-all"
+                  title="Mặc định"
+                >
+                  <img :src="defaultImg" class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-black/10 hover:bg-transparent transition-colors"></div>
+                  <div v-if="formData.imageUrl === 'preset_default'" class="absolute right-1 top-1 bg-primary text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow">
+                    <span class="material-symbols-outlined text-[10px] font-bold">check</span>
+                  </div>
+                </button>
+              </div>
+
+              <!-- Custom URL Input -->
+              <div class="relative mt-2">
+                <input
+                  v-model="customImageUrl"
+                  @input="onCustomImageUrlInput"
+                  class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all"
+                  placeholder="Hoặc nhập Link ảnh tùy chỉnh bên ngoài..."
+                  type="text"
+                />
+              </div>
             </div>
 
             <!-- Category and Level -->
@@ -598,8 +687,30 @@ import { ref, computed, onMounted, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCourseStore, useAuthStore, useStudentStore, useCategoryStore, useClassStore } from '../../stores'
 import api from '../../services/api'
+import foreignLanguageImg from '../../assets/course_foreign_language.png'
+import itImg from '../../assets/course_it.png'
+import skillsImg from '../../assets/course_skills.png'
+import defaultImg from '../../assets/course_default.png'
 
 const store = useCourseStore()
+
+function getCourseImage(imageUrl, cat) {
+  if (imageUrl === 'preset_foreign_language') return foreignLanguageImg
+  if (imageUrl === 'preset_it') return itImg
+  if (imageUrl === 'preset_skills') return skillsImg
+  if (imageUrl === 'preset_default') return defaultImg
+  
+  if (imageUrl && imageUrl.trim().length > 0 && !imageUrl.startsWith('preset_')) {
+    return imageUrl
+  }
+
+  const map = {
+    NgoaiNgu: foreignLanguageImg,
+    TinHoc: itImg,
+    KyNang: skillsImg
+  }
+  return map[cat] || defaultImg
+}
 const authStore = useAuthStore()
 const studentStore = useStudentStore()
 const categoryStore = useCategoryStore()
@@ -668,9 +779,21 @@ const vipLaunchForm = ref({
   startDate: new Date().toISOString().split('T')[0],
 })
 
+const customImageUrl = ref('')
+
+function onCustomImageUrlInput() {
+  formData.value.imageUrl = customImageUrl.value
+}
+
+function selectPresetImage(preset) {
+  formData.value.imageUrl = preset
+  customImageUrl.value = ''
+}
+
 const formData = ref({
   courseName: '',
   description: '',
+  imageUrl: '',
   category: 'NgoaiNgu',
   level: 'Beginner',
   fee: 0,
@@ -765,18 +888,26 @@ function openCreateDialog() {
   formData.value = {
     courseName: '',
     description: '',
+    imageUrl: '',
     category: 'NgoaiNgu',
     level: 'Beginner',
     fee: 0,
     totalSessions: 0,
     isActive: true,
   }
+  customImageUrl.value = ''
   dialog.value = true
 }
 
 function openEditDialog(item) {
   isEdit.value = true
   formData.value = { ...item }
+  const presets = ['preset_foreign_language', 'preset_it', 'preset_skills', 'preset_default']
+  if (presets.includes(item.imageUrl)) {
+    customImageUrl.value = ''
+  } else {
+    customImageUrl.value = item.imageUrl || ''
+  }
   dialog.value = true
 }
 

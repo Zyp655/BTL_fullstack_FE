@@ -26,9 +26,9 @@
               :class="[
                 'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 cursor-pointer',
                 isActive && !item.children
-                  ? 'bg-white/15 text-white font-bold border-l-2 border-sky-300 shadow-sm'
+                  ? 'bg-white/15 text-white font-bold border-l-2 border-purple-300 shadow-sm'
                   : (isActive && item.children)
-                    ? 'bg-white/5 text-sky-200 font-bold border-l-2 border-sky-300/30'
+                    ? 'bg-white/5 text-purple-200 font-bold border-l-2 border-purple-300/30'
                     : 'text-white/70 hover:bg-white/10 hover:text-white'
               ]"
             >

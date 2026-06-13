@@ -28,10 +28,6 @@
           <router-link to="/login" class="text-slate-600 hover:text-slate-900 font-semibold px-4 py-2 hover:opacity-80 transition-all font-semibold">
             Đăng nhập
           </router-link>
-          <router-link to="/login" class="relative group overflow-hidden bg-gradient-to-r from-blue-600 to-sky-500 text-white px-6 py-2.5 rounded-xl font-semibold shadow-md shadow-blue-500/10 hover:shadow-blue-500/20 hover:-translate-y-0.5 transition-all duration-300">
-            <span class="relative z-10">Bắt đầu ngay</span>
-            <div class="absolute inset-0 -translate-x-full group-hover:translate-x-0 bg-gradient-to-r from-sky-500 to-blue-600 transition-transform duration-300 -z-0"></div>
-          </router-link>
         </div>
         <!-- Mobile Menu Toggle -->
         <button class="md:hidden text-slate-800 flex items-center p-2 rounded-lg hover:bg-slate-100 transition-colors" @click="toggleMobileMenu">
@@ -52,9 +48,6 @@
           <div class="pt-6 border-t border-slate-200 flex flex-col gap-3">
             <router-link to="/login" class="text-slate-600 hover:text-slate-900 font-semibold py-2.5 text-center border border-slate-200 rounded-xl hover:bg-slate-50 transition-all duration-200" @click="mobileMenuOpen = false">
               Đăng nhập
-            </router-link>
-            <router-link to="/login" class="bg-gradient-to-r from-blue-600 to-sky-500 text-white py-3 rounded-xl font-semibold text-center hover:shadow-md shadow-blue-500/10 transition-all duration-200" @click="mobileMenuOpen = false">
-              Bắt đầu ngay
             </router-link>
           </div>
         </div>
@@ -234,21 +227,9 @@
             </p>
             <div class="flex items-center space-x-4">
               <!-- Facebook -->
-              <a href="#" class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-all duration-300" aria-label="Facebook">
+              <a :href="facebookUrl" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-all duration-300" aria-label="Facebook">
                 <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                </svg>
-              </a>
-              <!-- Youtube -->
-              <a href="#" class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-center text-slate-500 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition-all duration-300" aria-label="Youtube">
-                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                  <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.518 3.545 12 3.545 12 3.545s-7.518 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.87.508 9.388.508 9.388.508s7.518 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                </svg>
-              </a>
-              <!-- LinkedIn -->
-              <a href="#" class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-center text-slate-500 hover:text-sky-600 hover:bg-sky-50 hover:border-sky-200 transition-all duration-300" aria-label="LinkedIn">
-                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                 </svg>
               </a>
             </div>
@@ -314,7 +295,7 @@
             <ul class="space-y-3 text-sm text-slate-600">
               <li class="flex items-start space-x-2.5">
                 <span class="material-symbols-outlined text-[18px] text-blue-600 mt-0.5">mail</span>
-                <span>support@edumanager.pro</span>
+                <span>leehieu655@gmail.com</span>
               </li>
               <li class="flex items-start space-x-2.5">
                 <span class="material-symbols-outlined text-[18px] text-blue-600 mt-0.5">call</span>
@@ -344,6 +325,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 
+const facebookUrl = import.meta.env.VITE_FACEBOOK_URL || 'https://www.facebook.com/hieu.minh.793013/'
 const mobileMenuOpen = ref(false)
 
 const toggleMobileMenu = () => {
