@@ -30,7 +30,7 @@
           </li>
         </ul>
         <div class="hidden md:flex items-center space-x-4">
-          <router-link to="/login" class="text-slate-600 hover:text-slate-900 font-semibold px-4 py-2 hover:opacity-80 transition-all font-semibold">
+          <router-link to="/login" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-sky-500 text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5 active:scale-95 transition-all duration-200">
             Đăng nhập
           </router-link>
         </div>
@@ -51,7 +51,7 @@
             </li>
           </ul>
           <div class="pt-6 border-t border-slate-200 flex flex-col gap-3">
-            <router-link to="/login" class="text-slate-600 hover:text-slate-900 font-semibold py-2.5 text-center border border-slate-200 rounded-xl hover:bg-slate-50 transition-all duration-200" @click="mobileMenuOpen = false">
+            <router-link to="/login" class="w-full bg-gradient-to-r from-blue-600 to-sky-500 text-white font-bold py-3 text-center rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5 active:scale-95 transition-all duration-200" @click="mobileMenuOpen = false">
               Đăng nhập
             </router-link>
           </div>
@@ -71,8 +71,8 @@
           <h1 class="text-4xl md:text-5xl lg:text-6xl text-slate-900 leading-tight font-extrabold tracking-tight">
             Hệ thống quản lý <br/>
             <span class="inline-flex flex-col h-[1.2em] overflow-hidden relative select-none align-bottom py-1">
-              <span class="carousel-word-wrapper" :style="{ transform: `translateY(-${currentWordIndex * 100}%)` }">
-                <span v-for="word in words" :key="word" class="carousel-word bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-sky-600 to-sky-500 block">
+              <span class="carousel-word-wrapper">
+                <span v-for="(word, index) in words" :key="index" class="carousel-word bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-sky-600 to-sky-500 block">
                   {{ word }}
                 </span>
               </span>
@@ -345,8 +345,12 @@ const toggleMobileMenu = () => {
 }
 
 // Word Carousel variables
-const words = ['đào tạo toàn diện', 'vận hành tối ưu', 'học vụ thông minh']
-const currentWordIndex = ref(0)
+const words = [
+  'đào tạo toàn diện',
+  'vận hành tối ưu',
+  'học vụ thông minh',
+  'đào tạo toàn diện'
+]
 
 // Static Mockup configurations (no reactive animations)
 
@@ -366,10 +370,7 @@ onMounted(() => {
     observer.observe(el)
   })
 
-  // Start word carousel interval
-  setInterval(() => {
-    currentWordIndex.value = (currentWordIndex.value + 1) % words.length
-  }, 3000)
+  // Word carousel is now animated via CSS keyframes for seamless loop
 })
 </script>
 
@@ -380,7 +381,7 @@ onMounted(() => {
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E"),
     radial-gradient(circle at 10% 10%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
     radial-gradient(circle at 90% 90%, rgba(99, 102, 241, 0.06) 0%, transparent 50%);
-  background-attachment: fixed;
+  background-attachment: scroll;
   background-size: 200% 200%;
   animation: bg-gradient-shift 22s ease infinite alternate;
 }
@@ -399,19 +400,18 @@ onMounted(() => {
 
 /* Background Floating Particles */
 .floating-particles {
-  position: absolute;
+  position: fixed;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
   z-index: 0;
-  height: 100%;
 }
 
 .particle {
   position: absolute;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.14) 0%, transparent 70%);
-  filter: blur(6px);
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, rgba(56, 189, 248, 0.1) 60%, transparent 100%);
+  filter: blur(3px);
   pointer-events: none;
   animation: float-drift infinite linear;
   bottom: -150px;
@@ -445,9 +445,24 @@ onMounted(() => {
 
 /* Word Carousel styling */
 .carousel-word-wrapper {
-  transition: transform 0.8s cubic-bezier(0.76, 0, 0.24, 1);
   display: flex;
   flex-direction: column;
+  animation: word-carousel 9s cubic-bezier(0.76, 0, 0.24, 1) infinite;
+}
+
+@keyframes word-carousel {
+  0%, 25% {
+    transform: translateY(0);
+  }
+  33.33%, 58.33% {
+    transform: translateY(-25%);
+  }
+  66.66%, 91.66% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(-75%);
+  }
 }
 
 .carousel-word {
@@ -497,7 +512,7 @@ onMounted(() => {
 .orb-1 {
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0) 70%);
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, rgba(37, 99, 235, 0) 70%);
   top: -100px;
   right: -50px;
   animation: float-slow 20s infinite ease-in-out alternate;
@@ -506,7 +521,7 @@ onMounted(() => {
 .orb-2 {
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.08) 0%, rgba(3, 105, 161, 0) 70%);
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.2) 0%, rgba(3, 105, 161, 0) 70%);
   bottom: 10%;
   left: -150px;
   animation: float-slow 25s infinite ease-in-out alternate-reverse;
@@ -515,7 +530,7 @@ onMounted(() => {
 .orb-3 {
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.06) 0%, rgba(14, 165, 233, 0) 70%);
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(14, 165, 233, 0) 70%);
   top: 40%;
   right: 10%;
   animation: float-slow 15s infinite ease-in-out alternate;
