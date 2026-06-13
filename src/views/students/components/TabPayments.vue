@@ -87,13 +87,9 @@
               <p class="text-body-sm text-emerald-600/80">Cảm ơn bạn, học phí của lớp học này đã được ghi nhận hoàn tất tự động qua cổng SePay.</p>
             </div>
           </div>
-          <button
-            @click="openDetailModal(pay)"
-            class="inline-flex items-center gap-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 text-body-xs font-semibold px-3 py-1.5 rounded-full border border-emerald-500/20 shadow-sm transition-all active:scale-95 cursor-pointer"
-          >
-            <span class="material-symbols-outlined text-[15px]">receipt_long</span>
-            Xem chi tiết
-          </button>
+          <span class="inline-flex items-center bg-emerald-100 text-emerald-800 text-body-xs font-semibold px-3 py-1.5 rounded-full border border-emerald-200">
+            Hoàn tất
+          </span>
         </div>
       </div>
     </div>

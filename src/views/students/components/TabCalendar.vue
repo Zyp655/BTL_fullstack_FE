@@ -111,9 +111,8 @@
                   <span class="material-symbols-outlined text-[13px]" :class="isConflicted(s) ? 'text-error' : 'text-on-tertiary-container'">schedule</span>
                   {{ s.startTime.substring(0, 5) }} - {{ s.endTime.substring(0, 5) }}
                 </div>
-                <div class="text-[9px] font-bold flex items-center gap-1" :class="isConflicted(s) ? 'text-error/70' : 'text-on-surface-variant/80'">
-                  <span class="material-symbols-outlined text-[12px]">location_on</span>
-                  {{ s.room }}
+                <div class="text-[9px] font-bold flex items-center gap-1.5" :class="isConflicted(s) ? 'text-error/70' : 'text-on-surface-variant/80'">
+                  Phòng: {{ s.room }}
                 </div>
               </div>
             </div>
@@ -175,7 +174,6 @@
                 </div>
                 <div class="text-body-xs font-medium" :class="isConflicted(s) ? 'text-error/80' : 'text-on-surface-variant/80'">{{ s.courseName }}</div>
                 <div class="text-body-xs flex items-center gap-1.5 mt-1" :class="isConflicted(s) ? 'text-error/70' : 'text-on-surface-variant'">
-                  <span class="material-symbols-outlined text-[14px]">location_on</span>
                   Phòng: {{ s.room }}
                 </div>
               </div>
