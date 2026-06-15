@@ -12,7 +12,7 @@
     
     <!-- TopNavBar Component -->
     <nav class="bg-white/70 fixed top-0 w-full backdrop-blur-xl border-b border-slate-200/50 shadow-sm z-50 transition-all duration-300">
-      <div class="flex justify-between items-center px-6 md:px-12 h-20 max-w-[1400px] mx-auto">
+      <div class="flex justify-between items-center px-6 md:px-12 h-20 w-full">
         <router-link to="/" class="flex items-center space-x-3 group cursor-pointer">
           <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-sky-400 flex items-center justify-center shadow-md shadow-blue-500/10 group-hover:scale-105 transition-transform duration-300">
             <span class="material-symbols-outlined text-white text-[24px] font-bold">school</span>
@@ -92,17 +92,15 @@
         </div>
         
         <div class="flex-1 w-full max-w-2xl relative z-10 reveal reveal-fade-left">
-          <!-- Static premium Mockup card -->
-          <div 
-            class="relative rounded-2xl overflow-hidden shadow-xl border border-slate-200 bg-white/60 backdrop-blur-md p-2 shadow-blue-500/[0.03] border-slate-300 hover:shadow-blue-500/[0.08] transition-shadow duration-300"
-            style="transform: perspective(1000px) rotateX(4deg) rotateY(-6deg) scale3d(1, 1, 1); transform-style: preserve-3d; backface-visibility: hidden;"
-          >
-            <div class="absolute inset-0 bg-gradient-to-tr from-blue-500/5 via-transparent to-sky-500/5 opacity-50 pointer-events-none"></div>
-            <img 
-              alt="Dashboard" 
-              class="w-full h-auto rounded-xl shadow-inner border border-slate-100" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFGTE67V0VwVRVcE6c32UytIhoBeeDkY2BaxB9QI3zXLAD-WoUufa4aiFrHMQojjw5BkowZWXva1ONDooFBqMRkNDGzySry3I6XbrgB7IHXDdUvMcweqlIF1eHArn3IVlN2HC81whyjqPCAEzNaCLlZWdPpQw4K5ogkGNBAGL0yQ63AMkK4wxgqmT3_5mm5nljBh2Qjiom5_VlObetu-RLoho21wqHngK3dMpl8zYDR_KzJ7HKgUd-pQ6EwlhkwvrPhwhYOxOWLIyg"
-            />
+          <!-- 3D Interactive Hero Showcase -->
+          <div class="relative w-full h-[380px] md:h-[420px] rounded-2xl overflow-hidden border border-slate-200/60 bg-gradient-to-br from-slate-900 via-slate-950 to-blue-950 shadow-xl flex items-center justify-center">
+            <canvas ref="heroCanvas" class="w-full h-full block cursor-grab active:cursor-grabbing"></canvas>
+            
+            <!-- Floating interactive tip -->
+            <div class="absolute bottom-4 left-4 bg-white/10 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-lg text-[10px] font-bold text-white/90 uppercase tracking-widest flex items-center gap-1.5 pointer-events-none select-none">
+              <span class="material-symbols-outlined text-[13px] text-blue-400">3d_rotation</span>
+              Di chuột để xoay thiết bị 3D
+            </div>
           </div>
           <!-- Blur glow background behind image -->
           <div class="absolute -inset-10 bg-gradient-to-tr from-blue-600/10 to-sky-600/10 blur-3xl -z-10 rounded-full opacity-50"></div>
@@ -418,7 +416,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import * as THREE from 'three'
 
 const facebookUrl = import.meta.env.VITE_FACEBOOK_URL || 'https://www.facebook.com/hieu.minh.793013/'
@@ -436,10 +434,12 @@ const words = [
   'đào tạo toàn diện'
 ]
 
-// 3D Modal References & States
+// 3D References & States
 const active3DModal = ref(null)
 const threeCanvas = ref(null)
 const loading3D = ref(false)
+
+const heroCanvas = ref(null)
 
 const featureDetails = {
   course: {
@@ -467,6 +467,9 @@ const featureDetails = {
 const modalInfo = computed(() => {
   return featureDetails[active3DModal.value] || { title: '', description: '', features: [] }
 })
+
+// Three.js Hero Scene Variables
+let heroScene, heroCamera, heroRenderer, heroAnimationFrameId, heroGroup
 
 // Three.js Scene Variables
 let scene, camera, renderer, animationFrameId, activeMesh
@@ -777,7 +780,296 @@ const initThree = (type) => {
   animate()
 }
 
+// Procedural Dashboard Canvas for the 3D device screen
+const createDashboardCanvas = () => {
+  const canvas = document.createElement('canvas')
+  canvas.width = 512
+  canvas.height = 340
+  const ctx = canvas.getContext('2d')
+  
+  // Background
+  ctx.fillStyle = '#0f172a'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+  
+  // Header
+  ctx.fillStyle = '#1e293b'
+  ctx.fillRect(0, 0, canvas.width, 50)
+  
+  ctx.fillStyle = '#38bdf8'
+  ctx.font = 'bold 20px sans-serif'
+  ctx.fillText('EduManager Pro', 20, 32)
+  
+  // Decorative grid lines
+  ctx.strokeStyle = '#334155'
+  ctx.lineWidth = 1
+  for (let i = 0; i < canvas.width; i += 40) {
+    ctx.beginPath()
+    ctx.moveTo(i, 50)
+    ctx.lineTo(i, canvas.height)
+    ctx.stroke()
+  }
+  for (let i = 50; i < canvas.height; i += 40) {
+    ctx.beginPath()
+    ctx.moveTo(0, i)
+    ctx.lineTo(canvas.width, i)
+    ctx.stroke()
+  }
+
+  // Draw a bar chart
+  ctx.fillStyle = '#3b82f6'
+  const data = [60, 120, 180, 140, 220, 190, 240]
+  data.forEach((val, index) => {
+    const x = 50 + index * 50
+    const y = canvas.height - val - 40
+    ctx.fillRect(x, y, 30, val)
+  })
+  
+  // Draw a line chart (orange/amber)
+  ctx.strokeStyle = '#f59e0b'
+  ctx.lineWidth = 4
+  ctx.beginPath()
+  const points = [80, 160, 110, 200, 150, 230, 210]
+  points.forEach((val, index) => {
+    const x = 65 + index * 50
+    const y = canvas.height - val - 40
+    if (index === 0) {
+      ctx.moveTo(x, y)
+    } else {
+      ctx.lineTo(x, y)
+    }
+  })
+  ctx.stroke()
+  
+  // Draw some UI buttons / circles
+  ctx.fillStyle = '#10b981'
+  ctx.beginPath()
+  ctx.arc(430, 100, 30, 0, Math.PI * 2)
+  ctx.fill()
+  
+  ctx.fillStyle = '#ffffff'
+  ctx.font = 'bold 12px sans-serif'
+  ctx.fillText('ACTIVE', 410, 104)
+
+  ctx.fillStyle = '#64748b'
+  ctx.fillText('Revenue Growth: +24%', 20, 90)
+  ctx.fillText('Active Students: 1,482', 20, 110)
+
+  return canvas
+}
+
+const handleHeroResize = () => {
+  const canvas = heroCanvas.value
+  if (!canvas || !heroCamera || !heroRenderer) return
+  const width = canvas.clientWidth
+  const height = canvas.clientHeight
+  heroCamera.aspect = width / height
+  heroCamera.updateProjectionMatrix()
+  heroRenderer.setSize(width, height, false)
+}
+
+const initHeroThree = () => {
+  const canvas = heroCanvas.value
+  if (!canvas) return
+
+  const width = canvas.clientWidth
+  const height = canvas.clientHeight
+
+  heroScene = new THREE.Scene()
+  
+  heroCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100)
+  heroCamera.position.set(0, 0.8, 6.0)
+
+  heroRenderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: true,
+    alpha: true
+  })
+  heroRenderer.setSize(width, height, false)
+  heroRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+
+  // Lights
+  const ambient = new THREE.AmbientLight(0xffffff, 0.6)
+  heroScene.add(ambient)
+
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.2)
+  dirLight.position.set(5, 10, 5)
+  heroScene.add(dirLight)
+
+  const blueLight = new THREE.PointLight(0x3b82f6, 2, 10)
+  blueLight.position.set(-3, 2, 2)
+  heroScene.add(blueLight)
+
+  const purpleLight = new THREE.PointLight(0xa855f7, 2, 10)
+  purpleLight.position.set(3, -2, 2)
+  heroScene.add(purpleLight)
+
+  // Group for the laptop and its orbiting assets
+  heroGroup = new THREE.Group()
+  
+  // Sleek Laptop Body
+  const baseGeo = new THREE.BoxGeometry(3.6, 0.1, 2.4)
+  const baseMat = new THREE.MeshStandardMaterial({
+    color: 0x334155,
+    metalness: 0.8,
+    roughness: 0.2
+  })
+  const base = new THREE.Mesh(baseGeo, baseMat)
+  base.position.y = -0.5
+  heroGroup.add(base)
+
+  // Screen hinge / connection
+  const hingeGeo = new THREE.CylinderGeometry(0.06, 0.06, 3.2, 16)
+  const hingeMat = new THREE.MeshStandardMaterial({ color: 0x1e293b })
+  const hinge = new THREE.Mesh(hingeGeo, hingeMat)
+  hinge.rotation.z = Math.PI / 2
+  hinge.position.set(0, -0.45, -1.1)
+  heroGroup.add(hinge)
+
+  // Screen Lid
+  const lidGeo = new THREE.BoxGeometry(3.4, 2.3, 0.08)
+  const lidMat = new THREE.MeshStandardMaterial({
+    color: 0x1e293b,
+    metalness: 0.8,
+    roughness: 0.3
+  })
+  const lid = new THREE.Mesh(lidGeo, lidMat)
+  lid.rotation.x = -0.15
+  lid.position.set(0, 0.6, -1.0)
+  heroGroup.add(lid)
+
+  // Screen Panel showing Dashboard
+  const screenGeo = new THREE.PlaneGeometry(3.2, 2.1)
+  const dbCanvas = createDashboardCanvas()
+  const screenTex = new THREE.CanvasTexture(dbCanvas)
+  const screenMat = new THREE.MeshStandardMaterial({
+    map: screenTex,
+    roughness: 0.1,
+    metalness: 0.1
+  })
+  const screen = new THREE.Mesh(screenGeo, screenMat)
+  screen.rotation.x = -0.15
+  screen.position.set(0, 0.6, -0.95)
+  heroGroup.add(screen)
+
+  // Orbiting Graduation Cap
+  const capGroup = new THREE.Group()
+  
+  const capBoardGeo = new THREE.BoxGeometry(0.5, 0.02, 0.5)
+  const capBoardMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4 })
+  const capBoard = new THREE.Mesh(capBoardGeo, capBoardMat)
+  capGroup.add(capBoard)
+
+  const capSkullGeo = new THREE.CylinderGeometry(0.15, 0.18, 0.1, 16)
+  const capSkullMat = new THREE.MeshStandardMaterial({ color: 0x0f172a })
+  const capSkull = new THREE.Mesh(capSkullGeo, capSkullMat)
+  capSkull.position.y = -0.06
+  capGroup.add(capSkull)
+  
+  heroGroup.add(capGroup)
+
+  // Floating gear representing system management
+  const gearGeo = new THREE.TorusGeometry(0.22, 0.06, 8, 24)
+  const gearMat = new THREE.MeshStandardMaterial({ color: 0x10b981, metalness: 0.6, roughness: 0.3 })
+  const gear = new THREE.Mesh(gearGeo, gearMat)
+  gear.position.set(2.0, 1.2, 0.5)
+  heroGroup.add(gear)
+
+  // Floating gold coin representing finance
+  const coinGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.04, 24)
+  const coinMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8, roughness: 0.2 })
+  const coin = new THREE.Mesh(coinGeo, coinMat)
+  coin.position.set(-2.0, -0.2, 0.8)
+  coin.rotation.x = Math.PI / 3
+  heroGroup.add(coin)
+
+  heroScene.add(heroGroup)
+
+  // Mouse tilt controller variables
+  let targetRotationX = 0.15
+  let targetRotationY = -0.45
+  let currentRotationX = 0.15
+  let currentRotationY = -0.45
+
+  const handleMouseMove = (event) => {
+    const rect = canvas.getBoundingClientRect()
+    const x = ((event.clientX - rect.left) / rect.width) * 2 - 1
+    const y = -((event.clientY - rect.top) / rect.height) * 2 + 1
+    
+    targetRotationY = x * 0.5 - 0.45
+    targetRotationX = y * 0.3 + 0.15
+  }
+
+  canvas.addEventListener('mousemove', handleMouseMove)
+  window.addEventListener('resize', handleHeroResize)
+
+  // Render loop
+  const clock = new THREE.Clock()
+  const animateHero = () => {
+    if (!heroRenderer) return
+    heroAnimationFrameId = requestAnimationFrame(animateHero)
+
+    const elapsed = clock.getElapsedTime()
+
+    // Smooth easing for rotation
+    currentRotationX += (targetRotationX - currentRotationX) * 0.05
+    currentRotationY += (targetRotationY - currentRotationY) * 0.05
+
+    heroGroup.rotation.x = currentRotationX
+    heroGroup.rotation.y = currentRotationY
+
+    // Animate the cap
+    capGroup.position.x = Math.sin(elapsed * 1.2) * 2.2
+    capGroup.position.z = Math.cos(elapsed * 1.2) * 2.2
+    capGroup.position.y = 0.6 + Math.sin(elapsed * 2.0) * 0.2
+    capGroup.rotation.y = elapsed * 1.5
+
+    // Animate the gear
+    gear.rotation.z = -elapsed * 0.8
+    gear.position.y = 1.0 + Math.sin(elapsed * 1.5) * 0.15
+
+    // Animate the coin
+    coin.rotation.y = elapsed * 1.2
+    coin.position.y = -0.2 + Math.sin(elapsed * 1.8) * 0.1
+
+    heroRenderer.render(heroScene, heroCamera)
+  }
+
+  animateHero()
+}
+
+const cleanupHeroThree = () => {
+  if (heroAnimationFrameId) {
+    cancelAnimationFrame(heroAnimationFrameId)
+    heroAnimationFrameId = null
+  }
+  window.removeEventListener('resize', handleHeroResize)
+  
+  if (heroScene) {
+    heroScene.traverse((object) => {
+      if (object.geometry) object.geometry.dispose()
+      if (object.material) {
+        if (Array.isArray(object.material)) {
+          object.material.forEach((mat) => mat.dispose())
+        } else {
+          object.material.dispose()
+        }
+      }
+    })
+    heroScene = null
+  }
+  
+  if (heroRenderer) {
+    heroRenderer.dispose()
+    heroRenderer = null
+  }
+  
+  heroCamera = null
+  heroGroup = null
+}
+
 onMounted(() => {
+  initHeroThree()
+
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
@@ -791,6 +1083,10 @@ onMounted(() => {
   document.querySelectorAll('.reveal').forEach((el) => {
     observer.observe(el)
   })
+})
+
+onUnmounted(() => {
+  cleanupHeroThree()
 })
 </script>
 
