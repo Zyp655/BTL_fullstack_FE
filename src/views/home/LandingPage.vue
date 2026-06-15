@@ -36,11 +36,7 @@
               Trải nghiệm thực tế
             </a>
           </li>
-          <li>
-            <a class="text-[#5d5f5f] hover:text-[#000613] font-semibold transition-colors duration-200 block relative py-2 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[2px] after:bg-[#2b83ff] after:transition-all after:duration-300 hover:after:w-full" href="#pricing">
-              Bảng giá
-            </a>
-          </li>
+
         </ul>
         <div class="hidden md:flex items-center space-x-4">
           <router-link to="/login" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#001f3f] to-[#2b83ff] text-white font-bold shadow-lg shadow-blue-500/10 hover:shadow-xl hover:shadow-blue-500/20 hover:-translate-y-0.5 active:scale-95 transition-all duration-200">
@@ -67,11 +63,7 @@
                 Trải nghiệm thực tế
               </a>
             </li>
-            <li>
-              <a class="text-[#5d5f5f] hover:text-[#000613] font-medium transition-colors duration-200 block py-2" href="#pricing" @click="mobileMenuOpen = false">
-                Bảng giá
-              </a>
-            </li>
+
           </ul>
           <div class="pt-6 border-t border-slate-200 flex flex-col gap-3">
             <router-link to="/login" class="w-full bg-gradient-to-r from-[#001f3f] to-[#2b83ff] text-white font-bold py-3 text-center rounded-xl shadow-lg shadow-blue-500/10 hover:shadow-xl hover:shadow-blue-500/20 hover:-translate-y-0.5 active:scale-95 transition-all duration-200" @click="mobileMenuOpen = false">
@@ -618,76 +610,7 @@
           </div>
         </div>
 
-        <!-- Pricing Section -->
-        <div id="pricing" class="space-y-12 border-t border-slate-200/60 pt-16 reveal reveal-fade-up">
-          <div class="text-center max-w-2xl mx-auto space-y-3">
-            <span class="text-[#2b83ff] font-semibold text-sm tracking-wider uppercase bg-blue-50 border border-blue-100 px-3 py-1 rounded-full">Bảng giá dịch vụ</span>
-            <h2 class="text-3xl md:text-4xl font-extrabold text-[#000613] tracking-tight">Chọn gói phù hợp với trung tâm</h2>
-            <p class="text-base text-[#5d5f5f]">Bắt đầu dùng thử miễn phí trong 14 ngày, không yêu cầu thẻ tín dụng.</p>
-          </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto items-stretch mt-8">
-            <!-- Tier 1: Basic -->
-            <div class="glass-panel p-8 rounded-xl flex flex-col justify-between border border-white/50 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-              <div class="space-y-6">
-                <div>
-                  <h3 class="text-lg font-bold text-[#5d5f5f] mb-1">Cơ bản</h3>
-                  <div class="text-3xl font-black text-[#000613] tracking-tight">Miễn phí<span class="text-xs font-normal text-[#5d5f5f]"> / 14 ngày</span></div>
-                </div>
-                <div class="w-full h-px bg-slate-200/50"></div>
-                <ul class="space-y-3 text-xs text-[#42474d]">
-                  <li class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined text-[#2e7d32] text-[18px]">check</span>Tối đa 50 học viên</li>
-                  <li class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined text-[#2e7d32] text-[18px]">check</span>Quản lý lớp học cơ bản</li>
-                  <li class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined text-[#2e7d32] text-[18px]">check</span>Hỗ trợ qua Email</li>
-                </ul>
-              </div>
-              <router-link to="/login" class="mt-8 w-full py-3 text-center bg-white border border-slate-300 text-[#001f3f] font-bold rounded-lg hover:bg-slate-50 transition-colors text-xs">
-                Dùng thử ngay
-              </router-link>
-            </div>
-
-            <!-- Tier 2: Professional -->
-            <div class="glass-panel p-8 rounded-xl flex flex-col justify-between border-2 border-[#2b83ff] shadow-2xl relative transform md:-translate-y-4 transition-all duration-300 hover:-translate-y-5">
-              <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#2b83ff] text-white px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">PHỔ BIẾN NHẤT</div>
-              <div class="space-y-6">
-                <div>
-                  <h3 class="text-lg font-bold text-[#2b83ff] mb-1">Chuyên nghiệp</h3>
-                  <div class="text-3xl font-black text-[#000613] tracking-tight">999k<span class="text-xs font-normal text-[#5d5f5f]"> / tháng</span></div>
-                </div>
-                <div class="w-full h-px bg-slate-250"></div>
-                <ul class="space-y-3 text-xs text-[#42474d]">
-                  <li class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined text-[#2e7d32] text-[18px]">check</span>Không giới hạn học viên</li>
-                  <li class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined text-[#2e7d32] text-[18px]">check</span>Báo cáo tài chính chi tiết</li>
-                  <li class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined text-[#2e7d32] text-[18px]">check</span>Cổng thông tin phụ huynh/học sinh</li>
-                  <li class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined text-[#2e7d32] text-[18px]">check</span>Hỗ trợ ưu tiên 24/7</li>
-                </ul>
-              </div>
-              <router-link to="/login" class="mt-8 w-full py-3 text-center bg-gradient-to-r from-[#001f3f] to-[#2b83ff] text-white font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all text-xs shadow-md shadow-blue-500/10">
-                Chọn gói này
-              </router-link>
-            </div>
-
-            <!-- Tier 3: Enterprise -->
-            <div class="glass-panel p-8 rounded-xl flex flex-col justify-between border border-white/50 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-              <div class="space-y-6">
-                <div>
-                  <h3 class="text-lg font-bold text-[#5d5f5f] mb-1">Doanh nghiệp</h3>
-                  <div class="text-3xl font-black text-[#000613] tracking-tight">Liên hệ</div>
-                </div>
-                <div class="w-full h-px bg-slate-200/50"></div>
-                <ul class="space-y-3 text-xs text-[#42474d]">
-                  <li class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined text-[#2e7d32] text-[18px]">check</span>Tất cả tính năng gói Pro</li>
-                  <li class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined text-[#2e7d32] text-[18px]">check</span>Quản lý đa chi nhánh hệ thống</li>
-                  <li class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined text-[#2e7d32] text-[18px]">check</span>Tùy chỉnh hệ thống theo yêu cầu</li>
-                  <li class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined text-[#2e7d32] text-[18px]">check</span>Tài khoản quản lý riêng biệt</li>
-                </ul>
-              </div>
-              <a href="mailto:leehieu655@gmail.com" class="mt-8 w-full py-3 text-center bg-white border border-slate-300 text-[#001f3f] font-bold rounded-lg hover:bg-slate-50 transition-colors text-xs">
-                Nhận báo giá riêng
-              </a>
-            </div>
-          </div>
-        </div>
 
         <!-- CTA Section -->
         <section class="max-w-[1400px] mx-auto py-16 reveal reveal-fade-up">
@@ -1429,19 +1352,21 @@ const runStepAnimation = (stepIndex) => {
 }
 
 // Procedural Dashboard Canvas for the 3D device screen
-const createDashboardCanvas = () => {
-  const canvas = document.createElement('canvas')
-  canvas.width = 512
-  canvas.height = 340
-  const ctx = canvas.getContext('2d')
+const createDashboardCanvas = (time = 0, canvas) => {
+  const c = canvas || document.createElement('canvas')
+  if (!canvas) {
+    c.width = 512
+    c.height = 340
+  }
+  const ctx = c.getContext('2d')
   
   // Background
   ctx.fillStyle = '#0f131b'
-  ctx.fillRect(0, 0, canvas.width, canvas.height)
+  ctx.fillRect(0, 0, c.width, c.height)
   
   // Header
   ctx.fillStyle = '#1c2028'
-  ctx.fillRect(0, 0, canvas.width, 50)
+  ctx.fillRect(0, 0, c.width, 50)
   
   ctx.fillStyle = '#2b83ff'
   ctx.font = 'bold 20px sans-serif'
@@ -1450,16 +1375,16 @@ const createDashboardCanvas = () => {
   // Decorative grid lines
   ctx.strokeStyle = '#262a33'
   ctx.lineWidth = 1
-  for (let i = 0; i < canvas.width; i += 40) {
+  for (let i = 0; i < c.width; i += 40) {
     ctx.beginPath()
     ctx.moveTo(i, 50)
-    ctx.lineTo(i, canvas.height)
+    ctx.lineTo(i, c.height)
     ctx.stroke()
   }
-  for (let i = 50; i < canvas.height; i += 40) {
+  for (let i = 50; i < c.height; i += 40) {
     ctx.beginPath()
     ctx.moveTo(0, i)
-    ctx.lineTo(canvas.width, i)
+    ctx.lineTo(c.width, i)
     ctx.stroke()
   }
 
@@ -1467,9 +1392,10 @@ const createDashboardCanvas = () => {
   ctx.fillStyle = '#2b83ff'
   const data = [60, 120, 180, 140, 220, 190, 240]
   data.forEach((val, index) => {
+    const animVal = val + Math.sin(time * 2 + index) * 15
     const x = 50 + index * 50
-    const y = canvas.height - val - 40
-    ctx.fillRect(x, y, 30, val)
+    const y = c.height - animVal - 40
+    ctx.fillRect(x, y, 30, animVal)
   })
   
   // Draw a line chart (orange/amber)
@@ -1478,8 +1404,9 @@ const createDashboardCanvas = () => {
   ctx.beginPath()
   const points = [80, 160, 110, 200, 150, 230, 210]
   points.forEach((val, index) => {
+    const animVal = val + Math.cos(time * 2.5 + index) * 15
     const x = 65 + index * 50
-    const y = canvas.height - val - 40
+    const y = c.height - animVal - 40
     if (index === 0) {
       ctx.moveTo(x, y)
     } else {
@@ -1503,7 +1430,7 @@ const createDashboardCanvas = () => {
   ctx.fillText('Revenue Growth: +24%', 20, 90)
   ctx.fillText('Active Students: 1,482', 20, 110)
 
-  return canvas
+  return c
 }
 
 const handleHeroResize = () => {
@@ -1555,31 +1482,31 @@ const initHeroThree = () => {
   // Group for the laptop and its orbiting assets
   heroGroup = new THREE.Group()
   
-  // Sleek Laptop Body
+  // Sleek Laptop Body - White/Silver design
   const baseGeo = new THREE.BoxGeometry(3.6, 0.1, 2.4)
   const baseMat = new THREE.MeshStandardMaterial({
-    color: 0x001f3f,
-    metalness: 0.8,
-    roughness: 0.2
+    color: 0xf8fafc,
+    metalness: 0.9,
+    roughness: 0.15
   })
   const base = new THREE.Mesh(baseGeo, baseMat)
   base.position.y = -0.5
   heroGroup.add(base)
 
-  // Screen hinge / connection
+  // Screen hinge / connection - Light grey
   const hingeGeo = new THREE.CylinderGeometry(0.06, 0.06, 3.2, 16)
-  const hingeMat = new THREE.MeshStandardMaterial({ color: 0x001f3f })
+  const hingeMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.2 })
   const hinge = new THREE.Mesh(hingeGeo, hingeMat)
   hinge.rotation.z = Math.PI / 2
   hinge.position.set(0, -0.45, -1.1)
   heroGroup.add(hinge)
 
-  // Screen Lid
+  // Screen Lid - White/Silver
   const lidGeo = new THREE.BoxGeometry(3.4, 2.3, 0.08)
   const lidMat = new THREE.MeshStandardMaterial({
-    color: 0x000613,
-    metalness: 0.8,
-    roughness: 0.3
+    color: 0xf1f5f9,
+    metalness: 0.9,
+    roughness: 0.2
   })
   const lid = new THREE.Mesh(lidGeo, lidMat)
   lid.rotation.x = -0.15
@@ -1588,7 +1515,7 @@ const initHeroThree = () => {
 
   // Screen Panel showing Dashboard
   const screenGeo = new THREE.PlaneGeometry(3.2, 2.1)
-  const dbCanvas = createDashboardCanvas()
+  const dbCanvas = createDashboardCanvas(0)
   const screenTex = new THREE.CanvasTexture(dbCanvas)
   const screenMat = new THREE.MeshStandardMaterial({
     map: screenTex,
@@ -1600,7 +1527,7 @@ const initHeroThree = () => {
   screen.position.set(0, 0.6, -0.95)
   heroGroup.add(screen)
 
-  // Orbiting Graduation Cap
+  // Orbiting Graduation Cap - Navy and Gold details
   const capGroup = new THREE.Group()
   
   const capBoardGeo = new THREE.BoxGeometry(0.5, 0.02, 0.5)
@@ -1616,22 +1543,41 @@ const initHeroThree = () => {
   
   heroGroup.add(capGroup)
 
-  // Floating gear representing system management
+  // Floating gear representing system management - Vibrant Cyan
   const gearGeo = new THREE.TorusGeometry(0.22, 0.06, 8, 24)
   const gearMat = new THREE.MeshStandardMaterial({ color: 0x2b83ff, metalness: 0.6, roughness: 0.3 })
   const gear = new THREE.Mesh(gearGeo, gearMat)
   gear.position.set(2.0, 1.2, 0.5)
   heroGroup.add(gear)
 
-  // Floating gold coin representing finance
+  // Floating gold coin representing finance - Gold
   const coinGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.04, 24)
-  const coinMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8, roughness: 0.2 })
+  const coinMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8, roughness: 0.2 })
   const coin = new THREE.Mesh(coinGeo, coinMat)
   coin.position.set(-2.0, -0.2, 0.8)
   coin.rotation.x = Math.PI / 3
   heroGroup.add(coin)
 
   heroScene.add(heroGroup)
+
+  // Floating background space particles
+  const particleGeo = new THREE.BufferGeometry()
+  const particleCount = 80
+  const posArray = new Float32Array(particleCount * 3)
+  for (let i = 0; i < particleCount * 3; i += 3) {
+    posArray[i] = (Math.random() - 0.5) * 8      // x
+    posArray[i+1] = (Math.random() - 0.5) * 6    // y
+    posArray[i+2] = (Math.random() - 0.5) * 4    // z
+  }
+  particleGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3))
+  const particleMat = new THREE.PointsMaterial({
+    size: 0.04,
+    color: 0x38bdf8,
+    transparent: true,
+    opacity: 0.7
+  })
+  const particles = new THREE.Points(particleGeo, particleMat)
+  heroScene.add(particles)
 
   // Mouse tilt controller variables
   let targetRotationX = 0.15
@@ -1658,6 +1604,14 @@ const initHeroThree = () => {
     heroAnimationFrameId = requestAnimationFrame(animateHero)
 
     const elapsed = clock.getElapsedTime()
+
+    // Dynamic dashboard screen canvas animation
+    createDashboardCanvas(elapsed, dbCanvas)
+    screenTex.needsUpdate = true
+
+    // Drift particles slowly
+    particles.rotation.y = elapsed * 0.04
+    particles.rotation.x = elapsed * 0.01
 
     // Smooth easing for rotation
     currentRotationX += (targetRotationX - currentRotationX) * 0.05
