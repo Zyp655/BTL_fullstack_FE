@@ -52,7 +52,7 @@
             <div class="relative group">
               <input 
                 v-model="username"
-                class="floating-input peer w-full bg-slate-50/50 border border-slate-300 rounded-lg px-4 pt-6 pb-2 text-body-lg font-body-lg text-on-surface focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 hover:bg-slate-50/85 focus:bg-white transition-all shadow-inner" 
+                class="floating-input peer w-full h-14 bg-slate-50/50 border border-slate-300 rounded-lg px-4 pt-6 pb-2 text-body-lg font-body-lg text-on-surface focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 hover:bg-slate-50/85 focus:bg-white transition-all shadow-inner" 
                 id="username" 
                 name="username" 
                 placeholder=" " 
@@ -78,7 +78,7 @@
               <input 
                 v-model="password"
                 :type="passwordVisible ? 'text' : 'password'"
-                class="floating-input peer w-full bg-slate-50/50 border border-slate-300 rounded-lg pl-4 pr-12 pt-6 pb-2 text-body-lg font-body-lg text-on-surface focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 hover:bg-slate-50/85 focus:bg-white transition-all shadow-inner" 
+                class="floating-input peer w-full h-14 bg-slate-50/50 border border-slate-300 rounded-lg pl-4 pr-12 pt-6 pb-2 text-body-lg font-body-lg text-on-surface focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 hover:bg-slate-50/85 focus:bg-white transition-all shadow-inner" 
                 id="password" 
                 name="password" 
                 placeholder=" " 
@@ -98,7 +98,7 @@
                 @click="togglePasswordVisibility" 
                 type="button"
               >
-                <span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 0;">
+                <span class="material-symbols-outlined text-[22px]" style="font-family: 'Material Symbols Outlined' !important; font-variation-settings: 'FILL' 0;">
                   {{ passwordVisible ? 'visibility' : 'visibility_off' }}
                 </span>
               </button>
@@ -416,6 +416,10 @@ const resetPassword = async () => {
 </script>
 
 <style scoped>
+.floating-input {
+  color: #191c1d !important;
+}
+
 .bg-background {
   background-color: #f8f9fa;
 }

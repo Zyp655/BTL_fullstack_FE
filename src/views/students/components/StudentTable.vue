@@ -63,14 +63,14 @@
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-primary/5 border-b border-outline-variant/30">
-              <th class="py-4 px-6 font-bold text-primary font-label-caps uppercase whitespace-nowrap">Mã HV</th>
-              <th class="py-4 px-6 font-bold text-primary font-label-caps uppercase whitespace-nowrap">Họ tên</th>
-              <th class="py-4 px-6 font-bold text-primary font-label-caps uppercase whitespace-nowrap">Giới tính</th>
-              <th class="py-4 px-6 font-bold text-primary font-label-caps uppercase whitespace-nowrap">Ngày sinh</th>
-              <th class="py-4 px-6 font-bold text-primary font-label-caps uppercase whitespace-nowrap">SĐT</th>
-              <th class="py-4 px-6 font-bold text-primary font-label-caps uppercase whitespace-nowrap">Email</th>
-              <th class="py-4 px-6 font-bold text-primary font-label-caps uppercase whitespace-nowrap">Địa chỉ</th>
-              <th class="py-4 px-6 font-bold text-primary font-label-caps uppercase whitespace-nowrap text-right">Thao tác</th>
+              <th class="py-4 px-6 font-bold text-slate-950 font-label-caps uppercase whitespace-nowrap">Mã HV</th>
+              <th class="py-4 px-6 font-bold text-slate-950 font-label-caps uppercase whitespace-nowrap">Họ tên</th>
+              <th class="py-4 px-6 font-bold text-slate-950 font-label-caps uppercase whitespace-nowrap">Giới tính</th>
+              <th class="py-4 px-6 font-bold text-slate-950 font-label-caps uppercase whitespace-nowrap">Ngày sinh</th>
+              <th class="py-4 px-6 font-bold text-slate-950 font-label-caps uppercase whitespace-nowrap">SĐT</th>
+              <th class="py-4 px-6 font-bold text-slate-950 font-label-caps uppercase whitespace-nowrap">Email</th>
+              <th class="py-4 px-6 font-bold text-slate-950 font-label-caps uppercase whitespace-nowrap">Địa chỉ</th>
+              <th class="py-4 px-6 font-bold text-slate-950 font-label-caps uppercase whitespace-nowrap text-right">Thao tác</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-outline-variant/20">
@@ -80,13 +80,13 @@
               class="hover:bg-primary/5 transition-colors group cursor-pointer"
               @click="authStore.isAdmin ? $emit('open-edit-dialog', student) : $emit('view-enrollments', student)"
             >
-              <td class="py-4 px-6 font-bold text-primary">HV-{{ String(student.studentId).padStart(4, '0') }}</td>
+              <td class="py-4 px-6 font-bold text-slate-950">HV-{{ String(student.studentId).padStart(4, '0') }}</td>
               <td class="py-4 px-6">
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-bold">
                     {{ (student.fullName || 'H').substring(0, 2).toUpperCase() }}
                   </div>
-                  <span class="font-bold text-on-surface">{{ student.fullName }}</span>
+                  <span class="font-bold text-slate-950">{{ student.fullName }}</span>
                 </div>
               </td>
               <td class="py-4 px-6">
@@ -101,10 +101,10 @@
                   {{ student.gender }}
                 </span>
               </td>
-              <td class="py-4 px-6 text-secondary">{{ formatDate(student.dateOfBirth) }}</td>
-              <td class="py-4 px-6 text-secondary font-semibold">{{ student.phone || '-' }}</td>
-              <td class="py-4 px-6 text-secondary">{{ student.email || '-' }}</td>
-              <td class="py-4 px-6 text-secondary truncate max-w-[150px]" :title="student.address">
+              <td class="py-4 px-6 text-slate-950">{{ formatDate(student.dateOfBirth) }}</td>
+              <td class="py-4 px-6 text-slate-950 font-semibold">{{ student.phone || '-' }}</td>
+              <td class="py-4 px-6 text-slate-950">{{ student.email || '-' }}</td>
+              <td class="py-4 px-6 text-slate-950 truncate max-w-[150px]" :title="student.address">
                 {{ student.address || '-' }}
               </td>
               <td class="py-4 px-6 text-right">
@@ -205,3 +205,14 @@ function formatDate(date) {
   return new Date(date).toLocaleDateString('vi-VN')
 }
 </script>
+
+<style scoped>
+.space-y-stack-lg,
+table,
+th,
+td,
+span,
+div {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+</style>
