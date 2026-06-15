@@ -121,40 +121,56 @@
           
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
             <!-- Card 1 -->
-            <div class="glass-panel p-8 rounded-2xl flex flex-col gap-4 group hover:border-blue-500/30 hover:shadow-xl hover:shadow-blue-500/[0.02] hover:-translate-y-2 transition-all duration-300 relative overflow-hidden">
+            <div @click="open3DModal('course')" class="glass-panel p-8 rounded-2xl flex flex-col gap-4 group hover:border-blue-500/30 hover:shadow-xl hover:shadow-blue-500/[0.02] hover:-translate-y-2 transition-all duration-300 relative overflow-hidden cursor-pointer" title="Xem mô phỏng 3D">
               <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-blue-500/5 to-transparent rounded-bl-3xl pointer-events-none"></div>
               <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white group-hover:scale-110 group-hover:shadow-md group-hover:shadow-blue-500/20 transition-all duration-300">
                 <span class="material-symbols-outlined text-2xl">menu_book</span>
               </div>
               <h3 class="text-xl font-bold text-slate-900 mt-2 group-hover:text-blue-600 transition-colors duration-300">Quản lý Khóa học</h3>
               <p class="text-sm text-slate-600 leading-relaxed">Lên lịch lớp, sắp xếp thời khóa biểu và phân công giảng viên tối ưu hiệu suất.</p>
+              <div class="mt-auto text-xs font-bold text-blue-600 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <span>Khám phá 3D</span>
+                <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+              </div>
             </div>
             <!-- Card 2 -->
-            <div class="glass-panel p-8 rounded-2xl flex flex-col gap-4 group hover:border-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/[0.02] hover:-translate-y-2 transition-all duration-300 relative overflow-hidden">
+            <div @click="open3DModal('student')" class="glass-panel p-8 rounded-2xl flex flex-col gap-4 group hover:border-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/[0.02] hover:-translate-y-2 transition-all duration-300 relative overflow-hidden cursor-pointer" title="Xem mô phỏng 3D">
               <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-emerald-500/5 to-transparent rounded-bl-3xl pointer-events-none"></div>
               <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white group-hover:scale-110 group-hover:shadow-md group-hover:shadow-emerald-500/20 transition-all duration-300">
                 <span class="material-symbols-outlined text-2xl">groups</span>
               </div>
               <h3 class="text-xl font-bold text-slate-900 mt-2 group-hover:text-emerald-600 transition-colors duration-300">Hồ sơ Học viên</h3>
               <p class="text-sm text-slate-600 leading-relaxed">Điểm danh thông minh, theo dõi kết quả chuyên cần và quản lý bảng điểm chi tiết.</p>
+              <div class="mt-auto text-xs font-bold text-emerald-600 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <span>Khám phá 3D</span>
+                <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+              </div>
             </div>
             <!-- Card 3 -->
-            <div class="glass-panel p-8 rounded-2xl flex flex-col gap-4 group hover:border-amber-500/30 hover:shadow-xl hover:shadow-amber-500/[0.02] hover:-translate-y-2 transition-all duration-300 relative overflow-hidden">
+            <div @click="open3DModal('finance')" class="glass-panel p-8 rounded-2xl flex flex-col gap-4 group hover:border-amber-500/30 hover:shadow-xl hover:shadow-amber-500/[0.02] hover:-translate-y-2 transition-all duration-300 relative overflow-hidden cursor-pointer" title="Xem mô phỏng 3D">
               <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-amber-500/5 to-transparent rounded-bl-3xl pointer-events-none"></div>
               <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white group-hover:scale-110 group-hover:shadow-md group-hover:shadow-amber-500/20 transition-all duration-300">
                 <span class="material-symbols-outlined text-2xl">payments</span>
               </div>
               <h3 class="text-xl font-bold text-slate-900 mt-2 group-hover:text-amber-600 transition-colors duration-300">Học phí & Doanh thu</h3>
               <p class="text-sm text-slate-600 leading-relaxed">Theo dõi công nợ học phí, xuất hóa đơn điện tử và đối soát thanh toán tự động.</p>
+              <div class="mt-auto text-xs font-bold text-amber-600 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <span>Khám phá 3D</span>
+                <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+              </div>
             </div>
             <!-- Card 4 -->
-            <div class="glass-panel p-8 rounded-2xl flex flex-col gap-4 group hover:border-sky-500/30 hover:shadow-xl hover:shadow-sky-500/[0.02] hover:-translate-y-2 transition-all duration-300 relative overflow-hidden">
+            <div @click="open3DModal('portal')" class="glass-panel p-8 rounded-2xl flex flex-col gap-4 group hover:border-sky-500/30 hover:shadow-xl hover:shadow-sky-500/[0.02] hover:-translate-y-2 transition-all duration-300 relative overflow-hidden cursor-pointer" title="Xem mô phỏng 3D">
               <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-sky-500/5 to-transparent rounded-bl-3xl pointer-events-none"></div>
               <div class="w-12 h-12 rounded-xl bg-sky-550/10 text-sky-600 border border-sky-100 bg-sky-50 flex items-center justify-center group-hover:bg-sky-600 group-hover:text-white group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-sky-500/20 transition-all duration-300">
                 <span class="material-symbols-outlined text-2xl">smartphone</span>
               </div>
               <h3 class="text-xl font-bold text-slate-900 mt-2 group-hover:text-sky-600 transition-colors duration-300">Cổng học tập học viên</h3>
               <p class="text-sm text-slate-600 leading-relaxed">Giao diện riêng giúp học viên chủ động thanh toán, tra cứu lịch học và bảng điểm.</p>
+              <div class="mt-auto text-xs font-bold text-sky-600 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <span>Khám phá 3D</span>
+                <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+              </div>
             </div>
           </div>
         </div>
@@ -331,11 +347,79 @@
         </div>
       </div>
     </footer>
+
+    <!-- 3D Interactive Modal Popup -->
+    <teleport to="body">
+      <transition name="modal-fade">
+        <div v-if="active3DModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
+          <div class="bg-white/95 backdrop-blur-[24px] border border-white/50 shadow-[0_20px_40px_rgba(0,31,63,0.15)] w-full max-w-4xl rounded-2xl overflow-hidden animate-scale-in flex flex-col md:flex-row h-[90vh] md:h-[520px]">
+            
+            <!-- 3D Canvas Container -->
+            <div class="flex-1 bg-gradient-to-br from-slate-900 via-slate-950 to-blue-950 relative min-h-[300px] md:min-h-0 flex items-center justify-center overflow-hidden">
+              <canvas ref="threeCanvas" class="w-full h-full block cursor-grab active:cursor-grabbing"></canvas>
+              
+              <!-- 3D Drag Tip Overlay -->
+              <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-md border border-white/10 px-3.5 py-1.5 rounded-full text-[10px] font-bold text-white/70 uppercase tracking-widest flex items-center gap-1.5 pointer-events-none select-none">
+                <span class="material-symbols-outlined text-[13px] animate-pulse">drag_pan</span>
+                Kéo chuột để xoay 3D
+              </div>
+
+              <!-- Loading scene placeholder -->
+              <div v-if="loading3D" class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-slate-955/80 transition-opacity duration-300">
+                <span class="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin"></span>
+                <span class="text-xs text-white/50 font-bold uppercase tracking-wide">Đang khởi tạo 3D...</span>
+              </div>
+            </div>
+
+            <!-- Modal Info Description Panel -->
+            <div class="w-full md:w-[380px] p-8 flex flex-col justify-between border-t md:border-t-0 md:border-l border-slate-200 bg-white">
+              <div class="space-y-6">
+                <!-- Header Title & Tag -->
+                <div class="space-y-2">
+                  <span class="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full border border-blue-500/20 text-blue-600 bg-blue-50 inline-block">
+                    Mô phỏng 3D
+                  </span>
+                  <h3 class="text-2xl font-black text-slate-900 tracking-tight leading-tight">
+                    {{ modalInfo.title }}
+                  </h3>
+                </div>
+
+                <!-- Description Text -->
+                <p class="text-sm text-slate-600 leading-relaxed">
+                  {{ modalInfo.description }}
+                </p>
+
+                <!-- Feature list items -->
+                <div class="space-y-3 pt-2">
+                  <div v-for="(feat, idx) in modalInfo.features" :key="idx" class="flex items-start gap-2.5 text-xs text-slate-700 font-semibold">
+                    <span class="material-symbols-outlined text-[16px] text-blue-600 shrink-0 mt-0.5" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                    <span>{{ feat }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Footer Buttons -->
+              <div class="flex gap-3 pt-6 border-t border-slate-100">
+                <router-link to="/login" class="flex-1 bg-gradient-to-r from-blue-600 to-sky-500 hover:from-sky-500 hover:to-blue-600 text-white font-bold text-center py-3 rounded-xl shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 active:scale-95 transition-all text-xs flex items-center justify-center">
+                  Thử nghiệm ngay
+                </router-link>
+                <button @click="close3DModal" class="px-5 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-colors text-xs cursor-pointer">
+                  Đóng
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </transition>
+    </teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
+import * as THREE from 'three'
 
 const facebookUrl = import.meta.env.VITE_FACEBOOK_URL || 'https://www.facebook.com/hieu.minh.793013/'
 const mobileMenuOpen = ref(false)
@@ -352,10 +436,348 @@ const words = [
   'đào tạo toàn diện'
 ]
 
-// Static Mockup configurations (no reactive animations)
+// 3D Modal References & States
+const active3DModal = ref(null)
+const threeCanvas = ref(null)
+const loading3D = ref(false)
+
+const featureDetails = {
+  course: {
+    title: "Hệ thống Quản lý Khóa học",
+    description: "Tối ưu hóa sắp xếp lịch dạy, tránh trùng lặp thời khóa biểu và tự động điều phối phòng học cùng giáo viên phụ trách.",
+    features: ["Tự động xếp lịch thông minh", "Cảnh báo trùng lịch ngay lập tức", "Báo cáo hiệu suất sử dụng phòng học"]
+  },
+  student: {
+    title: "Hồ sơ & Chuyên cần Học viên",
+    description: "Số hóa học bạ điện tử, điểm danh thông minh bằng QR/nhận diện và tự động hóa hệ thống chấm điểm chuyên cần của trung tâm.",
+    features: ["Theo dõi chuyên cần theo thời gian thực", "Điểm danh trực quan bằng biểu đồ", "Đồng bộ hóa kết quả thi và học bạ"]
+  },
+  finance: {
+    title: "Học phí & Quản trị Doanh thu",
+    description: "Tự động hóa hoàn toàn các giao dịch đóng học phí, đối soát thông minh qua VietQR SePay và cảnh báo công nợ định kỳ.",
+    features: ["Giao dịch tự động VietQR SePay", "Theo dõi công nợ học phí tự động", "Báo cáo doanh thu & tăng trưởng trực quan"]
+  },
+  portal: {
+    title: "Cổng học vụ riêng cho Học viên",
+    description: "Không gian cá nhân hóa giúp học viên dễ dàng theo dõi tiến độ, tra cứu lịch học, xem bảng điểm và thực hiện thanh toán trực tuyến.",
+    features: ["Ví tích lũy bảo lưu học phí", "Tra cứu thời khóa biểu cá nhân", "Cổng thanh toán học phí trực tiếp"]
+  }
+}
+
+const modalInfo = computed(() => {
+  return featureDetails[active3DModal.value] || { title: '', description: '', features: [] }
+})
+
+// Three.js Scene Variables
+let scene, camera, renderer, animationFrameId, activeMesh
+let isDragging = false
+let previousMousePosition = { x: 0, y: 0 }
+
+const open3DModal = (type) => {
+  active3DModal.value = type
+  loading3D.value = true
+  
+  nextTick(() => {
+    initThree(type)
+  })
+}
+
+const close3DModal = () => {
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId)
+    animationFrameId = null
+  }
+  
+  window.removeEventListener('resize', handleResize)
+  
+  const canvas = threeCanvas.value
+  if (canvas) {
+    canvas.removeEventListener('pointerdown', onPointerDown)
+    canvas.removeEventListener('pointermove', onPointerMove)
+    canvas.removeEventListener('pointerup', onPointerUp)
+    canvas.removeEventListener('pointerleave', onPointerUp)
+  }
+
+  if (scene) {
+    scene.traverse((object) => {
+      if (object.geometry) object.geometry.dispose()
+      if (object.material) {
+        if (Array.isArray(object.material)) {
+          object.material.forEach((material) => material.dispose())
+        } else {
+          object.material.dispose()
+        }
+      }
+    })
+    scene = null
+  }
+
+  if (renderer) {
+    renderer.dispose()
+    renderer = null
+  }
+
+  camera = null
+  activeMesh = null
+  active3DModal.value = null
+  loading3D.value = false
+}
+
+// Pointer Drag Event Listeners
+const onPointerDown = (e) => {
+  isDragging = true
+}
+
+const onPointerMove = (e) => {
+  const deltaMove = {
+    x: e.offsetX - previousMousePosition.x,
+    y: e.offsetY - previousMousePosition.y
+  }
+
+  if (isDragging && activeMesh) {
+    activeMesh.rotation.y += deltaMove.x * 0.007
+    activeMesh.rotation.x += deltaMove.y * 0.007
+  }
+
+  previousMousePosition = {
+    x: e.offsetX,
+    y: e.offsetY
+  }
+}
+
+const onPointerUp = () => {
+  isDragging = false
+}
+
+const handleResize = () => {
+  const canvas = threeCanvas.value
+  if (!canvas || !camera || !renderer) return
+  const width = canvas.clientWidth
+  const height = canvas.clientHeight
+  camera.aspect = width / height
+  camera.updateProjectionMatrix()
+  renderer.setSize(width, height, false)
+}
+
+// Procedural 3D Builders
+const createCourse3D = () => {
+  const group = new THREE.Group()
+
+  // 1. The Book Cover
+  const coverGeo = new THREE.BoxGeometry(2.2, 3.0, 0.3)
+  const coverMat = new THREE.MeshStandardMaterial({
+    color: 0x2563eb,
+    roughness: 0.3,
+    metalness: 0.1
+  })
+  const cover = new THREE.Mesh(coverGeo, coverMat)
+  group.add(cover)
+
+  // 2. The Book Pages
+  const pagesGeo = new THREE.BoxGeometry(2.0, 2.8, 0.25)
+  const pagesMat = new THREE.MeshStandardMaterial({
+    color: 0xf8fafc,
+    roughness: 0.8
+  })
+  const pages = new THREE.Mesh(pagesGeo, pagesMat)
+  pages.position.x = 0.05
+  group.add(pages)
+
+  // 3. Floating Ring
+  const ringGeo = new THREE.TorusGeometry(2.0, 0.03, 8, 48)
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: 0x38bdf8,
+    wireframe: true
+  })
+  const ring = new THREE.Mesh(ringGeo, ringMat)
+  ring.rotation.x = Math.PI / 2.5
+  group.add(ring)
+
+  return group
+}
+
+const createStudent3D = () => {
+  const group = new THREE.Group()
+  const count = 12
+  const nodes = []
+
+  const nodeGeo = new THREE.SphereGeometry(0.12, 16, 16)
+  const nodeMat = new THREE.MeshStandardMaterial({
+    color: 0x10b981,
+    emissive: 0x047857,
+    roughness: 0.1
+  })
+
+  for (let i = 0; i < count; i++) {
+    const mesh = new THREE.Mesh(nodeGeo, nodeMat)
+    const u = Math.random()
+    const v = Math.random()
+    const theta = u * 2.0 * Math.PI
+    const phi = Math.acos(2.0 * v - 1.0)
+    const r = 1.5 + Math.random() * 0.3
+    
+    mesh.position.x = r * Math.sin(phi) * Math.cos(theta)
+    mesh.position.y = r * Math.sin(phi) * Math.sin(theta)
+    mesh.position.z = r * Math.cos(phi)
+    
+    group.add(mesh)
+    nodes.push(mesh.position)
+  }
+
+  const lineMat = new THREE.LineBasicMaterial({
+    color: 0x34d399,
+    transparent: true,
+    opacity: 0.4
+  })
+
+  const points = []
+  for (let i = 0; i < count; i++) {
+    for (let j = i + 1; j < count; j++) {
+      const dist = nodes[i].distanceTo(nodes[j])
+      if (dist < 2.5) {
+        points.push(nodes[i].clone())
+        points.push(nodes[j].clone())
+      }
+    }
+  }
+
+  const lineGeo = new THREE.BufferGeometry().setFromPoints(points)
+  const lines = new THREE.LineSegments(lineGeo, lineMat)
+  group.add(lines)
+
+  return group
+}
+
+const createPortal3D = () => {
+  const group = new THREE.Group()
+
+  // Phone Frame
+  const frameGeo = new THREE.BoxGeometry(1.6, 3.2, 0.15)
+  const frameMat = new THREE.MeshStandardMaterial({
+    color: 0x0f172a,
+    roughness: 0.4,
+    metalness: 0.9
+  })
+  const frame = new THREE.Mesh(frameGeo, frameMat)
+  group.add(frame)
+
+  // Screen
+  const screenGeo = new THREE.BoxGeometry(1.5, 3.1, 0.04)
+  const screenMat = new THREE.MeshStandardMaterial({
+    color: 0x0ea5e9,
+    emissive: 0x0369a1,
+    roughness: 0.1
+  })
+  const screen = new THREE.Mesh(screenGeo, screenMat)
+  screen.position.z = 0.06
+  group.add(screen)
+
+  return group
+}
+
+// Init Three.js Scene
+const initThree = (type) => {
+  const canvas = threeCanvas.value
+  if (!canvas) return
+
+  // 1. Create Scene
+  scene = new THREE.Scene()
+
+  // 2. Camera Setup
+  const width = canvas.clientWidth
+  const height = canvas.clientHeight
+  camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100)
+  camera.position.z = 6.5
+
+  // 3. Renderer Setup
+  renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: true,
+    alpha: true
+  })
+  renderer.setSize(width, height, false)
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+
+  // 4. Lights
+  const ambient = new THREE.AmbientLight(0xffffff, 0.7)
+  scene.add(ambient)
+
+  const light1 = new THREE.DirectionalLight(0x38bdf8, 1.2)
+  light1.position.set(5, 5, 5)
+  scene.add(light1)
+
+  const light2 = new THREE.PointLight(0xa855f7, 1.5, 10)
+  light2.position.set(-3, -3, 3)
+  scene.add(light2)
+
+  // 5. Build Procedural 3D Mesh
+  if (type === 'course') {
+    activeMesh = createCourse3D()
+  } else if (type === 'student') {
+    activeMesh = createStudent3D()
+  } else if (type === 'finance') {
+    const group = new THREE.Group()
+    const cardGeo = new THREE.BoxGeometry(3.0, 1.8, 0.08)
+    const cardMat = new THREE.MeshStandardMaterial({
+      color: 0x1e293b,
+      roughness: 0.2,
+      metalness: 0.8,
+      emissive: 0x1e3a8a,
+      emissiveIntensity: 0.15
+    })
+    const card = new THREE.Mesh(cardGeo, cardMat)
+    group.add(card)
+
+    const coinGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.12, 24)
+    const coinMat = new THREE.MeshStandardMaterial({
+      color: 0xf59e0b,
+      metalness: 0.8,
+      roughness: 0.2
+    })
+    for (let i = 0; i < 4; i++) {
+      const coin = new THREE.Mesh(coinGeo, coinMat)
+      coin.position.set(-0.6, -1.0 + (i * 0.15), 0.2)
+      coin.rotation.x = 0.2
+      group.add(coin)
+    }
+    activeMesh = group
+  } else if (type === 'portal') {
+    activeMesh = createPortal3D()
+  }
+
+  if (activeMesh) {
+    scene.add(activeMesh)
+  }
+
+  // 6. Interaction listeners
+  canvas.addEventListener('pointerdown', onPointerDown)
+  canvas.addEventListener('pointermove', onPointerMove)
+  canvas.addEventListener('pointerup', onPointerUp)
+  canvas.addEventListener('pointerleave', onPointerUp)
+  window.addEventListener('resize', handleResize)
+
+  loading3D.value = false
+
+  // 7. Render Loop
+  const clock = new THREE.Clock()
+  const animate = () => {
+    if (!renderer) return
+    animationFrameId = requestAnimationFrame(animate)
+
+    const elapsed = clock.getElapsedTime()
+
+    if (activeMesh && !isDragging) {
+      activeMesh.rotation.y = Math.sin(elapsed * 0.4) * 0.3
+      activeMesh.rotation.x = Math.sin(elapsed * 0.2) * 0.15
+    }
+
+    renderer.render(scene, camera)
+  }
+
+  animate()
+}
 
 onMounted(() => {
-  // Intersection Observer for Scroll Reveal
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
@@ -369,8 +791,6 @@ onMounted(() => {
   document.querySelectorAll('.reveal').forEach((el) => {
     observer.observe(el)
   })
-
-  // Word carousel is now animated via CSS keyframes for seamless loop
 })
 </script>
 
