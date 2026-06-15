@@ -17,11 +17,11 @@
           <span class="material-symbols-outlined text-headline-lg text-on-primary">school</span>
           <span class="font-title-md text-title-md text-on-primary tracking-tight">EduManager Pro</span>
         </router-link>
-        <div class="relative z-10 max-w-lg mb-20">
-          <h1 class="font-display-lg text-display-lg text-on-primary mb-stack-md leading-tight drop-shadow-md">
+        <div class="relative z-10 max-w-3xl mb-20">
+          <h1 class="font-display-lg text-display-lg text-on-primary mb-stack-md leading-tight drop-shadow-md whitespace-nowrap">
             Kiến tạo Tương lai Giáo dục
           </h1>
-          <p class="font-body-lg text-body-lg text-on-primary-container opacity-90 max-w-md">
+          <p class="font-body-lg text-body-lg text-on-primary-container opacity-90 whitespace-nowrap">
             Nền tảng quản lý học vụ tập trung và bảo mật cho giáo dục hiện đại.
           </p>
         </div>
