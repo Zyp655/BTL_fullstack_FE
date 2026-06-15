@@ -244,17 +244,17 @@
             class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl overflow-hidden flex flex-col group hover:-translate-y-1 hover:shadow-md transition-all duration-300 relative cursor-pointer"
             @click="authStore.isAdmin && openEditDialog(course)"
           >
-            <!-- Card Banner Image -->
-            <div class="h-40 w-full overflow-hidden relative">
-              <img
-                :src="getCourseImage(course.imageUrl, course.category)"
-                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                alt="Course cover image"
-              />
-              <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+            <!-- Card Banner Image Carousel -->
+            <div class="h-40 w-full overflow-hidden relative group/carousel">
+              <div class="w-full h-full flex transition-transform duration-300" :style="{ transform: `translateX(-${(activeImageIndices[course.courseId] || 0) * 100}%)` }">
+                <div v-for="(img, idx) in getCourseImages(course.imageUrl, course.category)" :key="idx" class="w-full h-full flex-shrink-0">
+                  <img :src="img" class="w-full h-full object-cover" alt="Course image" />
+                </div>
+              </div>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none"></div>
               
               <!-- Floating Category Badge -->
-              <div class="absolute left-4 bottom-3 flex items-center gap-1.5">
+              <div class="absolute left-4 bottom-3 flex items-center gap-1.5 z-10">
                 <div :class="[getCategoryBgClass(course.category), 'w-8 h-8 rounded-lg flex items-center justify-center border shadow-md backdrop-blur-sm bg-white/70']">
                   <span class="material-symbols-outlined text-[18px]">{{ getCategoryIcon(course.category) }}</span>
                 </div>
@@ -264,7 +264,7 @@
               </div>
 
               <!-- Floating Admin Controls -->
-              <div v-if="authStore.isAdmin" class="absolute right-3 top-3 flex items-center gap-1 bg-white/80 backdrop-blur-md p-1 rounded-lg shadow-md" @click.stop>
+              <div v-if="authStore.isAdmin" class="absolute right-3 top-3 flex items-center gap-1 bg-white/80 backdrop-blur-md p-1 rounded-lg shadow-md z-10" @click.stop>
                 <button
                   @click="openEditDialog(course)"
                   class="w-8 h-8 rounded-lg hover:bg-on-tertiary-container/10 flex items-center justify-center text-on-tertiary-container transition-colors cursor-pointer"
@@ -279,6 +279,33 @@
                 >
                   <span class="material-symbols-outlined text-[18px]">delete</span>
                 </button>
+              </div>
+
+              <!-- Left/Right navigation arrows (only show if images length > 1) -->
+              <button 
+                v-if="getCourseImages(course.imageUrl, course.category).length > 1"
+                @click.stop="prevImage(course.courseId, getCourseImages(course.imageUrl, course.category).length)"
+                class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-all opacity-0 group-hover/carousel:opacity-100 cursor-pointer z-10"
+              >
+                <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+              </button>
+              <button 
+                v-if="getCourseImages(course.imageUrl, course.category).length > 1"
+                @click.stop="nextImage(course.courseId, getCourseImages(course.imageUrl, course.category).length)"
+                class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-all opacity-0 group-hover/carousel:opacity-100 cursor-pointer z-10"
+              >
+                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+              </button>
+
+              <!-- Dots indicators -->
+              <div v-if="getCourseImages(course.imageUrl, course.category).length > 1" class="absolute bottom-3 right-4 flex gap-1 z-10 pointer-events-auto">
+                <span 
+                  v-for="(img, idx) in getCourseImages(course.imageUrl, course.category)" 
+                  :key="idx"
+                  @click.stop="activeImageIndices[course.courseId] = idx"
+                  :class="[(activeImageIndices[course.courseId] || 0) === idx ? 'bg-white w-4' : 'bg-white/50 w-1.5']"
+                  class="h-1.5 rounded-full transition-all duration-300 cursor-pointer"
+                ></span>
               </div>
             </div>
 
@@ -420,21 +447,21 @@
 
             <!-- Course Image Selection -->
             <div class="space-y-2">
-              <label class="text-body-sm font-semibold text-primary">Ảnh bìa môn học</label>
+              <label class="text-body-sm font-semibold text-primary">Ảnh bìa môn học (Chọn một hoặc nhiều ảnh)</label>
               
               <!-- Presets Grid -->
               <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
                 <!-- Preset Foreign Language -->
                 <button
                   type="button"
-                  @click="selectPresetImage('preset_foreign_language')"
-                  :class="[formData.imageUrl === 'preset_foreign_language' ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant/30']"
+                  @click="toggleImageSelection('preset_foreign_language')"
+                  :class="[imageUrlsList.includes('preset_foreign_language') ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant/30']"
                   class="border rounded-lg overflow-hidden h-14 relative focus:outline-none cursor-pointer hover:border-primary transition-all"
                   title="Ngoại ngữ"
                 >
                   <img :src="foreignLanguageImg" class="w-full h-full object-cover" />
                   <div class="absolute inset-0 bg-black/10 hover:bg-transparent transition-colors"></div>
-                  <div v-if="formData.imageUrl === 'preset_foreign_language'" class="absolute right-1 top-1 bg-primary text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow">
+                  <div v-if="imageUrlsList.includes('preset_foreign_language')" class="absolute right-1 top-1 bg-primary text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow">
                     <span class="material-symbols-outlined text-[10px] font-bold">check</span>
                   </div>
                 </button>
@@ -442,14 +469,14 @@
                 <!-- Preset IT -->
                 <button
                   type="button"
-                  @click="selectPresetImage('preset_it')"
-                  :class="[formData.imageUrl === 'preset_it' ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant/30']"
+                  @click="toggleImageSelection('preset_it')"
+                  :class="[imageUrlsList.includes('preset_it') ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant/30']"
                   class="border rounded-lg overflow-hidden h-14 relative focus:outline-none cursor-pointer hover:border-primary transition-all"
                   title="Tin học"
                 >
                   <img :src="itImg" class="w-full h-full object-cover" />
                   <div class="absolute inset-0 bg-black/10 hover:bg-transparent transition-colors"></div>
-                  <div v-if="formData.imageUrl === 'preset_it'" class="absolute right-1 top-1 bg-primary text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow">
+                  <div v-if="imageUrlsList.includes('preset_it')" class="absolute right-1 top-1 bg-primary text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow">
                     <span class="material-symbols-outlined text-[10px] font-bold">check</span>
                   </div>
                 </button>
@@ -457,14 +484,14 @@
                 <!-- Preset Skills -->
                 <button
                   type="button"
-                  @click="selectPresetImage('preset_skills')"
-                  :class="[formData.imageUrl === 'preset_skills' ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant/30']"
+                  @click="toggleImageSelection('preset_skills')"
+                  :class="[imageUrlsList.includes('preset_skills') ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant/30']"
                   class="border rounded-lg overflow-hidden h-14 relative focus:outline-none cursor-pointer hover:border-primary transition-all"
                   title="Kỹ năng"
                 >
                   <img :src="skillsImg" class="w-full h-full object-cover" />
                   <div class="absolute inset-0 bg-black/10 hover:bg-transparent transition-colors"></div>
-                  <div v-if="formData.imageUrl === 'preset_skills'" class="absolute right-1 top-1 bg-primary text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow">
+                  <div v-if="imageUrlsList.includes('preset_skills')" class="absolute right-1 top-1 bg-primary text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow">
                     <span class="material-symbols-outlined text-[10px] font-bold">check</span>
                   </div>
                 </button>
@@ -472,14 +499,14 @@
                 <!-- Preset Art -->
                 <button
                   type="button"
-                  @click="selectPresetImage('preset_art')"
-                  :class="[formData.imageUrl === 'preset_art' ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant/30']"
+                  @click="toggleImageSelection('preset_art')"
+                  :class="[imageUrlsList.includes('preset_art') ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant/30']"
                   class="border rounded-lg overflow-hidden h-14 relative focus:outline-none cursor-pointer hover:border-primary transition-all"
                   title="Mỹ thuật & Thiết kế"
                 >
                   <img :src="artImg" class="w-full h-full object-cover" />
                   <div class="absolute inset-0 bg-black/10 hover:bg-transparent transition-colors"></div>
-                  <div v-if="formData.imageUrl === 'preset_art'" class="absolute right-1 top-1 bg-primary text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow">
+                  <div v-if="imageUrlsList.includes('preset_art')" class="absolute right-1 top-1 bg-primary text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow">
                     <span class="material-symbols-outlined text-[10px] font-bold">check</span>
                   </div>
                 </button>
@@ -487,14 +514,14 @@
                 <!-- Preset Science -->
                 <button
                   type="button"
-                  @click="selectPresetImage('preset_science')"
-                  :class="[formData.imageUrl === 'preset_science' ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant/30']"
+                  @click="toggleImageSelection('preset_science')"
+                  :class="[imageUrlsList.includes('preset_science') ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant/30']"
                   class="border rounded-lg overflow-hidden h-14 relative focus:outline-none cursor-pointer hover:border-primary transition-all"
                   title="Khoa học & Toán"
                 >
                   <img :src="scienceImg" class="w-full h-full object-cover" />
                   <div class="absolute inset-0 bg-black/10 hover:bg-transparent transition-colors"></div>
-                  <div v-if="formData.imageUrl === 'preset_science'" class="absolute right-1 top-1 bg-primary text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow">
+                  <div v-if="imageUrlsList.includes('preset_science')" class="absolute right-1 top-1 bg-primary text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow">
                     <span class="material-symbols-outlined text-[10px] font-bold">check</span>
                   </div>
                 </button>
@@ -502,14 +529,14 @@
                 <!-- Preset Default -->
                 <button
                   type="button"
-                  @click="selectPresetImage('preset_default')"
-                  :class="[formData.imageUrl === 'preset_default' ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant/30']"
+                  @click="toggleImageSelection('preset_default')"
+                  :class="[imageUrlsList.includes('preset_default') ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant/30']"
                   class="border rounded-lg overflow-hidden h-14 relative focus:outline-none cursor-pointer hover:border-primary transition-all"
                   title="Mặc định"
                 >
                   <img :src="defaultImg" class="w-full h-full object-cover" />
                   <div class="absolute inset-0 bg-black/10 hover:bg-transparent transition-colors"></div>
-                  <div v-if="formData.imageUrl === 'preset_default'" class="absolute right-1 top-1 bg-primary text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow">
+                  <div v-if="imageUrlsList.includes('preset_default')" class="absolute right-1 top-1 bg-primary text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow">
                     <span class="material-symbols-outlined text-[10px] font-bold">check</span>
                   </div>
                 </button>
@@ -529,27 +556,58 @@
                   </button>
                 </div>
 
-                <!-- Preview of uploaded/custom image -->
-                <div v-if="isCustomImageActive" class="flex items-center gap-3 p-3 bg-primary-container/[0.03] border border-primary-container/10 rounded-xl">
-                  <div class="w-16 h-12 rounded-lg overflow-hidden border border-outline-variant/30 shrink-0">
-                    <img :src="formData.imageUrl" class="w-full h-full object-cover" />
-                  </div>
-                  <div class="min-w-0 flex-1">
-                    <div class="text-body-xs font-bold text-primary-container">Ảnh tự chọn đang kích hoạt</div>
-                    <div class="text-[10px] text-on-surface-variant truncate">
-                      {{ formData.imageUrl.startsWith('data:') ? 'Ảnh tải lên từ thiết bị' : formData.imageUrl }}
+                <!-- Preview Grid of Selected Images -->
+                <div v-if="imageUrlsList.length > 0" class="space-y-1.5 mt-2">
+                  <div class="text-[11px] font-bold text-primary-container">Ảnh đã chọn (Ảnh đầu tiên sẽ làm ảnh bìa chính):</div>
+                  <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 max-h-40 overflow-y-auto p-2 border border-primary-container/10 rounded-xl bg-primary-container/[0.02]">
+                    <div 
+                      v-for="(img, index) in imageUrlsList" 
+                      :key="index"
+                      class="relative group rounded-lg overflow-hidden border border-outline-variant/30 h-16 bg-black/5 flex items-center justify-center"
+                    >
+                      <img :src="getSingleImageSrc(img)" class="w-full h-full object-cover" />
+                      
+                      <!-- Cover badge for the first image -->
+                      <span v-if="index === 0" class="absolute left-1 top-1 bg-emerald-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow">
+                        Bìa
+                      </span>
+                      
+                      <!-- Remove Button overlay -->
+                      <button
+                        type="button"
+                        @click="removeSelectedImage(index)"
+                        class="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer"
+                        title="Xóa ảnh này"
+                      >
+                        <span class="material-symbols-outlined text-[20px]">delete</span>
+                      </button>
+                      
+                      <!-- Order control buttons -->
+                      <div class="absolute right-1 bottom-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          type="button"
+                          v-if="index > 0"
+                          @click.stop="moveImage(index, index - 1)"
+                          class="w-5 h-5 rounded bg-black/75 text-white flex items-center justify-center hover:bg-black/90"
+                          title="Di chuyển lên trước"
+                        >
+                          <span class="material-symbols-outlined text-[12px]">arrow_back</span>
+                        </button>
+                        <button 
+                          type="button"
+                          v-if="index < imageUrlsList.length - 1"
+                          @click.stop="moveImage(index, index + 1)"
+                          class="w-5 h-5 rounded bg-black/75 text-white flex items-center justify-center hover:bg-black/90"
+                          title="Di chuyển ra sau"
+                        >
+                          <span class="material-symbols-outlined text-[12px]">arrow_forward</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    @click="clearCustomImage"
-                    class="text-error hover:text-error/80 cursor-pointer flex items-center justify-center"
-                  >
-                    <span class="material-symbols-outlined text-[20px]">delete</span>
-                  </button>
                 </div>
               </div>
-              <input ref="courseImageInput" type="file" class="hidden" accept="image/*" @change="onCourseImageUpload" />
+              <input ref="courseImageInput" type="file" class="hidden" accept="image/*" multiple @change="onCourseImageUpload" />
             </div>
 
             <!-- Category and Level -->
@@ -932,15 +990,25 @@ const courseColumns = [
 ]
 
 function getCourseImage(imageUrl, cat) {
-  if (imageUrl === 'preset_foreign_language') return foreignLanguageImg
-  if (imageUrl === 'preset_it') return itImg
-  if (imageUrl === 'preset_skills') return skillsImg
-  if (imageUrl === 'preset_art') return artImg
-  if (imageUrl === 'preset_science') return scienceImg
-  if (imageUrl === 'preset_default') return defaultImg
+  if (!imageUrl) {
+    const map = {
+      NgoaiNgu: foreignLanguageImg,
+      TinHoc: itImg,
+      KyNang: skillsImg
+    }
+    return map[cat] || defaultImg
+  }
   
-  if (imageUrl && imageUrl.trim().length > 0 && !imageUrl.startsWith('preset_')) {
-    return imageUrl
+  const firstUrl = imageUrl.split('|')[0]
+  if (firstUrl === 'preset_foreign_language') return foreignLanguageImg
+  if (firstUrl === 'preset_it') return itImg
+  if (firstUrl === 'preset_skills') return skillsImg
+  if (firstUrl === 'preset_art') return artImg
+  if (firstUrl === 'preset_science') return scienceImg
+  if (firstUrl === 'preset_default') return defaultImg
+  
+  if (firstUrl && firstUrl.trim().length > 0) {
+    return firstUrl
   }
 
   const map = {
@@ -1021,45 +1089,122 @@ const vipLaunchForm = ref({
 const customImageUrl = ref('')
 const courseImageInput = ref(null)
 
-const isCustomImageActive = computed(() => {
-  const val = formData.value.imageUrl
-  return val && !['preset_foreign_language', 'preset_it', 'preset_skills', 'preset_art', 'preset_science', 'preset_default'].includes(val)
-})
+const imageUrlsList = ref([])
+const activeImageIndices = ref({})
 
-function onCustomImageUrlInput() {
-  formData.value.imageUrl = customImageUrl.value
+function prevImage(courseId, length) {
+  const current = activeImageIndices.value[courseId] || 0
+  activeImageIndices.value[courseId] = (current - 1 + length) % length
 }
 
-function selectPresetImage(preset) {
-  formData.value.imageUrl = preset
-  customImageUrl.value = ''
+function nextImage(courseId, length) {
+  const current = activeImageIndices.value[courseId] || 0
+  activeImageIndices.value[courseId] = (current + 1) % length
+}
+
+function getCourseImages(imageUrl, cat) {
+  if (!imageUrl) {
+    const map = {
+      NgoaiNgu: [foreignLanguageImg],
+      TinHoc: [itImg],
+      KyNang: [skillsImg]
+    }
+    return map[cat] || [defaultImg]
+  }
+  return imageUrl.split('|').filter(Boolean).map(url => {
+    if (url === 'preset_foreign_language') return foreignLanguageImg
+    if (url === 'preset_it') return itImg
+    if (url === 'preset_skills') return skillsImg
+    if (url === 'preset_art') return artImg
+    if (url === 'preset_science') return scienceImg
+    if (url === 'preset_default') return defaultImg
+    return url
+  })
+}
+
+function getSingleImageSrc(img) {
+  if (img === 'preset_foreign_language') return foreignLanguageImg
+  if (img === 'preset_it') return itImg
+  if (img === 'preset_skills') return skillsImg
+  if (img === 'preset_art') return artImg
+  if (img === 'preset_science') return scienceImg
+  if (img === 'preset_default') return defaultImg
+  return img
+}
+
+function toggleImageSelection(preset) {
+  if (preset === 'preset_default') {
+    imageUrlsList.value = ['preset_default']
+    return
+  }
+  
+  // If selecting a normal image, remove preset_default first
+  const defaultIdx = imageUrlsList.value.indexOf('preset_default')
+  if (defaultIdx > -1) {
+    imageUrlsList.value.splice(defaultIdx, 1)
+  }
+  
+  const index = imageUrlsList.value.indexOf(preset)
+  if (index > -1) {
+    imageUrlsList.value.splice(index, 1)
+  } else {
+    imageUrlsList.value.push(preset)
+  }
+  
+  if (imageUrlsList.value.length === 0) {
+    imageUrlsList.value = ['preset_default']
+  }
 }
 
 function triggerCourseImageSelect() {
   courseImageInput.value.click()
 }
 
-function onCourseImageUpload(e) {
-  const file = e.target.files[0]
-  if (!file) return
-  if (file.size > 2 * 1024 * 1024) {
-    showSnackbar('Ảnh kích thước quá lớn, vui lòng chọn ảnh dưới 2MB', 'error')
-    return
+async function onCourseImageUpload(e) {
+  const files = Array.from(e.target.files)
+  if (files.length === 0) return
+  
+  // Remove default image if it was the only one
+  if (imageUrlsList.value.length === 1 && imageUrlsList.value[0] === 'preset_default') {
+    imageUrlsList.value = []
   }
-  const reader = new FileReader()
-  reader.onload = () => {
-    formData.value.imageUrl = reader.result
-    customImageUrl.value = ''
+  
+  for (const file of files) {
+    if (file.size > 2 * 1024 * 1024) {
+      showSnackbar(`Ảnh "${file.name}" kích thước quá lớn, vui lòng chọn ảnh dưới 2MB`, 'error')
+      continue
+    }
+    const reader = new FileReader()
+    const promise = new Promise((resolve) => {
+      reader.onload = () => {
+        resolve(reader.result)
+      }
+    })
+    reader.readAsDataURL(file)
+    const base64 = await promise
+    imageUrlsList.value.push(base64)
   }
-  reader.readAsDataURL(file)
-}
-
-function clearCustomImage() {
-  formData.value.imageUrl = 'preset_default'
-  customImageUrl.value = ''
+  
+  if (imageUrlsList.value.length === 0) {
+    imageUrlsList.value = ['preset_default']
+  }
+  
   if (courseImageInput.value) {
     courseImageInput.value.value = ''
   }
+}
+
+function removeSelectedImage(index) {
+  imageUrlsList.value.splice(index, 1)
+  if (imageUrlsList.value.length === 0) {
+    imageUrlsList.value = ['preset_default']
+  }
+}
+
+function moveImage(fromIndex, toIndex) {
+  const element = imageUrlsList.value[fromIndex]
+  imageUrlsList.value.splice(fromIndex, 1)
+  imageUrlsList.value.splice(toIndex, 0, element)
 }
 
 const formData = ref({
@@ -1169,6 +1314,7 @@ function openCreateDialog() {
     totalSessions: 0,
     isActive: true,
   }
+  imageUrlsList.value = ['preset_default']
   customImageUrl.value = ''
   dialog.value = true
 }
@@ -1176,12 +1322,8 @@ function openCreateDialog() {
 function openEditDialog(item) {
   isEdit.value = true
   formData.value = { ...item }
-  const presets = ['preset_foreign_language', 'preset_it', 'preset_skills', 'preset_art', 'preset_science', 'preset_default']
-  if (presets.includes(item.imageUrl) || (item.imageUrl && item.imageUrl.startsWith('data:'))) {
-    customImageUrl.value = ''
-  } else {
-    customImageUrl.value = item.imageUrl || ''
-  }
+  imageUrlsList.value = item.imageUrl ? item.imageUrl.split('|').filter(Boolean) : ['preset_default']
+  customImageUrl.value = ''
   dialog.value = true
 }
 
@@ -1189,6 +1331,7 @@ async function saveForm() {
   if (!isCourseFormValid.value) return
   saving.value = true
   try {
+    formData.value.imageUrl = imageUrlsList.value.join('|')
     if (isEdit.value) {
       await store.updateCourse(formData.value.courseId, formData.value)
       showSnackbar('Cập nhật môn học thành công', 'success')

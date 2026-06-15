@@ -101,23 +101,50 @@
             @click="openCourseDetail(course)"
             class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl overflow-hidden flex flex-col justify-between group hover:-translate-y-1 hover:shadow-md transition-all duration-300 relative cursor-pointer"
           >
-            <!-- Card Banner Image -->
-            <div class="h-40 w-full overflow-hidden relative">
-              <img
-                :src="getCourseImage(course.imageUrl, course.category)"
-                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                alt="Course cover image"
-              />
-              <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+            <!-- Card Banner Image Carousel -->
+            <div class="h-40 w-full overflow-hidden relative group/carousel">
+              <div class="w-full h-full flex transition-transform duration-300" :style="{ transform: `translateX(-${(activeImageIndices[course.courseId] || 0) * 100}%)` }">
+                <div v-for="(img, idx) in getCourseImages(course.imageUrl, course.category)" :key="idx" class="w-full h-full flex-shrink-0">
+                  <img :src="img" class="w-full h-full object-cover" alt="Course image" />
+                </div>
+              </div>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none"></div>
               
               <!-- Floating Category Badge -->
-              <div class="absolute left-4 bottom-3 flex items-center gap-1.5">
+              <div class="absolute left-4 bottom-3 flex items-center gap-1.5 z-10">
                 <div :class="[getCategoryBgClass(course.category), 'w-8 h-8 rounded-lg flex items-center justify-center border shadow-md backdrop-blur-sm bg-white/70']">
                   <span class="material-symbols-outlined text-[18px]">{{ getCategoryIcon(course.category) }}</span>
                 </div>
                 <span class="text-white text-[13px] font-bold drop-shadow-md">
                   {{ getCategoryLabel(course.category) }}
                 </span>
+              </div>
+
+              <!-- Left/Right navigation arrows (only show if images length > 1) -->
+              <button 
+                v-if="getCourseImages(course.imageUrl, course.category).length > 1"
+                @click.stop="prevImage(course.courseId, getCourseImages(course.imageUrl, course.category).length)"
+                class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-all opacity-0 group-hover/carousel:opacity-100 cursor-pointer z-10"
+              >
+                <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+              </button>
+              <button 
+                v-if="getCourseImages(course.imageUrl, course.category).length > 1"
+                @click.stop="nextImage(course.courseId, getCourseImages(course.imageUrl, course.category).length)"
+                class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-all opacity-0 group-hover/carousel:opacity-100 cursor-pointer z-10"
+              >
+                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+              </button>
+
+              <!-- Dots indicators -->
+              <div v-if="getCourseImages(course.imageUrl, course.category).length > 1" class="absolute bottom-3 right-4 flex gap-1 z-10 pointer-events-auto">
+                <span 
+                  v-for="(img, idx) in getCourseImages(course.imageUrl, course.category)" 
+                  :key="idx"
+                  @click.stop="activeImageIndices[course.courseId] = idx"
+                  :class="[(activeImageIndices[course.courseId] || 0) === idx ? 'bg-white w-4' : 'bg-white/50 w-1.5']"
+                  class="h-1.5 rounded-full transition-all duration-300 cursor-pointer"
+                ></span>
               </div>
             </div>
 
@@ -252,17 +279,17 @@
       <teleport to="body">
         <div v-if="detailModal" class="fixed inset-0 glass-backdrop z-[9999] flex items-center justify-center p-4">
           <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-2xl shadow-[0_20px_40px_rgba(0,31,63,0.12)] max-w-lg w-full overflow-hidden animate-scale-in flex flex-col">
-            <!-- Modal Banner -->
-            <div class="h-48 w-full overflow-hidden relative">
-              <img
-                :src="getCourseImage(selectedCourseForDetail?.imageUrl, selectedCourseForDetail?.category)"
-                class="w-full h-full object-cover"
-                alt="Course cover image"
-              />
-              <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+            <!-- Modal Banner Carousel -->
+            <div class="h-56 w-full overflow-hidden relative group/modal-carousel">
+              <div class="w-full h-full flex transition-transform duration-300" :style="{ transform: `translateX(-${activeDetailImageIndex * 100}%)` }">
+                <div v-for="(img, idx) in getCourseImages(selectedCourseForDetail?.imageUrl, selectedCourseForDetail?.category)" :key="idx" class="w-full h-full flex-shrink-0">
+                  <img :src="img" class="w-full h-full object-cover" alt="Course image" />
+                </div>
+              </div>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none"></div>
               
               <!-- Category Badge inside Banner -->
-              <div class="absolute left-6 bottom-4 flex items-center gap-2">
+              <div class="absolute left-6 bottom-4 flex items-center gap-2 z-10">
                 <div :class="[getCategoryBgClass(selectedCourseForDetail?.category), 'w-9 h-9 rounded-xl flex items-center justify-center border shadow-md bg-white/90']">
                   <span class="material-symbols-outlined text-[20px]">{{ getCategoryIcon(selectedCourseForDetail?.category) }}</span>
                 </div>
@@ -274,10 +301,37 @@
               <!-- Close Button -->
               <button
                 @click="detailModal = false"
-                class="absolute right-4 top-4 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-colors cursor-pointer"
+                class="absolute right-4 top-4 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-colors cursor-pointer z-20"
               >
                 <span class="material-symbols-outlined text-[20px]">close</span>
               </button>
+
+              <!-- Left/Right navigation arrows (only show if images length > 1) -->
+              <button 
+                v-if="selectedCourseForDetail && getCourseImages(selectedCourseForDetail.imageUrl, selectedCourseForDetail.category).length > 1"
+                @click.stop="activeDetailImageIndex = (activeDetailImageIndex - 1 + getCourseImages(selectedCourseForDetail.imageUrl, selectedCourseForDetail.category).length) % getCourseImages(selectedCourseForDetail.imageUrl, selectedCourseForDetail.category).length"
+                class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-all cursor-pointer z-10"
+              >
+                <span class="material-symbols-outlined text-[20px]">chevron_left</span>
+              </button>
+              <button 
+                v-if="selectedCourseForDetail && getCourseImages(selectedCourseForDetail.imageUrl, selectedCourseForDetail.category).length > 1"
+                @click.stop="activeDetailImageIndex = (activeDetailImageIndex + 1) % getCourseImages(selectedCourseForDetail.imageUrl, selectedCourseForDetail.category).length"
+                class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-all cursor-pointer z-10"
+              >
+                <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+              </button>
+
+              <!-- Dots indicators -->
+              <div v-if="selectedCourseForDetail && getCourseImages(selectedCourseForDetail.imageUrl, selectedCourseForDetail.category).length > 1" class="absolute bottom-4 right-6 flex gap-1.5 z-10">
+                <span 
+                  v-for="(img, idx) in getCourseImages(selectedCourseForDetail.imageUrl, selectedCourseForDetail.category)" 
+                  :key="idx"
+                  @click.stop="activeDetailImageIndex = idx"
+                  :class="[activeDetailImageIndex === idx ? 'bg-white w-5' : 'bg-white/50 w-2']"
+                  class="h-2 rounded-full transition-all duration-300 cursor-pointer"
+                ></span>
+              </div>
             </div>
 
             <!-- Modal Content -->
@@ -358,15 +412,62 @@ import foreignLanguageImg from '../../assets/course_foreign_language.png'
 import itImg from '../../assets/course_it.png'
 import skillsImg from '../../assets/course_skills.png'
 import defaultImg from '../../assets/course_default.png'
+import artImg from '../../assets/course_art.png'
+import scienceImg from '../../assets/course_science.png'
+
+const activeImageIndices = ref({})
+const activeDetailImageIndex = ref(0)
+
+function prevImage(courseId, length) {
+  const current = activeImageIndices.value[courseId] || 0
+  activeImageIndices.value[courseId] = (current - 1 + length) % length
+}
+
+function nextImage(courseId, length) {
+  const current = activeImageIndices.value[courseId] || 0
+  activeImageIndices.value[courseId] = (current + 1) % length
+}
+
+function getCourseImages(imageUrl, cat) {
+  if (!imageUrl) {
+    const map = {
+      NgoaiNgu: [foreignLanguageImg],
+      TinHoc: [itImg],
+      KyNang: [skillsImg]
+    }
+    return map[cat] || [defaultImg]
+  }
+  return imageUrl.split('|').filter(Boolean).map(url => {
+    if (url === 'preset_foreign_language') return foreignLanguageImg
+    if (url === 'preset_it') return itImg
+    if (url === 'preset_skills') return skillsImg
+    if (url === 'preset_art') return artImg
+    if (url === 'preset_science') return scienceImg
+    if (url === 'preset_default') return defaultImg
+    return url
+  })
+}
 
 function getCourseImage(imageUrl, cat) {
-  if (imageUrl === 'preset_foreign_language') return foreignLanguageImg
-  if (imageUrl === 'preset_it') return itImg
-  if (imageUrl === 'preset_skills') return skillsImg
-  if (imageUrl === 'preset_default') return defaultImg
+  if (!imageUrl) {
+    const map = {
+      NgoaiNgu: foreignLanguageImg,
+      TinHoc: itImg,
+      KyNang: skillsImg
+    }
+    return map[cat] || defaultImg
+  }
   
-  if (imageUrl && imageUrl.trim().length > 0 && !imageUrl.startsWith('preset_')) {
-    return imageUrl
+  const firstUrl = imageUrl.split('|')[0]
+  if (firstUrl === 'preset_foreign_language') return foreignLanguageImg
+  if (firstUrl === 'preset_it') return itImg
+  if (firstUrl === 'preset_skills') return skillsImg
+  if (firstUrl === 'preset_art') return artImg
+  if (firstUrl === 'preset_science') return scienceImg
+  if (firstUrl === 'preset_default') return defaultImg
+  
+  if (firstUrl && firstUrl.trim().length > 0) {
+    return firstUrl
   }
 
   const map = {
@@ -459,6 +560,7 @@ const filteredCourses = computed(() => {
 
 function openCourseDetail(course) {
   selectedCourseForDetail.value = course
+  activeDetailImageIndex.value = 0
   detailModal.value = true
 }
 

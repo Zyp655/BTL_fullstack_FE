@@ -160,19 +160,19 @@
           </div>
 
           <div v-else class="bg-white/70 backdrop-blur-[20px] border border-white/40 p-4 rounded-xl space-y-3 shadow-[0_8px_16px_rgba(0,0,0,0.03)]">
-            <div class="flex justify-between items-center text-body-sm font-semibold text-primary-container">
+            <div class="flex justify-start items-center gap-2 text-body-sm font-semibold text-primary-container">
               <span>Điểm trung bình môn:</span>
               <span :class="[selectedClassAverageScore >= 5 ? 'text-emerald-600' : 'text-red-500', 'font-extrabold text-body-lg']">
                 {{ selectedClassAverageScore > 0 ? selectedClassAverageScore.toFixed(1) : 'Chưa tổng kết' }}
               </span>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
               <div
                 v-for="res in selectedClassExamResults"
                 :key="res.resultId"
-                class="bg-white/40 p-2.5 rounded-lg border border-white/20 flex justify-between items-center text-body-sm"
+                class="bg-white/40 p-2.5 rounded-lg border border-white/20 flex justify-start items-center gap-2 text-body-sm"
               >
-                <span class="font-medium text-primary-container">{{ getExamTypeLabel(res.examType) }}</span>
+                <span class="font-medium text-primary-container">{{ getExamTypeLabel(res.examType) }}:</span>
                 <span :class="[res.score >= 5 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20', 'font-extrabold text-[13px] px-2 py-0.5 rounded border']">
                   {{ res.score }}
                 </span>

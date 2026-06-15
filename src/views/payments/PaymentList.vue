@@ -146,10 +146,10 @@
                 @change="handleStatusChange"
                 class="glass-input rounded-lg pl-3 pr-10 py-2 text-sm bg-transparent cursor-pointer appearance-none text-primary focus:outline-none"
               >
-                <option :value="null">Tất cả trạng thái</option>
-                <option value="Paid">Đã thanh toán</option>
-                <option value="PartiallyPaid">Đóng một phần</option>
-                <option value="Unpaid">Chưa thanh toán</option>
+                <option value="null">Tất cả trạng thái</option>
+                <option value="HoanTat">Đã thanh toán</option>
+                <option value="DangTT">Đóng một phần</option>
+                <option value="ChuaTT">Chưa thanh toán</option>
               </select>
               <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-secondary pointer-events-none text-[18px]">expand_more</span>
             </div>
@@ -840,7 +840,8 @@ function handleSearchInput(e) {
 }
 
 function handleStatusChange(e) {
-  filters.value.status = e.target.value || null
+  const val = e.target.value
+  filters.value.status = (val === 'null' || !val) ? null : val
   pagination.value.page = 1
   fetchPayments()
 }
@@ -1083,15 +1084,15 @@ function formatDate(date) {
 }
 
 function getStatusLabel(status) {
-  const map = { Paid: 'Đã thanh toán', PartiallyPaid: 'Đóng một phần', Unpaid: 'Chưa thanh toán' }
+  const map = { HoanTat: 'Đã thanh toán', DangTT: 'Đóng một phần', ChuaTT: 'Chưa thanh toán' }
   return map[status] || status
 }
 
 function getStatusBadgeClass(status) {
   const map = {
-    Paid: 'bg-emerald-100 text-emerald-700 border-emerald-300',
-    PartiallyPaid: 'bg-amber-100 text-amber-700 border-amber-300',
-    Unpaid: 'bg-red-100 text-red-700 border-red-300'
+    HoanTat: 'bg-emerald-100 text-emerald-700 border-emerald-300',
+    DangTT: 'bg-amber-100 text-amber-700 border-amber-300',
+    ChuaTT: 'bg-red-100 text-red-700 border-red-300'
   }
   return map[status] || 'bg-slate-100 text-slate-700 border-slate-300'
 }
