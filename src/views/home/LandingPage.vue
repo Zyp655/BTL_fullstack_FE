@@ -173,6 +173,348 @@
           </div>
         </div>
 
+        <!-- Part A.5: Interactive App Tour Simulation -->
+        <div class="space-y-12 border-t border-slate-200/60 pt-16 reveal reveal-fade-up">
+          <div class="text-center max-w-2xl mx-auto space-y-3">
+            <span class="text-indigo-650/10 text-indigo-600 font-semibold text-sm tracking-wider uppercase bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">Trải nghiệm tương tác</span>
+            <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">Khám phá hoạt động của hệ thống</h2>
+            <p class="text-base text-slate-500">Xem trước cách EduManager Pro tự động hóa vận hành đào tạo trong nháy mắt</p>
+          </div>
+
+          <div class="flex flex-col lg:flex-row gap-8 items-stretch mt-8">
+            <!-- Left side: Tour Navigation Steps -->
+            <div class="flex-grow lg:w-[420px] shrink-0 flex flex-col gap-4 justify-center">
+              <div 
+                v-for="(step, index) in tourSteps" 
+                :key="index"
+                @click="selectTourStep(index)"
+                :class="[
+                  'p-5 rounded-2xl border cursor-pointer transition-all duration-300 flex items-start gap-4 relative overflow-hidden group',
+                  activeTourStep === index 
+                    ? 'bg-white border-blue-500 shadow-md shadow-blue-500/[0.04]' 
+                    : 'bg-white/40 border-slate-200/80 hover:bg-white hover:border-slate-350'
+                ]"
+              >
+                <!-- Filling progress bar for active tab autoplay -->
+                <div 
+                  v-if="activeTourStep === index" 
+                  class="absolute bottom-0 left-0 h-[3px] bg-gradient-to-r from-blue-500 to-sky-500 transition-all duration-[50ms] ease-linear"
+                  :style="{ width: stepProgress + '%' }"
+                ></div>
+
+                <div 
+                  :class="[
+                    'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300',
+                    activeTourStep === index 
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' 
+                      : 'bg-slate-100 text-slate-500 group-hover:bg-slate-200 group-hover:text-slate-700'
+                  ]"
+                >
+                  <span class="material-symbols-outlined text-[20px]">{{ step.icon }}</span>
+                </div>
+                
+                <div class="space-y-1">
+                  <h4 
+                    :class="[
+                      'font-bold text-sm tracking-tight transition-colors duration-300',
+                      activeTourStep === index ? 'text-blue-600' : 'text-slate-800'
+                    ]"
+                  >
+                    {{ step.title }}
+                  </h4>
+                  <p class="text-xs text-slate-500 leading-relaxed">{{ step.description }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right side: Live Simulator Browser Window -->
+            <div class="flex-grow min-h-[380px] lg:min-h-0 bg-slate-900 border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden flex flex-col relative">
+              <!-- Browser Header -->
+              <div class="bg-slate-950/80 border-b border-slate-800/80 px-4 py-3 flex items-center gap-3">
+                <!-- Three dots -->
+                <div class="flex gap-1.5 shrink-0">
+                  <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+                </div>
+                <!-- Address bar -->
+                <div class="bg-slate-900/90 border border-slate-800/60 rounded px-3 py-1 text-[10px] text-slate-400 font-mono flex items-center gap-1.5 w-full max-w-sm mx-auto select-none">
+                  <span class="material-symbols-outlined text-[10px] text-emerald-400">lock</span>
+                  <span>admin.edumanagerpro.com/dashboard/{{ tourSteps[activeTourStep].path }}</span>
+                </div>
+              </div>
+
+              <!-- Browser Web Content Screen -->
+              <div class="flex-grow p-6 text-slate-100 font-sans relative overflow-hidden bg-slate-950 flex flex-col justify-center select-none min-h-[280px]">
+                <!-- Simulated view loader backdrop -->
+                <transition name="tab-fade" mode="out-in">
+                  <!-- Step 0: Training Scheduler -->
+                  <div v-if="activeTourStep === 0" key="step0" class="flex-grow flex flex-col gap-4 justify-between h-full">
+                    <div class="flex justify-between items-center">
+                      <div class="text-xs font-bold text-slate-350">Lớp học tuyển sinh</div>
+                      <span class="text-[9px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full font-bold">Lịch thông minh</span>
+                    </div>
+
+                    <!-- Mock Table -->
+                    <div class="bg-slate-900 border border-slate-800/60 rounded-xl overflow-hidden text-xs">
+                      <div class="grid grid-cols-3 bg-slate-800/40 px-3 py-2 text-[10px] font-bold text-slate-400">
+                        <div>Lớp học</div>
+                        <div>Giáo viên</div>
+                        <div>Trạng thái</div>
+                      </div>
+                      <div class="divide-y divide-slate-800/50">
+                        <div class="grid grid-cols-3 px-3 py-2.5 items-center">
+                          <div class="font-bold text-slate-200">WEB-FULLSTACK</div>
+                          <div class="text-slate-400">Trần Văn A</div>
+                          <div>
+                            <span class="text-[9px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1 w-fit">
+                              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Hoạt động
+                            </span>
+                          </div>
+                        </div>
+                        <div class="grid grid-cols-3 px-3 py-2.5 items-center">
+                          <div class="font-bold text-slate-200">MOBILE-DEV</div>
+                          <div class="text-slate-400">Lê Hoàng B</div>
+                          <div>
+                            <span class="text-[9px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/20 w-fit">Tuyển sinh</span>
+                          </div>
+                        </div>
+                        <!-- New row scheduled by micro-animation -->
+                        <div 
+                          :class="[
+                            'grid grid-cols-3 px-3 py-2.5 items-center transition-all duration-[750ms]',
+                            simData.schedulerRowVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+                          ]"
+                        >
+                          <div class="font-bold text-sky-400">REACT-NATIVE</div>
+                          <div class="text-slate-400">Phạm Văn C</div>
+                          <div>
+                            <span class="text-[9px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20 w-fit">Đã xếp phòng</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Simulator Console Log Info -->
+                    <div class="bg-slate-900/60 border border-slate-800/60 p-3 rounded-lg flex items-start gap-2 text-[10px] text-slate-400 leading-relaxed">
+                      <span class="material-symbols-outlined text-[14px] text-blue-400 shrink-0">info</span>
+                      <span>Hệ thống vừa tự động xếp phòng **P-302** cho lớp React Native vào thứ 3, 5, 7. Tránh hoàn toàn trùng lịch dạy của giảng viên Phạm Văn C.</span>
+                    </div>
+                  </div>
+
+                  <!-- Step 1: Attendance Check -->
+                  <div v-else-if="activeTourStep === 1" key="step1" class="flex-grow flex flex-col gap-4 justify-between h-full">
+                    <div class="flex justify-between items-center">
+                      <div class="text-xs font-bold text-slate-350">Điểm danh lớp WEB-FULLSTACK</div>
+                      <div class="text-[9px] text-slate-400">Sĩ số: 3/3</div>
+                    </div>
+
+                    <!-- Attendance checklist -->
+                    <div class="bg-slate-900 border border-slate-800/60 rounded-xl divide-y divide-slate-800/50 text-xs">
+                      <div class="flex justify-between items-center px-4 py-2.5">
+                        <div class="flex items-center gap-2">
+                          <div class="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-[10px] font-bold">TH</div>
+                          <div class="font-bold text-slate-200">Nguyễn Thu Hà</div>
+                        </div>
+                        <span class="material-symbols-outlined text-emerald-400 text-lg">check_circle</span>
+                      </div>
+                      <div class="flex justify-between items-center px-4 py-2.5">
+                        <div class="flex items-center gap-2">
+                          <div class="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-[10px] font-bold">MA</div>
+                          <div class="font-bold text-slate-200">Lê Minh Anh</div>
+                        </div>
+                        <span class="material-symbols-outlined text-emerald-400 text-lg">check_circle</span>
+                      </div>
+                      <div class="flex justify-between items-center px-4 py-2.5">
+                        <div class="flex items-center gap-2">
+                          <div class="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-[10px] font-bold">PB</div>
+                          <div class="font-bold text-slate-200">Phạm Quốc Bảo</div>
+                        </div>
+                        <!-- State changes with check animation -->
+                        <span 
+                          :class="[
+                            'material-symbols-outlined text-lg transition-all duration-300',
+                            simData.attendanceChecked ? 'text-emerald-400 scale-110' : 'text-slate-600 scale-95'
+                          ]"
+                        >
+                          {{ simData.attendanceChecked ? 'check_circle' : 'radio_button_unchecked' }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Statistic summary card -->
+                    <div class="grid grid-cols-2 gap-3">
+                      <div class="bg-slate-900/60 border border-slate-800/60 p-3 rounded-xl">
+                        <div class="text-[9px] text-slate-400 uppercase tracking-wider font-bold">Tỉ lệ chuyên cần</div>
+                        <div class="text-lg font-black text-slate-200 mt-0.5 transition-all duration-500">
+                          {{ simData.attendanceChecked ? '96%' : '92%' }}
+                        </div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                          <div 
+                            class="bg-emerald-500 h-full transition-all duration-500" 
+                            :style="{ width: simData.attendanceChecked ? '96%' : '92%' }"
+                          ></div>
+                        </div>
+                      </div>
+                      <div class="bg-slate-900/60 border border-slate-800/60 p-3 rounded-xl flex items-center justify-center text-center">
+                        <div class="text-[9px] text-slate-400 leading-tight">Nhấp tự động đồng bộ học vụ qua Telegram phụ huynh</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Step 2: VietQR Pay Invoice -->
+                  <div v-else-if="activeTourStep === 2" key="step2" class="flex-grow flex flex-col justify-between h-full">
+                    <div class="flex justify-between items-center">
+                      <div class="text-xs font-bold text-slate-350">Hóa đơn thanh toán học phí</div>
+                      <span 
+                        :class="[
+                          'text-[9px] px-2 py-0.5 rounded-full font-bold border transition-colors duration-300',
+                          simData.paymentPaid 
+                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                            : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                        ]"
+                      >
+                        {{ simData.paymentPaid ? 'Đã thanh toán' : 'Chờ giao dịch' }}
+                      </span>
+                    </div>
+
+                    <div class="flex items-center gap-6 bg-slate-900 border border-slate-800/60 p-4 rounded-xl relative overflow-hidden my-2">
+                      <!-- Mock QR Code -->
+                      <div class="w-20 h-20 bg-white p-1 rounded-lg shrink-0 flex items-center justify-center relative shadow-md">
+                        <!-- Simulated QR Grid -->
+                        <div class="w-full h-full bg-slate-950 flex flex-wrap p-0.5 gap-0.5 rounded overflow-hidden opacity-90">
+                          <div v-for="n in 36" :key="n" :class="['w-2.5 h-2.5 rounded-[2px]', (n % 3 === 0 || n % 5 === 0) ? 'bg-white' : 'bg-transparent']"></div>
+                        </div>
+                        <!-- VietQR icon center -->
+                        <div class="absolute inset-0 m-auto w-5 h-5 bg-blue-600 rounded flex items-center justify-center text-[7px] text-white font-bold tracking-tight">QR</div>
+                        
+                        <!-- Paid glow screen overlay -->
+                        <div 
+                          :class="[
+                            'absolute inset-0 bg-emerald-500/90 rounded-lg flex items-center justify-center transition-all duration-500',
+                            simData.paymentPaid ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
+                          ]"
+                        >
+                          <span class="material-symbols-outlined text-white text-3xl animate-bounce">check</span>
+                        </div>
+                      </div>
+
+                      <div class="space-y-1 text-xs">
+                        <div class="text-slate-400">Học viên: <span class="text-slate-200 font-bold">Nguyễn Thu Hà</span></div>
+                        <div class="text-slate-400">Khóa học: <span class="text-slate-200">Web Fullstack</span></div>
+                        <div class="text-[14px] font-black text-blue-400 mt-1">3.500.000đ</div>
+                        <div class="text-[9px] text-slate-500 leading-tight">Giao dịch tự động VietQR SePay API</div>
+                      </div>
+                    </div>
+
+                    <!-- Payment status logger -->
+                    <div 
+                      :class="[
+                        'p-2.5 rounded-lg text-center text-[10px] font-semibold border flex items-center justify-center gap-1.5 transition-all duration-500',
+                        simData.paymentPaid 
+                          ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
+                          : 'bg-slate-900/60 border-slate-800/60 text-slate-400'
+                      ]"
+                    >
+                      <span class="material-symbols-outlined text-[13px]" :class="{'animate-spin': !simData.paymentPaid}">
+                        {{ simData.paymentPaid ? 'check_circle' : 'sync' }}
+                      </span>
+                      <span>
+                        {{ simData.paymentPaid ? 'Nhận thành công 3.500.000đ - Kích hoạt khóa học!' : 'Đang chờ VietQR chuyển khoản ngân hàng...' }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Step 3: Student Portal -->
+                  <div v-else-if="activeTourStep === 3" key="step3" class="flex-grow flex flex-col justify-between h-full">
+                    <div class="flex justify-between items-center">
+                      <div class="text-xs font-bold text-slate-350">Cổng thông tin học viên (Mobile View)</div>
+                      <span class="text-[9px] bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-full font-bold">Trải nghiệm học viên</span>
+                    </div>
+
+                    <!-- Mobile responsive inner frame simulation -->
+                    <div class="bg-slate-900 border border-slate-800/60 rounded-xl p-3 space-y-3 relative overflow-hidden flex-grow my-2">
+                      <!-- Welcome user -->
+                      <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 text-[11px] font-bold flex items-center justify-center text-white">N</div>
+                        <div>
+                          <div class="text-[10px] text-slate-400 leading-none">Xin chào học viên</div>
+                          <div class="text-xs font-black text-slate-200 mt-0.5">Nguyễn Thu Hà</div>
+                        </div>
+                      </div>
+
+                      <!-- Sub tabs view -->
+                      <div class="grid grid-cols-2 gap-2 text-[10px]">
+                        <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800/50 flex flex-col justify-between">
+                          <span class="text-slate-400">Thời khóa biểu</span>
+                          <span class="font-bold text-slate-200 mt-1 flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> 18:30 Hôm nay
+                          </span>
+                        </div>
+                        <div 
+                          :class="[
+                            'p-2.5 rounded-lg border flex flex-col justify-between cursor-pointer transition-all duration-300',
+                            simData.portalCardExpanded 
+                              ? 'bg-blue-650/10 border-blue-500/30' 
+                              : 'bg-slate-950 border-slate-800/50'
+                          ]"
+                        >
+                          <span class="text-slate-400">Bảng điểm thi</span>
+                          <span class="font-bold text-slate-200 mt-1 flex items-center justify-between">
+                            <span>8.5 (Giỏi)</span>
+                            <span class="material-symbols-outlined text-[10px] text-blue-400">open_in_new</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Expandable grades content overlay simulated -->
+                      <div 
+                        :class="[
+                          'bg-slate-950 border border-slate-800/80 p-2.5 rounded-lg text-[9px] space-y-1 transition-all duration-500 absolute bottom-3 left-3 right-3',
+                          simData.portalCardExpanded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+                        ]"
+                      >
+                        <div class="font-bold text-slate-350 border-b border-slate-800 pb-1 flex justify-between">
+                          <span>Chi tiết điểm thi kì I</span>
+                          <span class="text-blue-400 font-black">Môn Web</span>
+                        </div>
+                        <div class="flex justify-between text-slate-450 mt-1"><span>Lý thuyết:</span> <span class="font-bold text-slate-200">9.0/10</span></div>
+                        <div class="flex justify-between text-slate-450"><span>Thực hành:</span> <span class="font-bold text-slate-200">8.0/10</span></div>
+                      </div>
+                    </div>
+
+                    <div class="text-[9px] text-slate-500 text-center font-mono select-none">
+                      Học sinh chủ động nộp học phí, theo dõi chuyên cần và điểm thi 100% online.
+                    </div>
+                  </div>
+                </transition>
+
+                <!-- Virtual Cursor Floating Simulator -->
+                <div 
+                  class="absolute w-5 h-5 pointer-events-none z-50 transition-all duration-500 bg-transparent flex items-center justify-center"
+                  :style="{ 
+                    left: cursorSim.x + '%', 
+                    top: cursorSim.y + '%', 
+                    transform: cursorSim.clicking ? 'scale(0.85)' : 'scale(1)',
+                    opacity: cursorSim.visible ? 1 : 0
+                  }"
+                >
+                  <!-- SVG Cursor design -->
+                  <svg class="w-4 h-4 fill-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" viewBox="0 0 24 24">
+                    <path d="M4 0l16 12.27-7.9 1.58L16 22l-3 1.34-4.03-8.28L4 18.23z"/>
+                  </svg>
+                  
+                  <!-- Click pulse shockwave ring -->
+                  <div 
+                    v-if="cursorSim.clicking" 
+                    class="absolute w-6 h-6 border-2 border-blue-400 rounded-full animate-ping-once pointer-events-none"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Part B: Benefits -->
         <div class="space-y-12 border-t border-slate-200/60 pt-16 reveal reveal-fade-up">
           <div class="text-center max-w-2xl mx-auto space-y-3">
@@ -440,6 +782,56 @@ const threeCanvas = ref(null)
 const loading3D = ref(false)
 
 const heroCanvas = ref(null)
+
+// Interactive Product Tour variables & states
+const activeTourStep = ref(0)
+const stepProgress = ref(0)
+const tourIntervalTime = 7000 // 7 seconds per slide
+let tourTimer = null
+let animationTickTimer = null
+
+const tourSteps = [
+  {
+    title: "Xếp lịch & Đào tạo thông minh",
+    description: "Tự động phân lịch giảng viên và quản lý lớp học tuyển sinh trực quan.",
+    icon: "event_note",
+    path: "scheduler"
+  },
+  {
+    title: "Hồ sơ Học viên & Điểm danh",
+    description: "Theo dõi sĩ số chuyên cần, cập nhật bảng điểm tự động đồng bộ hóa.",
+    icon: "fact_check",
+    path: "attendance"
+  },
+  {
+    title: "Thanh toán VietQR SePay",
+    description: "Quét mã QR, tự động xác thực đối soát thanh toán ngân hàng tức thì.",
+    icon: "qr_code_scanner",
+    path: "tuition"
+  },
+  {
+    title: "Cổng học vụ Cá nhân hóa",
+    description: "Không gian riêng để học viên kiểm tra điểm thi và thời khóa biểu di động.",
+    icon: "account_box",
+    path: "portal"
+  }
+]
+
+// Mock data states for simulated app views
+const simData = ref({
+  schedulerRowVisible: false,
+  attendanceChecked: false,
+  paymentPaid: false,
+  portalCardExpanded: false
+})
+
+// Mock cursor state
+const cursorSim = ref({
+  x: 20,
+  y: 80,
+  visible: false,
+  clicking: false
+})
 
 const featureDetails = {
   course: {
@@ -780,6 +1172,128 @@ const initThree = (type) => {
   animate()
 }
 
+// Interactive Product Tour Navigation & Autoplay
+const selectTourStep = (index) => {
+  activeTourStep.value = index
+  resetTourAutoplay()
+  runStepAnimation(index)
+}
+
+const startTourAutoplay = () => {
+  if (tourTimer) clearInterval(tourTimer)
+  
+  const tickMs = 50
+  let elapsed = 0
+  
+  tourTimer = setInterval(() => {
+    elapsed += tickMs
+    stepProgress.value = (elapsed / tourIntervalTime) * 100
+    
+    if (elapsed >= tourIntervalTime) {
+      elapsed = 0
+      stepProgress.value = 0
+      activeTourStep.value = (activeTourStep.value + 1) % tourSteps.length
+      runStepAnimation(activeTourStep.value)
+    }
+  }, tickMs)
+}
+
+const resetTourAutoplay = () => {
+  stepProgress.value = 0
+  if (tourTimer) {
+    clearInterval(tourTimer)
+    startTourAutoplay()
+  }
+}
+
+const runStepAnimation = (stepIndex) => {
+  if (animationTickTimer) clearTimeout(animationTickTimer)
+  
+  // Reset states
+  simData.value.schedulerRowVisible = false
+  simData.value.attendanceChecked = false
+  simData.value.paymentPaid = false
+  simData.value.portalCardExpanded = false
+  
+  cursorSim.value.visible = true
+  cursorSim.value.clicking = false
+
+  if (stepIndex === 0) {
+    cursorSim.value.x = 20
+    cursorSim.value.y = 85
+    animationTickTimer = setTimeout(() => {
+      cursorSim.value.x = 80
+      cursorSim.value.y = 35
+      animationTickTimer = setTimeout(() => {
+        cursorSim.value.clicking = true
+        animationTickTimer = setTimeout(() => {
+          cursorSim.value.clicking = false
+          simData.value.schedulerRowVisible = true
+          animationTickTimer = setTimeout(() => {
+            cursorSim.value.visible = false
+          }, 1000)
+        }, 300)
+      }, 1200)
+    }, 500)
+
+  } else if (stepIndex === 1) {
+    cursorSim.value.x = 10
+    cursorSim.value.y = 80
+    animationTickTimer = setTimeout(() => {
+      cursorSim.value.x = 90
+      cursorSim.value.y = 52
+      animationTickTimer = setTimeout(() => {
+        cursorSim.value.clicking = true
+        animationTickTimer = setTimeout(() => {
+          cursorSim.value.clicking = false
+          simData.value.attendanceChecked = true
+          animationTickTimer = setTimeout(() => {
+            cursorSim.value.visible = false
+          }, 1000)
+        }, 300)
+      }, 1200)
+    }, 500)
+
+  } else if (stepIndex === 2) {
+    cursorSim.value.x = 10
+    cursorSim.value.y = 80
+    animationTickTimer = setTimeout(() => {
+      cursorSim.value.x = 30
+      cursorSim.value.y = 50
+      animationTickTimer = setTimeout(() => {
+        cursorSim.value.clicking = true
+        animationTickTimer = setTimeout(() => {
+          cursorSim.value.clicking = false
+          animationTickTimer = setTimeout(() => {
+            simData.value.paymentPaid = true
+            animationTickTimer = setTimeout(() => {
+              cursorSim.value.visible = false
+            }, 1000)
+          }, 1500)
+        }, 300)
+      }, 1000)
+    }, 500)
+
+  } else if (stepIndex === 3) {
+    cursorSim.value.x = 90
+    cursorSim.value.y = 85
+    animationTickTimer = setTimeout(() => {
+      cursorSim.value.x = 75
+      cursorSim.value.y = 52
+      animationTickTimer = setTimeout(() => {
+        cursorSim.value.clicking = true
+        animationTickTimer = setTimeout(() => {
+          cursorSim.value.clicking = false
+          simData.value.portalCardExpanded = true
+          animationTickTimer = setTimeout(() => {
+            cursorSim.value.visible = false
+          }, 1000)
+        }, 300)
+      }, 1200)
+    }, 500)
+  }
+}
+
 // Procedural Dashboard Canvas for the 3D device screen
 const createDashboardCanvas = () => {
   const canvas = document.createElement('canvas')
@@ -1069,6 +1583,8 @@ const cleanupHeroThree = () => {
 
 onMounted(() => {
   initHeroThree()
+  startTourAutoplay()
+  runStepAnimation(0)
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
@@ -1087,6 +1603,8 @@ onMounted(() => {
 
 onUnmounted(() => {
   cleanupHeroThree()
+  if (tourTimer) clearInterval(tourTimer)
+  if (animationTickTimer) clearTimeout(animationTickTimer)
 })
 </script>
 
@@ -1297,5 +1815,41 @@ onUnmounted(() => {
 .fade-slide-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+/* Product Tour transitions */
+.tab-fade-enter-active,
+.tab-fade-leave-active {
+  transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.tab-fade-enter-from {
+  opacity: 0;
+  transform: scale(0.98) translateY(5px);
+}
+
+.tab-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.98) translateY(-5px);
+}
+
+/* Custom CSS animation for cursor click shockwave */
+@keyframes ping-once {
+  0% {
+    transform: scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.animate-ping-once {
+  animation: ping-once 0.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+.duration-750 {
+  transition-duration: 750ms;
 }
 </style>
