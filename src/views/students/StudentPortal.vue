@@ -180,14 +180,6 @@
           :enrolled-schedules-map="enrolledSchedulesMap"
         />
 
-        <TabGrades
-          v-slot="{ cls }"
-          v-if="activeTab === 'grades'"
-          :enrolled-classes="enrolledClasses"
-          :exam-results="examResults"
-          @open-grading-dialog="openGradingDialog"
-        />
-
         <TabPayments
           v-slot="{ pay }"
           v-if="activeTab === 'payments'"
@@ -342,7 +334,6 @@ import api from '../../services/api'
 import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr'
 
 import TabClassesSchedules from './components/TabClassesSchedules.vue'
-import TabGrades from './components/TabGrades.vue'
 import TabPayments from './components/TabPayments.vue'
 import TabCredits from './components/TabCredits.vue'
 import TabConflicts from './components/TabConflicts.vue'
@@ -398,7 +389,6 @@ const activeTab = ref(route.query.tab || 'classes')
 const tabs = [
   { label: 'Lớp học & Lịch học', value: 'classes', icon: 'school' },
   { label: 'Lịch học tuần', value: 'calendar', icon: 'calendar_month' },
-  { label: 'Bảng điểm của tôi', value: 'grades', icon: 'history_edu' },
   { label: 'Học phí & Thanh toán', value: 'payments', icon: 'receipt_long' },
   { label: 'Ví bảo lưu', value: 'credits', icon: 'account_balance_wallet' },
   { label: 'Trùng lịch học', value: 'conflicts', icon: 'warning' }
