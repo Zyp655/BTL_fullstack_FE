@@ -126,10 +126,15 @@
             <div
               v-for="schedule in schedules"
               :key="schedule.scheduleId"
-              class="bg-white/70 backdrop-blur-[20px] border border-white/40 p-3.5 rounded-xl flex justify-between items-center hover:bg-white/50 transition-colors"
+              @click="viewScheduleDates(schedule)"
+              class="bg-white/70 backdrop-blur-[20px] border border-white/40 p-3.5 rounded-xl flex justify-between items-center hover:bg-white/50 hover:border-on-tertiary-container/30 hover:shadow-sm transition-all cursor-pointer group"
+              title="Click để xem chi tiết lịch sử học tập hôm này"
             >
               <div class="space-y-1">
-                <div class="font-semibold text-primary-container text-body-lg">Thứ {{ formatDayOfWeek(schedule.dayOfWeek) }}</div>
+                <div class="font-semibold text-primary-container text-body-lg flex items-center gap-1.5 group-hover:text-on-tertiary-container transition-colors">
+                  Thứ {{ formatDayOfWeek(schedule.dayOfWeek) }}
+                  <span class="material-symbols-outlined text-[16px] text-on-tertiary-container/70 opacity-0 group-hover:opacity-100 transition-opacity">info</span>
+                </div>
                 <div class="text-body-sm text-on-surface-variant">
                   Phòng học: <span class="font-semibold text-primary-container">{{ schedule.classroom }}</span>
                 </div>
@@ -138,6 +143,39 @@
                 <div class="font-semibold text-on-tertiary-container text-body-sm bg-on-tertiary-container/10 px-2.5 py-1 rounded-lg">
                   {{ schedule.startTime.substring(0, 5) }} - {{ schedule.endTime.substring(0, 5) }}
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1b. Grades section -->
+        <div v-if="selectedClass && !isClassUnpaid(selectedClass.classId) && !loadingSchedules && schedules.length > 0" class="space-y-3 pt-4 border-t border-dashed border-outline-variant/30 animate-fade-in">
+          <h3 class="font-title-md text-body-lg font-semibold text-primary-container flex items-center gap-2">
+            <span class="material-symbols-outlined text-[20px] text-purple-600">history_edu</span>
+            Kết quả học tập &amp; Điểm số
+          </h3>
+
+          <div v-if="selectedClassExamResults.length === 0" class="bg-white/70 backdrop-blur-[20px] border border-white/40 p-4 text-center rounded-xl text-body-sm text-on-surface-variant">
+            Chưa có điểm thi/kiểm tra cho lớp học này.
+          </div>
+
+          <div v-else class="bg-white/70 backdrop-blur-[20px] border border-white/40 p-4 rounded-xl space-y-3 shadow-[0_8px_16px_rgba(0,0,0,0.03)]">
+            <div class="flex justify-between items-center text-body-sm font-semibold text-primary-container">
+              <span>Điểm trung bình môn:</span>
+              <span :class="[selectedClassAverageScore >= 5 ? 'text-emerald-600' : 'text-red-500', 'font-extrabold text-body-lg']">
+                {{ selectedClassAverageScore > 0 ? selectedClassAverageScore.toFixed(1) : 'Chưa tổng kết' }}
+              </span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div
+                v-for="res in selectedClassExamResults"
+                :key="res.resultId"
+                class="bg-white/40 p-2.5 rounded-lg border border-white/20 flex justify-between items-center text-body-sm"
+              >
+                <span class="font-medium text-primary-container">{{ getExamTypeLabel(res.examType) }}</span>
+                <span :class="[res.score >= 5 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20', 'font-extrabold text-[13px] px-2 py-0.5 rounded border']">
+                  {{ res.score }}
+                </span>
               </div>
             </div>
           </div>
@@ -285,11 +323,65 @@
         </div>
       </div>
     </div>
+    <!-- Schedule Dates Details Modal -->
+    <teleport to="body">
+      <div v-if="showScheduleModal" class="fixed inset-0 glass-backdrop z-[9999] flex items-center justify-center p-4">
+        <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-xl shadow-[0_20px_40px_rgba(0,31,63,0.12)] max-w-md w-full p-6 space-y-4 animate-scale-in flex flex-col">
+          <div class="flex items-center gap-3 text-primary-container border-b border-white/40 pb-3 justify-between">
+            <h3 class="font-title-md text-[18px] font-bold flex items-center gap-2">
+              <span class="material-symbols-outlined text-[24px] text-on-tertiary-container">event_available</span>
+              Lịch sử học Thứ {{ formatDayOfWeek(activeSchedule?.dayOfWeek) }}
+            </h3>
+            <button @click="showScheduleModal = false" class="text-on-surface-variant hover:text-primary-container cursor-pointer">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <div class="text-body-sm text-on-surface-variant space-y-1 bg-primary-container/[0.02] p-3 rounded-lg border border-primary-container/5">
+            <div>Khóa học: <strong class="text-primary-container">{{ selectedClass?.courseName }}</strong></div>
+            <div>Lớp: <strong class="text-primary-container">{{ selectedClass?.className }}</strong></div>
+            <div>Thời gian: <strong class="text-on-tertiary-container">{{ activeSchedule?.startTime.substring(0, 5) }} - {{ activeSchedule?.endTime.substring(0, 5) }}</strong> (Phòng {{ activeSchedule?.classroom }})</div>
+          </div>
+
+          <div class="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+            <div v-if="activeScheduleDates.length === 0" class="text-center py-8 text-on-surface-variant italic">
+              Không tìm thấy buổi học nào trong khoảng thời gian của lớp.
+            </div>
+            <div 
+              v-else
+              v-for="item in activeScheduleDates"
+              :key="item.date.toISOString()"
+              class="flex justify-between items-center bg-white/40 p-2.5 rounded-lg text-body-sm border border-white/20 hover:bg-white/60 transition-colors"
+            >
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="material-symbols-outlined text-[16px] text-on-surface-variant/70 shrink-0">calendar_today</span>
+                <span class="font-semibold text-primary-container shrink-0">{{ formatDate(item.date) }}</span>
+                <span v-if="item.note" class="text-body-xs text-on-surface-variant/70 italic truncate max-w-[120px]" :title="item.note">
+                  - {{ item.note }}
+                </span>
+              </div>
+              <span :class="[getScheduleStatusClass(item.status), 'px-2 py-0.5 rounded text-[10px] border shrink-0']">
+                {{ getScheduleStatusLabel(item.status) }}
+              </span>
+            </div>
+          </div>
+
+          <div class="flex justify-end pt-2 border-t border-white/40">
+            <button 
+              @click="showScheduleModal = false"
+              class="px-4 py-2 rounded-lg bg-primary-container text-white font-semibold text-body-sm hover:bg-primary transition-all active:scale-95 cursor-pointer"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useAuthStore } from '../../../stores'
 
 const authStore = useAuthStore()
@@ -302,7 +394,9 @@ const props = defineProps({
   payments: { type: Array, required: true },
   mySupportMessages: { type: Array, required: true },
   currentConflicts: { type: Array, required: true },
-  attendanceSummaries: { type: Array, default: () => [] }
+  attendanceSummaries: { type: Array, default: () => [] },
+  examResults: { type: Object, default: () => ({}) },
+  selectedClassDetails: { type: Object, default: null }
 })
 
 defineEmits([
@@ -315,10 +409,115 @@ defineEmits([
   'change-attendance-status'
 ])
 
+// Modal states for clicking schedules
+const showScheduleModal = ref(false)
+const activeSchedule = ref(null)
+
+const selectedClassExamResults = computed(() => {
+  if (!props.selectedClass || !props.examResults) return []
+  return props.examResults[props.selectedClass.enrollmentId] || []
+})
+
+const selectedClassAverageScore = computed(() => {
+  const scores = selectedClassExamResults.value
+  if (scores.length === 0) return 0
+  let total = 0
+  scores.forEach(s => {
+    total += s.score
+  })
+  return total / scores.length
+})
+
 const selectedClassAttendanceSummary = computed(() => {
   if (!props.selectedClass || !props.attendanceSummaries) return null
   return props.attendanceSummaries.find(s => s.classId === props.selectedClass.classId)
 })
+
+const activeScheduleDates = computed(() => {
+  if (!activeSchedule.value || !props.selectedClassDetails || !props.schedules) return []
+  const classDetails = props.selectedClassDetails
+  if (!classDetails.startDate || !classDetails.endDate) return []
+  
+  const start = new Date(classDetails.startDate)
+  const end = new Date(classDetails.endDate)
+  const targetDayOfWeek = activeSchedule.value.dayOfWeek // e.g. 2 for Monday
+  
+  const dates = []
+  let current = new Date(start)
+  current.setHours(0, 0, 0, 0)
+  
+  const endLimit = new Date(end)
+  endLimit.setHours(23, 59, 59, 999)
+  
+  while (current <= endLimit) {
+    const dbDay = current.getDay() + 1 // 1=Sunday, 2=Monday...
+    if (dbDay === targetDayOfWeek) {
+      dates.push(new Date(current))
+    }
+    current.setDate(current.getDate() + 1)
+  }
+  
+  // Map dates to attendance status
+  const sessions = selectedClassAttendanceSummary.value?.sessions || []
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
+  return dates.map(date => {
+    const match = sessions.find(s => {
+      const sessionDate = new Date(s.sessionDate)
+      return sessionDate.getFullYear() === date.getFullYear() &&
+             sessionDate.getMonth() === date.getMonth() &&
+             sessionDate.getDate() === date.getDate()
+    })
+    
+    let status = 'ChuaDienRa'
+    let note = ''
+    
+    if (match) {
+      status = match.status
+      note = match.note
+    } else {
+      if (date <= today) {
+        status = 'ChuaDiemDanh'
+      }
+    }
+    
+    return {
+      date,
+      status,
+      note
+    }
+  })
+})
+
+function viewScheduleDates(schedule) {
+  activeSchedule.value = schedule
+  showScheduleModal.value = true
+}
+
+function getScheduleStatusLabel(status) {
+  const map = {
+    CoMat: 'Đi học',
+    Vang: 'Vắng mặt',
+    DiTre: 'Đi muộn',
+    CoPhep: 'Có phép',
+    ChuaDiemDanh: 'Vắng mặt (Chưa điểm danh)',
+    ChuaDienRa: 'Chưa diễn ra'
+  }
+  return map[status] || status
+}
+
+function getScheduleStatusClass(status) {
+  const map = {
+    CoMat: 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20',
+    Vang: 'bg-red-500/10 text-red-500 border border-red-500/20 font-bold',
+    DiTre: 'bg-amber-500/10 text-amber-600 border border-amber-500/20',
+    CoPhep: 'bg-blue-500/10 text-blue-600 border border-blue-500/20',
+    ChuaDiemDanh: 'bg-red-500/5 text-red-500/80 border border-red-500/10 italic',
+    ChuaDienRa: 'bg-outline-variant/10 text-on-surface-variant/60 border border-outline-variant/20'
+  }
+  return map[status] || 'bg-outline/10 text-on-surface'
+}
 
 function getAttendanceStatusClass(status) {
   const map = {
@@ -338,6 +537,11 @@ function getAttendanceStatusLabel(status) {
     CoPhep: 'Có phép'
   }
   return map[status] || status
+}
+
+function getExamTypeLabel(type) {
+  const map = { GiuaKy: 'Giữa kỳ', CuoiKy: 'Cuối kỳ', KiemTra: 'Kiểm tra' }
+  return map[type] || type
 }
 
 function isClassUnpaid(classId) {
