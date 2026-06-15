@@ -816,6 +816,8 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import * as THREE from 'three'
+import courseItImg from '../../assets/course_it.png'
+import courseDefaultImg from '../../assets/course_default.png'
 
 const facebookUrl = import.meta.env.VITE_FACEBOOK_URL || 'https://www.facebook.com/hieu.minh.793013/'
 const mobileMenuOpen = ref(false)
@@ -1015,14 +1017,23 @@ const handleResize = () => {
 const createCourse3D = () => {
   const group = new THREE.Group()
 
-  // 1. The Book Cover
+  // Cover image texture loaded asynchronously
+  const loader = new THREE.TextureLoader()
+  const texture = loader.load(courseItImg)
+  texture.colorSpace = THREE.SRGBColorSpace
+
+  // 1. The Book Cover (using materials array: Right, Left, Top, Bottom, Front, Back)
   const coverGeo = new THREE.BoxGeometry(2.2, 3.0, 0.3)
-  const coverMat = new THREE.MeshStandardMaterial({
-    color: 0x2b83ff,
-    roughness: 0.3,
-    metalness: 0.1
-  })
-  const cover = new THREE.Mesh(coverGeo, coverMat)
+  const sideMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.4, metalness: 0.1 })
+  const coverMats = [
+    sideMat, // Right
+    new THREE.MeshStandardMaterial({ color: 0x172554, roughness: 0.3, metalness: 0.2 }), // Left (Spine)
+    sideMat, // Top
+    sideMat, // Bottom
+    new THREE.MeshStandardMaterial({ map: texture, roughness: 0.2, metalness: 0.1 }),    // Front Cover
+    sideMat  // Back Cover
+  ]
+  const cover = new THREE.Mesh(coverGeo, coverMats)
   group.add(cover)
 
   // 2. The Book Pages
@@ -1033,6 +1044,7 @@ const createCourse3D = () => {
   })
   const pages = new THREE.Mesh(pagesGeo, pagesMat)
   pages.position.x = 0.05
+  pages.position.z = 0.01
   group.add(pages)
 
   // 3. Floating Ring
@@ -1050,52 +1062,45 @@ const createCourse3D = () => {
 
 const createStudent3D = () => {
   const group = new THREE.Group()
-  const count = 12
-  const nodes = []
 
-  const nodeGeo = new THREE.SphereGeometry(0.12, 16, 16)
-  const nodeMat = new THREE.MeshStandardMaterial({
-    color: 0x2b83ff,
-    emissive: 0x003366,
-    roughness: 0.1
+  // Plastic Card box
+  const cardGeo = new THREE.BoxGeometry(3.0, 1.9, 0.08)
+
+  const cardCanvas = createStudentCardCanvas()
+  const cardTex = new THREE.CanvasTexture(cardCanvas)
+  cardTex.colorSpace = THREE.SRGBColorSpace
+
+  const sideMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.5 })
+  const cardMats = [
+    sideMat, // Right
+    sideMat, // Left
+    sideMat, // Top
+    sideMat, // Bottom
+    new THREE.MeshStandardMaterial({ map: cardTex, roughness: 0.2, metalness: 0.1 }), // Front Card Face
+    new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.4, metalness: 0.2 })  // Back
+  ]
+
+  const card = new THREE.Mesh(cardGeo, cardMats)
+  group.add(card)
+
+  // Floating Emerald green sparkles orbiting the card
+  const sparklesGroup = new THREE.Group()
+  sparklesGroup.name = "sparkles"
+  const sparkleGeo = new THREE.DodecahedronGeometry(0.08, 0)
+  const sparkleMat = new THREE.MeshStandardMaterial({
+    color: 0x10b981,
+    emissive: 0x065f46,
+    roughness: 0.1,
+    metalness: 0.8
   })
 
-  for (let i = 0; i < count; i++) {
-    const mesh = new THREE.Mesh(nodeGeo, nodeMat)
-    const u = Math.random()
-    const v = Math.random()
-    const theta = u * 2.0 * Math.PI
-    const phi = Math.acos(2.0 * v - 1.0)
-    const r = 1.5 + Math.random() * 0.3
-    
-    mesh.position.x = r * Math.sin(phi) * Math.cos(theta)
-    mesh.position.y = r * Math.sin(phi) * Math.sin(theta)
-    mesh.position.z = r * Math.cos(phi)
-    
-    group.add(mesh)
-    nodes.push(mesh.position)
+  for (let i = 0; i < 6; i++) {
+    const mesh = new THREE.Mesh(sparkleGeo, sparkleMat)
+    const angle = (i / 6) * Math.PI * 2
+    mesh.position.set(Math.cos(angle) * 2.0, Math.sin(angle) * 1.2, (Math.random() - 0.5) * 0.4)
+    sparklesGroup.add(mesh)
   }
-
-  const lineMat = new THREE.LineBasicMaterial({
-    color: 0x38bdf8,
-    transparent: true,
-    opacity: 0.4
-  })
-
-  const points = []
-  for (let i = 0; i < count; i++) {
-    for (let j = i + 1; j < count; j++) {
-      const dist = nodes[i].distanceTo(nodes[j])
-      if (dist < 2.5) {
-        points.push(nodes[i].clone())
-        points.push(nodes[j].clone())
-      }
-    }
-  }
-
-  const lineGeo = new THREE.BufferGeometry().setFromPoints(points)
-  const lines = new THREE.LineSegments(lineGeo, lineMat)
-  group.add(lines)
+  group.add(sparklesGroup)
 
   return group
 }
@@ -1106,21 +1111,30 @@ const createPortal3D = () => {
   // Phone Frame
   const frameGeo = new THREE.BoxGeometry(1.6, 3.2, 0.15)
   const frameMat = new THREE.MeshStandardMaterial({
-    color: 0x000613,
-    roughness: 0.4,
-    metalness: 0.9
+    color: 0x0f172a,
+    roughness: 0.3,
+    metalness: 0.8
   })
   const frame = new THREE.Mesh(frameGeo, frameMat)
   group.add(frame)
 
-  // Screen
+  // Screen with Portal Mock UI Canvas
   const screenGeo = new THREE.BoxGeometry(1.5, 3.1, 0.04)
-  const screenMat = new THREE.MeshStandardMaterial({
-    color: 0x2b83ff,
-    emissive: 0x003366,
-    roughness: 0.1
-  })
-  const screen = new THREE.Mesh(screenGeo, screenMat)
+  const screenCanvas = createPortalScreenCanvas()
+  const screenTex = new THREE.CanvasTexture(screenCanvas)
+  screenTex.colorSpace = THREE.SRGBColorSpace
+
+  const sideMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.8 })
+  const screenMats = [
+    sideMat, // Right
+    sideMat, // Left
+    sideMat, // Top
+    sideMat, // Bottom
+    new THREE.MeshStandardMaterial({ map: screenTex, roughness: 0.15, metalness: 0.1 }), // Front Mobile Screen
+    sideMat  // Back
+  ]
+
+  const screen = new THREE.Mesh(screenGeo, screenMats)
   screen.position.z = 0.06
   group.add(screen)
 
@@ -1169,29 +1183,48 @@ const initThree = (type) => {
     activeMesh = createStudent3D()
   } else if (type === 'finance') {
     const group = new THREE.Group()
-    const cardGeo = new THREE.BoxGeometry(3.0, 1.8, 0.08)
-    const cardMat = new THREE.MeshStandardMaterial({
-      color: 0x001f3f,
-      roughness: 0.2,
-      metalness: 0.8,
-      emissive: 0x003366,
-      emissiveIntensity: 0.15
-    })
-    const card = new THREE.Mesh(cardGeo, cardMat)
-    group.add(card)
+    
+    // Receipt shape (thermal invoice)
+    const receiptGeo = new THREE.BoxGeometry(2.1, 3.0, 0.04)
+    
+    const invoiceCanvas = createInvoiceCanvas()
+    const invoiceTex = new THREE.CanvasTexture(invoiceCanvas)
+    invoiceTex.colorSpace = THREE.SRGBColorSpace
+    
+    const sideMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.6 })
+    const receiptMats = [
+      sideMat, // Right
+      sideMat, // Left
+      sideMat, // Top
+      sideMat, // Bottom
+      new THREE.MeshStandardMaterial({ map: invoiceTex, roughness: 0.5, metalness: 0.0 }), // Front Receipt Face
+      new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.6 }) // Back
+    ]
+    
+    const receipt = new THREE.Mesh(receiptGeo, receiptMats)
+    receipt.rotation.z = -0.05
+    group.add(receipt)
 
-    const coinGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.12, 24)
+    // Floating 3D golden coins orbiting the receipt
+    const coinsGroup = new THREE.Group()
+    coinsGroup.name = "coins"
+    const coinGeo = new THREE.CylinderGeometry(0.24, 0.24, 0.06, 24)
     const coinMat = new THREE.MeshStandardMaterial({
-      color: 0xf59e0b,
-      metalness: 0.8,
-      roughness: 0.2
+      color: 0xffd700,
+      metalness: 0.9,
+      roughness: 0.1
     })
+    
     for (let i = 0; i < 4; i++) {
       const coin = new THREE.Mesh(coinGeo, coinMat)
-      coin.position.set(-0.6, -1.0 + (i * 0.15), 0.2)
-      coin.rotation.x = 0.2
-      group.add(coin)
+      const angle = (i / 4) * Math.PI * 2
+      coin.position.set(Math.cos(angle) * 1.6, Math.sin(angle) * 1.1, 0.3 + (i * 0.1))
+      coin.rotation.x = Math.PI / 2.5
+      coin.rotation.y = Math.random() * Math.PI
+      coinsGroup.add(coin)
     }
+    group.add(coinsGroup)
+    
     activeMesh = group
   } else if (type === 'portal') {
     activeMesh = createPortal3D()
@@ -1221,6 +1254,24 @@ const initThree = (type) => {
     if (activeMesh && !isDragging) {
       activeMesh.rotation.y = Math.sin(elapsed * 0.4) * 0.3
       activeMesh.rotation.x = Math.sin(elapsed * 0.2) * 0.15
+      
+      // Animate coins in finance view
+      const coins = activeMesh.getObjectByName("coins")
+      if (coins) {
+        coins.children.forEach((coin, idx) => {
+          coin.rotation.z += 0.02
+          coin.position.y += Math.sin(elapsed * 2 + idx) * 0.003
+        })
+      }
+
+      // Animate sparkles in student view
+      const sparkles = activeMesh.getObjectByName("sparkles")
+      if (sparkles) {
+        sparkles.children.forEach((sparkle, idx) => {
+          sparkle.rotation.y += 0.015
+          sparkle.position.y += Math.sin(elapsed * 1.5 + idx) * 0.004
+        })
+      }
     }
 
     renderer.render(scene, camera)
@@ -1351,6 +1402,404 @@ const runStepAnimation = (stepIndex) => {
   }
 }
 
+// Procedural Canvas Helpers for Realistic 3D Textures
+const createStudentCardCanvas = () => {
+  const canvas = document.createElement('canvas')
+  canvas.width = 512
+  canvas.height = 320
+  const ctx = canvas.getContext('2d')
+
+  // Smooth dark slate-blue gradient background
+  const grad = ctx.createLinearGradient(0, 0, 512, 320)
+  grad.addColorStop(0, '#0a0f1d')
+  grad.addColorStop(1, '#1e293b')
+  ctx.fillStyle = grad
+  ctx.fillRect(0, 0, 512, 320)
+
+  // Subtle grid overlay
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.08)'
+  ctx.lineWidth = 1
+  for (let i = 0; i < 512; i += 20) {
+    ctx.beginPath()
+    ctx.moveTo(i, 0)
+    ctx.lineTo(i, 320)
+    ctx.stroke()
+  }
+  for (let i = 0; i < 320; i += 20) {
+    ctx.beginPath()
+    ctx.moveTo(0, i)
+    ctx.lineTo(512, i)
+    ctx.stroke()
+  }
+
+  // Header band
+  ctx.fillStyle = '#2b83ff'
+  ctx.fillRect(20, 20, 472, 60)
+
+  ctx.fillStyle = '#ffffff'
+  ctx.font = 'bold 20px sans-serif'
+  ctx.fillText('THẺ HỌC VIÊN / STUDENT ID', 40, 56)
+
+  // Outer border glow
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'
+  ctx.lineWidth = 2
+  ctx.strokeRect(20, 20, 472, 280)
+
+  // Profile picture frame
+  ctx.fillStyle = '#1e293b'
+  ctx.fillRect(40, 100, 110, 140)
+  ctx.strokeStyle = '#cbd5e1'
+  ctx.lineWidth = 2
+  ctx.strokeRect(40, 100, 110, 140)
+
+  // Avatar graphic inside frame
+  ctx.fillStyle = '#64748b'
+  ctx.beginPath()
+  ctx.arc(95, 145, 24, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.beginPath()
+  ctx.arc(95, 215, 42, Math.PI, 0)
+  ctx.fill()
+
+  // Student Info
+  ctx.fillStyle = '#ffffff'
+  ctx.font = 'bold 18px sans-serif'
+  ctx.fillText('NGUYỄN THU HÀ', 170, 130)
+
+  ctx.fillStyle = '#94a3b8'
+  ctx.font = '12px sans-serif'
+  ctx.fillText('Mã học viên / ID:', 170, 160)
+  ctx.fillStyle = '#38bdf8'
+  ctx.font = 'bold 13px sans-serif'
+  ctx.fillText('STUDENT-0294', 285, 160)
+
+  ctx.fillStyle = '#94a3b8'
+  ctx.font = '12px sans-serif'
+  ctx.fillText('Khóa học / Course:', 170, 190)
+  ctx.fillStyle = '#ffffff'
+  ctx.font = 'bold 13px sans-serif'
+  ctx.fillText('Web Fullstack Developer', 285, 190)
+
+  ctx.fillStyle = '#94a3b8'
+  ctx.font = '12px sans-serif'
+  ctx.fillText('Trạng thái / Status:', 170, 220)
+  ctx.fillStyle = '#10b981'
+  ctx.font = 'bold 13px sans-serif'
+  ctx.fillText('✓ ĐÃ ĐIỂM DANH', 285, 220)
+
+  // Decorative barcode
+  ctx.fillStyle = '#ffffff'
+  for (let i = 0; i < 28; i++) {
+    const w = (i % 3 === 0 || i % 7 === 0) ? 4 : 1.5
+    ctx.fillRect(170 + i * 5, 250, w, 20)
+  }
+
+  // Logo brand
+  ctx.fillStyle = '#2b83ff'
+  ctx.font = 'bold 12px sans-serif'
+  ctx.fillText('EDUMANAGER PRO', 370, 265)
+
+  return canvas
+}
+
+const createInvoiceCanvas = () => {
+  const canvas = document.createElement('canvas')
+  canvas.width = 360
+  canvas.height = 512
+  const ctx = canvas.getContext('2d')
+
+  // Pure thermal paper background
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(0, 0, 360, 512)
+
+  // Jagged paper top cut
+  ctx.fillStyle = '#f1f5f9'
+  ctx.fillRect(0, 0, 360, 15)
+  ctx.fillStyle = '#ffffff'
+  for (let i = 0; i < 360; i += 20) {
+    ctx.beginPath()
+    ctx.arc(i + 10, 15, 10, 0, Math.PI, true)
+    ctx.fill()
+  }
+
+  // Header Title
+  ctx.fillStyle = '#0f172a'
+  ctx.font = 'bold 18px sans-serif'
+  ctx.textAlign = 'center'
+  ctx.fillText('HÓA ĐƠN HỌC PHÍ', 180, 55)
+
+  ctx.fillStyle = '#475569'
+  ctx.font = '11px sans-serif'
+  ctx.fillText('Hệ thống Quản lý Đào tạo EduManager Pro', 180, 75)
+
+  // Dash divider
+  ctx.strokeStyle = '#cbd5e1'
+  ctx.lineWidth = 1
+  ctx.setLineDash([4, 4])
+  ctx.beginPath()
+  ctx.moveTo(20, 95)
+  ctx.lineTo(340, 95)
+  ctx.stroke()
+  ctx.setLineDash([])
+
+  // Details fields
+  ctx.textAlign = 'left'
+  ctx.fillStyle = '#64748b'
+  ctx.font = '11px sans-serif'
+
+  ctx.fillText('MÃ GIAO DỊCH:', 30, 125)
+  ctx.fillStyle = '#0f172a'
+  ctx.font = 'bold 11px sans-serif'
+  ctx.fillText('TXN-20260615-9482', 150, 125)
+
+  ctx.fillStyle = '#64748b'
+  ctx.font = '11px sans-serif'
+  ctx.fillText('NGÀY THANH TOÁN:', 30, 150)
+  ctx.fillStyle = '#0f172a'
+  ctx.fillText('15/06/2026 13:14:42', 150, 150)
+
+  ctx.fillStyle = '#64748b'
+  ctx.fillText('HỌC VIÊN:', 30, 175)
+  ctx.fillStyle = '#0f172a'
+  ctx.font = 'bold 11px sans-serif'
+  ctx.fillText('NGUYỄN THU HÀ', 150, 175)
+
+  ctx.fillStyle = '#64748b'
+  ctx.fillText('NỘI DUNG:', 30, 200)
+  ctx.fillStyle = '#0f172a'
+  ctx.fillText('HP Lớp Web Fullstack Developer', 150, 200)
+
+  // Line divider
+  ctx.strokeStyle = '#cbd5e1'
+  ctx.beginPath()
+  ctx.moveTo(20, 220)
+  ctx.lineTo(340, 220)
+  ctx.stroke()
+
+  // Total cash details
+  ctx.fillStyle = '#0f172a'
+  ctx.font = 'bold 12px sans-serif'
+  ctx.fillText('TỔNG TIỀN THANH TOÁN:', 30, 255)
+
+  ctx.fillStyle = '#2b83ff'
+  ctx.font = 'bold 20px sans-serif'
+  ctx.textAlign = 'right'
+  ctx.fillText('3.500.000 đ', 330, 260)
+
+  ctx.textAlign = 'left'
+  ctx.fillStyle = '#64748b'
+  ctx.font = 'italic 10px sans-serif'
+  ctx.fillText('Bằng chữ: Ba triệu năm trăm ngàn đồng chẵn.', 30, 290)
+
+  // Divider
+  ctx.strokeStyle = '#cbd5e1'
+  ctx.beginPath()
+  ctx.moveTo(20, 315)
+  ctx.lineTo(340, 315)
+  ctx.stroke()
+
+  // Auto detect tags
+  ctx.fillStyle = '#64748b'
+  ctx.font = '10px sans-serif'
+  ctx.fillText('Cổng API kết nối:', 30, 340)
+  ctx.fillStyle = '#0f172a'
+  ctx.fillText('VietQR / SePay Auto-Detect', 140, 340)
+
+  ctx.fillStyle = '#64748b'
+  ctx.fillText('Hình thức chuyển:', 30, 365)
+  ctx.fillStyle = '#0f172a'
+  ctx.fillText('Ngân hàng điện tử (Internet Banking)', 140, 365)
+
+  // Official Seal/Stamp
+  ctx.strokeStyle = '#e11d48'
+  ctx.lineWidth = 3
+  ctx.beginPath()
+  ctx.arc(260, 425, 45, 0, Math.PI * 2)
+  ctx.stroke()
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.arc(260, 425, 38, 0, Math.PI * 2)
+  ctx.stroke()
+
+  ctx.fillStyle = '#e11d48'
+  ctx.font = 'bold 10px sans-serif'
+  ctx.textAlign = 'center'
+  ctx.fillText('EDUMANAGER', 260, 410)
+  ctx.font = 'bold 13px sans-serif'
+  ctx.fillText('ĐÃ THU TIỀN', 260, 432)
+  ctx.font = '8px sans-serif'
+  ctx.fillText('15/06/2026', 260, 450)
+
+  // Barcode
+  ctx.fillStyle = '#000000'
+  for (let i = 0; i < 48; i++) {
+    const w = (i % 4 === 0 || i % 9 === 0) ? 3.5 : 1.5
+    ctx.fillRect(40 + i * 5, 480, w, 16)
+  }
+
+  return canvas
+}
+
+const createPortalScreenCanvas = () => {
+  const canvas = document.createElement('canvas')
+  canvas.width = 256
+  canvas.height = 512
+  const ctx = canvas.getContext('2d')
+
+  // Screen background
+  ctx.fillStyle = '#f8fafc'
+  ctx.fillRect(0, 0, 256, 512)
+
+  // Status Bar
+  ctx.fillStyle = '#0f172a'
+  ctx.fillRect(0, 0, 256, 24)
+  ctx.fillStyle = '#ffffff'
+  ctx.font = '10px sans-serif'
+  ctx.fillText('13:14', 12, 16)
+  ctx.textAlign = 'right'
+  ctx.fillText('📶 🛜 🔋 98%', 244, 16)
+  ctx.textAlign = 'left'
+
+  // Header banner
+  const grad = ctx.createLinearGradient(0, 24, 0, 110)
+  grad.addColorStop(0, '#001f3f')
+  grad.addColorStop(1, '#2b83ff')
+  ctx.fillStyle = grad
+  ctx.fillRect(0, 24, 256, 86)
+
+  // Profile Greeting
+  ctx.fillStyle = '#ffffff'
+  ctx.font = 'bold 12px sans-serif'
+  ctx.fillText('Nguyễn Thu Hà', 55, 60)
+  ctx.font = '8px sans-serif'
+  ctx.fillStyle = '#cbd5e1'
+  ctx.fillText('Học viên chính thức', 55, 74)
+
+  // Profile circle avatar
+  ctx.fillStyle = '#38bdf8'
+  ctx.beginPath()
+  ctx.arc(30, 62, 15, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.fillStyle = '#ffffff'
+  ctx.beginPath()
+  ctx.arc(30, 57, 5, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.beginPath()
+  ctx.arc(30, 74, 11, Math.PI, 0)
+  ctx.fill()
+
+  // Bell icon
+  ctx.font = '12px sans-serif'
+  ctx.fillText('🔔', 224, 64)
+
+  // Class Card
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(12, 120, 232, 90)
+  ctx.strokeStyle = '#e2e8f0'
+  ctx.lineWidth = 1
+  ctx.strokeRect(12, 120, 232, 90)
+
+  ctx.fillStyle = '#2b83ff'
+  ctx.font = 'bold 9px sans-serif'
+  ctx.fillText('LỚP HỌC SẮP DIỄN RA', 22, 140)
+
+  ctx.fillStyle = '#0f172a'
+  ctx.font = 'bold 12px sans-serif'
+  ctx.fillText('Lập trình Web Fullstack', 22, 160)
+
+  ctx.fillStyle = '#475569'
+  ctx.font = '9px sans-serif'
+  ctx.fillText('⏱ Thứ 3 - 5 - 7, 18:30', 22, 178)
+  ctx.fillText('📍 Phòng P-302 (Lầu 3)', 22, 194)
+
+  // Result card
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(12, 225, 232, 100)
+  ctx.strokeRect(12, 225, 232, 100)
+
+  ctx.fillStyle = '#0f172a'
+  ctx.font = 'bold 10px sans-serif'
+  ctx.fillText('KẾT QUẢ HỌC TẬP', 22, 245)
+
+  // Circle chart
+  ctx.strokeStyle = '#e2e8f0'
+  ctx.lineWidth = 4
+  ctx.beginPath()
+  ctx.arc(55, 285, 20, 0, Math.PI * 2)
+  ctx.stroke()
+
+  ctx.strokeStyle = '#10b981'
+  ctx.beginPath()
+  ctx.arc(55, 285, 20, -Math.PI / 2, Math.PI * 2 * 0.96 - Math.PI / 2)
+  ctx.stroke()
+
+  ctx.textAlign = 'center'
+  ctx.fillStyle = '#0f172a'
+  ctx.font = 'bold 10px sans-serif'
+  ctx.fillText('96%', 55, 288)
+
+  ctx.fillStyle = '#64748b'
+  ctx.font = '8px sans-serif'
+  ctx.fillText('Chuyên cần', 55, 316)
+
+  // Exam Score
+  ctx.textAlign = 'left'
+  ctx.fillStyle = '#0f172a'
+  ctx.font = 'bold 18px sans-serif'
+  ctx.fillText('8.5', 135, 282)
+
+  ctx.fillStyle = '#10b981'
+  ctx.font = 'bold 10px sans-serif'
+  ctx.fillText('GIỎI', 168, 278)
+
+  ctx.fillStyle = '#64748b'
+  ctx.font = '8px sans-serif'
+  ctx.fillText('Điểm thi trung bình', 135, 300)
+
+  // Action cards
+  ctx.fillStyle = '#e0f2fe'
+  ctx.fillRect(12, 340, 110, 50)
+  ctx.fillStyle = '#0369a1'
+  ctx.font = 'bold 9px sans-serif'
+  ctx.fillText('📚 Bài tập', 22, 360)
+  ctx.fillStyle = '#0284c7'
+  ctx.fillText('3 chưa nộp', 22, 378)
+
+  ctx.fillStyle = '#fef3c7'
+  ctx.fillRect(134, 340, 110, 50)
+  ctx.fillStyle = '#b45309'
+  ctx.fillText('💳 Học phí', 144, 360)
+  ctx.fillStyle = '#d97706'
+  ctx.fillText('Đã đóng kì I', 144, 378)
+
+  // Tabbar
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(0, 462, 256, 50)
+  ctx.strokeStyle = '#e2e8f0'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(0, 462)
+  ctx.lineTo(256, 462)
+  ctx.stroke()
+
+  ctx.textAlign = 'center'
+  ctx.font = '14px sans-serif'
+  ctx.fillText('🏠', 32, 484)
+  ctx.fillText('📅', 96, 484)
+  ctx.fillText('📊', 160, 484)
+  ctx.fillText('👤', 224, 484)
+
+  ctx.font = '7px sans-serif'
+  ctx.fillStyle = '#2b83ff'
+  ctx.fillText('Trang chủ', 32, 498)
+  ctx.fillStyle = '#64748b'
+  ctx.fillText('Lịch học', 96, 498)
+  ctx.fillText('Bảng điểm', 160, 498)
+  ctx.fillText('Tài khoản', 224, 498)
+
+  return canvas
+}
+
 // Procedural Dashboard Canvas for the 3D device screen
 const createDashboardCanvas = (time = 0, canvas) => {
   const c = canvas || document.createElement('canvas')
@@ -1359,76 +1808,178 @@ const createDashboardCanvas = (time = 0, canvas) => {
     c.height = 340
   }
   const ctx = c.getContext('2d')
-  
-  // Background
-  ctx.fillStyle = '#0f131b'
+
+  // Background Dark Slate
+  ctx.fillStyle = '#0f131a'
   ctx.fillRect(0, 0, c.width, c.height)
-  
-  // Header
-  ctx.fillStyle = '#1c2028'
-  ctx.fillRect(0, 0, c.width, 50)
-  
+
+  // Sidebar Layout (width = 110)
+  ctx.fillStyle = '#141822'
+  ctx.fillRect(0, 0, 110, c.height)
+
+  // Logo inside sidebar
   ctx.fillStyle = '#2b83ff'
-  ctx.font = 'bold 20px sans-serif'
-  ctx.fillText('EduManager Pro', 20, 32)
-  
-  // Decorative grid lines
-  ctx.strokeStyle = '#262a33'
+  ctx.font = 'bold 12px sans-serif'
+  ctx.fillText('EduManager', 15, 30)
+
+  // Sidebar items
+  const sidebarItems = ['🏠 Tổng quan', '📚 Khóa học', '👤 Học viên', '💳 Học phí', '📊 Báo cáo']
+  sidebarItems.forEach((item, index) => {
+    ctx.fillStyle = index === 0 ? '#2b83ff' : '#94a3b8'
+    ctx.font = index === 0 ? 'bold 10px sans-serif' : '10px sans-serif'
+    ctx.fillText(item, 15, 75 + index * 30)
+
+    // Selection bar
+    if (index === 0) {
+      ctx.fillRect(0, 63 + index * 30, 4, 16)
+    }
+  })
+
+  // Header band
+  ctx.fillStyle = '#141822'
+  ctx.fillRect(110, 0, c.width - 110, 45)
+
+  // Top header text
+  ctx.fillStyle = '#ffffff'
+  ctx.font = 'bold 11px sans-serif'
+  ctx.fillText('HỆ THỐNG QUẢN LÝ ĐÀO TẠO PRO', 130, 27)
+
+  ctx.fillStyle = '#cbd5e1'
+  ctx.font = '10px sans-serif'
+  ctx.textAlign = 'right'
+  ctx.fillText('Xin chào, Admin A 🔔', c.width - 20, 27)
+  ctx.textAlign = 'left'
+
+  // Metric Cards
+  // Card 1
+  ctx.fillStyle = '#1e2530'
+  ctx.fillRect(130, 60, 170, 55)
+  ctx.strokeStyle = '#2b83ff'
   ctx.lineWidth = 1
-  for (let i = 0; i < c.width; i += 40) {
+  ctx.strokeRect(130, 60, 170, 55)
+
+  ctx.fillStyle = '#94a3b8'
+  ctx.font = '8px sans-serif'
+  ctx.fillText('TỔNG SỐ HỌC VIÊN', 140, 77)
+  ctx.fillStyle = '#ffffff'
+  ctx.font = 'bold 15px sans-serif'
+  ctx.fillText('1,482', 140, 98)
+  ctx.fillStyle = '#10b981'
+  ctx.font = 'bold 9px sans-serif'
+  ctx.fillText('+12%', 260, 98)
+
+  // Card 2
+  ctx.fillStyle = '#1e2530'
+  ctx.fillRect(320, 60, 170, 55)
+  ctx.strokeStyle = '#f59e0b'
+  ctx.strokeRect(320, 60, 170, 55)
+
+  ctx.fillStyle = '#94a3b8'
+  ctx.font = '8px sans-serif'
+  ctx.fillText('DOANH THU THÁNG', 330, 77)
+  ctx.fillStyle = '#ffffff'
+  ctx.font = 'bold 15px sans-serif'
+  ctx.fillText('128.5M đ', 330, 98)
+  ctx.fillStyle = '#10b981'
+  ctx.font = 'bold 9px sans-serif'
+  ctx.fillText('+24%', 450, 98)
+
+  // Graph Area
+  ctx.fillStyle = '#141822'
+  ctx.fillRect(130, 130, 360, 180)
+  ctx.strokeStyle = '#1e293b'
+  ctx.strokeRect(130, 130, 360, 180)
+
+  // Chart Title
+  ctx.fillStyle = '#94a3b8'
+  ctx.font = '9px sans-serif'
+  ctx.fillText('Xu hướng tăng trưởng (Doanh thu & Đăng ký)', 145, 150)
+
+  // Grid Lines inside chart
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)'
+  for (let i = 0; i < 4; i++) {
     ctx.beginPath()
-    ctx.moveTo(i, 50)
-    ctx.lineTo(i, c.height)
-    ctx.stroke()
-  }
-  for (let i = 50; i < c.height; i += 40) {
-    ctx.beginPath()
-    ctx.moveTo(0, i)
-    ctx.lineTo(c.width, i)
+    ctx.moveTo(145, 170 + i * 35)
+    ctx.lineTo(470, 170 + i * 35)
     ctx.stroke()
   }
 
-  // Draw a bar chart
-  ctx.fillStyle = '#2b83ff'
-  const data = [60, 120, 180, 140, 220, 190, 240]
-  data.forEach((val, index) => {
-    const animVal = val + Math.sin(time * 2 + index) * 15
-    const x = 50 + index * 50
-    const y = c.height - animVal - 40
-    ctx.fillRect(x, y, 30, animVal)
-  })
-  
-  // Draw a line chart (orange/amber)
-  ctx.strokeStyle = '#f59e0b'
-  ctx.lineWidth = 4
+  // Draw smooth spline area chart (Blue)
+  ctx.strokeStyle = '#2b83ff'
+  ctx.lineWidth = 2.5
   ctx.beginPath()
-  const points = [80, 160, 110, 200, 150, 230, 210]
-  points.forEach((val, index) => {
-    const animVal = val + Math.cos(time * 2.5 + index) * 15
-    const x = 65 + index * 50
-    const y = c.height - animVal - 40
+  const dataPoints = [35, 75, 50, 95, 80, 130, 110, 140]
+  dataPoints.forEach((val, index) => {
+    const animVal = val + Math.sin(time * 2 + index) * 8
+    const x = 160 + index * 40
+    const y = 290 - animVal
     if (index === 0) {
       ctx.moveTo(x, y)
     } else {
-      ctx.lineTo(x, y)
+      const prevX = 160 + (index - 1) * 40
+      const prevAnimVal = dataPoints[index - 1] + Math.sin(time * 2 + index - 1) * 8
+      const prevY = 290 - prevAnimVal
+      ctx.bezierCurveTo(prevX + 20, prevY, x - 20, y, x, y)
     }
   })
   ctx.stroke()
-  
-  // Draw some UI buttons / circles
-  ctx.fillStyle = '#2e7d32'
-  ctx.beginPath()
-  ctx.arc(430, 100, 30, 0, Math.PI * 2)
-  ctx.fill()
-  
-  ctx.fillStyle = '#ffffff'
-  ctx.font = 'bold 12px sans-serif'
-  ctx.fillText('ACTIVE', 410, 104)
 
-  ctx.fillStyle = '#bdcabf'
-  ctx.font = '12px sans-serif'
-  ctx.fillText('Revenue Growth: +24%', 20, 90)
-  ctx.fillText('Active Students: 1,482', 20, 110)
+  // Fill area under line with gradient
+  const areaGrad = ctx.createLinearGradient(0, 160, 0, 290)
+  areaGrad.addColorStop(0, 'rgba(43, 131, 255, 0.25)')
+  areaGrad.addColorStop(1, 'rgba(43, 131, 255, 0.0)')
+  ctx.fillStyle = areaGrad
+  ctx.beginPath()
+  dataPoints.forEach((val, index) => {
+    const animVal = val + Math.sin(time * 2 + index) * 8
+    const x = 160 + index * 40
+    const y = 290 - animVal
+    if (index === 0) {
+      ctx.moveTo(x, 290)
+      ctx.lineTo(x, y)
+    } else {
+      const prevX = 160 + (index - 1) * 40
+      const prevAnimVal = dataPoints[index - 1] + Math.sin(time * 2 + index - 1) * 8
+      const prevY = 290 - prevAnimVal
+      ctx.bezierCurveTo(prevX + 20, prevY, x - 20, y, x, y)
+    }
+    if (index === dataPoints.length - 1) {
+      ctx.lineTo(x, 290)
+    }
+  })
+  ctx.closePath()
+  ctx.fill()
+
+  // Draw second line (Orange)
+  ctx.strokeStyle = '#f59e0b'
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  const dataPoints2 = [60, 40, 80, 70, 110, 90, 125, 115]
+  dataPoints2.forEach((val, index) => {
+    const animVal = val + Math.cos(time * 2.5 + index) * 6
+    const x = 160 + index * 40
+    const y = 290 - animVal
+    if (index === 0) {
+      ctx.moveTo(x, y)
+    } else {
+      const prevX = 160 + (index - 1) * 40
+      const prevAnimVal = dataPoints2[index - 1] + Math.cos(time * 2.5 + index - 1) * 6
+      const prevY = 290 - prevAnimVal
+      ctx.bezierCurveTo(prevX + 20, prevY, x - 20, y, x, y)
+    }
+  })
+  ctx.stroke()
+
+  // Draw chart dots
+  ctx.fillStyle = '#2b83ff'
+  dataPoints.forEach((val, index) => {
+    const animVal = val + Math.sin(time * 2 + index) * 8
+    const x = 160 + index * 40
+    const y = 290 - animVal
+    ctx.beginPath()
+    ctx.arc(x, y, 4, 0, Math.PI * 2)
+    ctx.fill()
+  })
 
   return c
 }
