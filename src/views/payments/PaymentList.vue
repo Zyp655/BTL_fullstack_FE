@@ -48,7 +48,7 @@
           <div class="flex justify-between items-start mb-4 relative z-10">
             <div>
               <p class="font-body-sm text-body-sm text-secondary mb-1">Tổng doanh thu</p>
-              <h3 class="font-title-md text-title-md text-primary text-2xl font-bold">{{ formatCurrency(dashboardStats.totalRevenue) }}</h3>
+              <h3 class="font-title-md text-title-md text-primary text-2xl font-bold">{{ formatCurrency(totalRevenueTarget) }}</h3>
             </div>
             <div class="p-2 bg-white/60 rounded-lg shadow-sm border border-white/50 flex items-center justify-center">
               <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">account_balance</span>
@@ -759,6 +759,10 @@ const paymentCompletionRate = computed(() => {
   const total = Number(dashboardStats.value.totalRevenue) + Number(dashboardStats.value.totalDebt)
   if (total === 0) return 0
   return Math.round((Number(dashboardStats.value.totalRevenue) / total) * 100)
+})
+
+const totalRevenueTarget = computed(() => {
+  return Number(dashboardStats.value.totalRevenue) + Number(dashboardStats.value.totalDebt)
 })
 
 const currentYearVal = new Date().getFullYear()
