@@ -73,195 +73,371 @@
       </div>
     </section>
 
-    <!-- Class Cards Grid -->
-    <div v-if="classStore.loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
-      <div v-for="i in 3" :key="i" class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-5 space-y-4 animate-pulse">
-        <div class="flex justify-between items-center">
-          <div class="h-6 bg-surface-container-high rounded w-1/3"></div>
-          <div class="h-6 bg-surface-container-high rounded w-1/4"></div>
-        </div>
-        <div class="h-8 bg-surface-container-high rounded w-3/4"></div>
-        <div class="space-y-2">
-          <div class="h-4 bg-surface-container-high rounded w-1/2"></div>
-          <div class="h-4 bg-surface-container-high rounded w-2/3"></div>
-        </div>
-      </div>
-    </div>
+    <!-- Classes List Section -->
+    <section>
+      <!-- Table Layout for Admin -->
+      <div v-if="authStore.isAdmin" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl overflow-hidden p-4">
+        <a-table
+          :data-source="classStore.classes"
+          :columns="classColumns"
+          :loading="classStore.loading"
+          row-key="classId"
+          :pagination="{ pageSize: 10, showSizeChanger: true, showTotal: (total) => `Tổng số ${total} lớp học` }"
+          class="custom-antd-table"
+        >
+          <template #bodyCell="{ column, record }">
+            <template v-if="column.key === 'className'">
+              <span class="font-bold text-primary-container text-body-sm">{{ record.className }}</span>
+            </template>
+            
+            <template v-else-if="column.key === 'courseName'">
+              <span class="text-body-sm text-on-surface-variant font-semibold">{{ record.courseName }}</span>
+            </template>
 
-    <div v-else-if="classStore.classes.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
-      <div
-        v-for="cls in classStore.classes"
-        :key="cls.classId"
-        class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-5 flex flex-col group hover:-translate-y-1 hover:shadow-md transition-all duration-300 relative cursor-pointer"
-        @click="onCardClick(cls)"
-      >
-        <!-- Card Header -->
-        <div class="flex justify-between items-start gap-2 mb-3">
-          <span class="px-2.5 py-1 rounded bg-primary-container/5 text-primary-container font-semibold text-[11px] truncate max-w-[180px]" :title="cls.courseName">
-            {{ cls.courseName }}
-          </span>
-          <span :class="['status-badge', getStatusBadgeClass(cls.status)]">
-            {{ getStatusLabel(cls.status) }}
-          </span>
-        </div>
+            <template v-else-if="column.key === 'teacherName'">
+              <span class="text-body-sm font-semibold text-primary-container">{{ record.teacherName || 'Chưa phân công' }}</span>
+            </template>
 
-        <!-- Class Title -->
-        <h3 class="font-bold text-xl text-primary-container mb-3">{{ cls.className }}</h3>
+            <template v-else-if="column.key === 'room'">
+              <span class="text-body-sm font-medium">{{ record.room || 'Chưa xếp phòng' }}</span>
+            </template>
 
-        <!-- Class Meta Details -->
-        <div class="flex flex-col gap-2.5 mb-4 text-body-sm text-on-surface-variant">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-[18px]">account_circle</span>
-            <span>Giáo viên: <strong class="text-primary-container font-semibold">{{ cls.teacherName || 'Chưa phân công' }}</strong></span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-[18px]">meeting_room</span>
-            <span>Phòng: <strong class="text-primary-container font-semibold">{{ cls.room || 'Chưa xếp phòng' }}</strong></span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-[18px]">group</span>
-            <span>Học viên: <strong class="text-primary-container font-semibold">{{ cls.currentStudents }} / {{ cls.maxStudents }}</strong></span>
-          </div>
-          <div v-if="cls.startDate" class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-[18px]">calendar_month</span>
-            <span>Lịch: {{ formatDate(cls.startDate) }} &rarr; {{ formatDate(cls.endDate) }}</span>
-          </div>
-        </div>
-
-        <!-- Schedules Chips List -->
-        <div v-if="cls.schedules && cls.schedules.length > 0" class="mb-4">
-          <div class="text-[11px] font-bold text-on-surface-variant/80 uppercase tracking-wide mb-1">Thời khóa biểu:</div>
-          <div class="flex flex-wrap gap-1.5">
-            <span v-for="s in cls.schedules" :key="s.scheduleId" class="px-2 py-0.5 rounded bg-on-tertiary-container/10 text-on-tertiary-container text-[11px] font-semibold">
-              {{ s.dayOfWeekName }} {{ s.startTime }} - {{ s.endTime }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Under-enrolled warning alert -->
-        <div v-if="authStore.isAdmin && isUnderEnrolled(cls)" class="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 text-amber-800 rounded-xl text-body-sm flex flex-col gap-2 relative z-10" @click.stop>
-          <div class="flex items-start gap-1.5 font-bold">
-            <span class="material-symbols-outlined text-[18px] text-amber-600 shrink-0 mt-0.5">warning</span>
-            <span>Chưa đủ 5 học viên sau ngày khai giảng!</span>
-          </div>
-          <button
-            @click.stop="openResolveModal(cls)"
-            class="self-end px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-[12px] shadow-sm hover:shadow transition-all flex items-center gap-1 active:scale-95 cursor-pointer"
-          >
-            <span class="material-symbols-outlined text-[16px]">cancel_schedule_send</span>
-            Hủy lớp &amp; Giải quyết
-          </button>
-        </div>
-
-        <!-- Progress bar of Capacity -->
-        <div class="mb-5 space-y-1">
-          <div class="flex justify-between items-center text-[11px] font-bold text-on-surface-variant">
-            <span>Tỷ lệ lấp đầy</span>
-            <span>{{ Math.round((cls.currentStudents / cls.maxStudents) * 100) }}%</span>
-          </div>
-          <div class="w-full bg-white/40 h-2 rounded-full overflow-hidden border border-white/60">
-            <div
-              :style="{ width: `${Math.min((cls.currentStudents / cls.maxStudents) * 100, 100)}%` }"
-              :class="[
-                cls.currentStudents >= cls.maxStudents ? 'bg-rose-500' : 'bg-emerald-500',
-                'h-full rounded-full transition-all duration-500'
-              ]"
-            ></div>
-          </div>
-        </div>
-
-        <!-- Footer Actions row -->
-        <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/30 relative gap-1 flex-wrap" @click.stop>
-          <div class="flex items-center gap-1.5">
-            <button
-              @click.stop="$router.push({ path: `/classes/${cls.classId}/students`, query: { tab: 'attendance' } })"
-              class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[13px] transition-all flex items-center gap-1 active:scale-95 cursor-pointer shadow-sm"
-              :title="authStore.isAdmin ? 'Xem chuyên cần học viên' : 'Điểm danh học viên'"
-            >
-              <span class="material-symbols-outlined text-[16px]">fact_check</span>
-              {{ authStore.isAdmin ? 'Xem chuyên cần' : 'Điểm danh' }}
-            </button>
-            <button
-              @click.stop="$router.push({ path: `/classes/${cls.classId}/students`, query: { tab: 'grades' } })"
-              class="px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-[13px] transition-all flex items-center gap-1 active:scale-95 cursor-pointer shadow-sm"
-              :title="authStore.isAdmin ? 'Xem điểm số thi' : 'Nhập điểm thi'"
-            >
-              <span class="material-symbols-outlined text-[16px]">edit_note</span>
-              {{ authStore.isAdmin ? 'Xem điểm số' : 'Nhập điểm' }}
-            </button>
-            <button
-              @click.stop="$router.push(`/classes/${cls.classId}/schedules`)"
-              class="px-2.5 py-1.5 rounded-lg bg-primary-container/10 hover:bg-primary-container/20 text-primary font-semibold text-[13px] transition-all flex items-center gap-1 active:scale-95 cursor-pointer"
-              title="Thời khóa biểu"
-            >
-              <span class="material-symbols-outlined text-[16px]">calendar_today</span>
-              Lịch học
-            </button>
-          </div>
-          
-          <div class="flex items-center gap-1" v-if="authStore.isAdmin">
-            <button
-              @click.stop="openEditDialog(cls)"
-              class="w-8.5 h-8.5 rounded-lg text-on-tertiary-container hover:bg-on-tertiary-container/10 flex items-center justify-center transition-colors cursor-pointer"
-              title="Sửa lớp học"
-            >
-              <span class="material-symbols-outlined text-[18px]">edit</span>
-            </button>
-
-            <!-- Custom Dropdown Button -->
-            <div class="relative">
-              <button
-                @click.stop="toggleDropdown(cls.classId)"
-                class="w-8.5 h-8.5 rounded-lg text-on-surface-variant hover:bg-primary-container/[0.05] flex items-center justify-center transition-colors cursor-pointer"
-                title="Thay đổi trạng thái / Xóa"
-              >
-                <span class="material-symbols-outlined text-[18px]">more_vert</span>
-              </button>
-
-              <!-- Dropdown Items Menu -->
-              <div v-if="activeDropdownId === cls.classId" class="absolute right-0 bottom-10 w-44 rounded-xl bg-white/90 backdrop-blur-[24px] border border-white/50 shadow-[0_20px_40px_rgba(0,31,63,0.12)] py-2 z-30 animate-scale-in">
-                <div class="px-3 py-1 text-[11px] font-bold text-on-surface-variant/80 uppercase tracking-wide border-b border-white/40 mb-1">
-                  Đổi trạng thái
+            <template v-else-if="column.key === 'students'">
+              <div class="flex flex-col gap-1">
+                <div class="flex justify-between items-center text-body-xs font-bold text-on-surface-variant">
+                  <span>{{ record.currentStudents }}/{{ record.maxStudents }}</span>
+                  <span>{{ Math.round((record.currentStudents / record.maxStudents) * 100) }}%</span>
                 </div>
+                <div class="w-24 bg-white/40 h-1.5 rounded-full overflow-hidden border border-white/60">
+                  <div
+                    :style="{ width: `${Math.min((record.currentStudents / record.maxStudents) * 100, 100)}%` }"
+                    :class="[
+                      record.currentStudents >= record.maxStudents ? 'bg-rose-500' : 'bg-emerald-500',
+                      'h-full rounded-full transition-all duration-300'
+                    ]"
+                  ></div>
+                </div>
+                <!-- Warning if under-enrolled -->
+                <div v-if="isUnderEnrolled(record)" class="text-[10px] text-amber-600 font-bold flex items-center gap-0.5 mt-0.5">
+                  <span class="material-symbols-outlined text-[12px]">warning</span>
+                  Thiếu sĩ số
+                </div>
+              </div>
+            </template>
+
+            <template v-else-if="column.key === 'schedules'">
+              <div v-if="record.schedules && record.schedules.length > 0" class="flex flex-col gap-1 max-w-[180px]">
+                <span v-for="s in record.schedules" :key="s.scheduleId" class="px-1.5 py-0.5 rounded bg-on-tertiary-container/10 text-on-tertiary-container text-[10px] font-semibold truncate block">
+                  {{ s.dayOfWeekName }} {{ s.startTime }} - {{ s.endTime }}
+                </span>
+              </div>
+              <span v-else class="text-body-xs text-on-surface-variant italic">Chưa xếp lịch</span>
+            </template>
+
+            <template v-else-if="column.key === 'dates'">
+              <div class="text-body-xs text-on-surface-variant whitespace-nowrap font-medium">
+                <div>BĐ: {{ formatDate(record.startDate) }}</div>
+                <div>KT: {{ formatDate(record.endDate) }}</div>
+              </div>
+            </template>
+
+            <template v-else-if="column.key === 'status'">
+              <span :class="['status-badge inline-flex', getStatusBadgeClass(record.status)]">
+                {{ getStatusLabel(record.status) }}
+              </span>
+            </template>
+
+            <template v-else-if="column.key === 'actions'">
+              <div class="flex items-center gap-1.5 relative" @click.stop>
+                <!-- Standard Action Buttons -->
                 <button
-                  v-for="statusOpt in statusOptions"
-                  :key="statusOpt.value"
-                  @click.stop="changeStatus(cls.classId, statusOpt.value)"
-                  class="w-full text-left px-4 py-2 text-body-sm text-primary-container hover:bg-on-tertiary-container/10 transition-colors font-medium cursor-pointer"
+                  @click.stop="$router.push({ path: `/classes/${record.classId}/students`, query: { tab: 'attendance' } })"
+                  class="px-2 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-body-xs transition-all flex items-center gap-0.5 cursor-pointer shadow-sm"
+                  title="Chuyên cần"
                 >
-                  {{ statusOpt.title }}
+                  <span class="material-symbols-outlined text-[14px]">fact_check</span>
+                  Điểm danh
                 </button>
-                <div class="border-t border-white/40 my-1.5"></div>
+
                 <button
-                  @click.stop="openAssignTeacherDialog(cls)"
-                  class="w-full text-left px-4 py-2 text-body-sm text-primary-container hover:bg-on-tertiary-container/10 transition-colors font-medium cursor-pointer flex items-center gap-1"
+                  @click.stop="$router.push({ path: `/classes/${record.classId}/students`, query: { tab: 'grades' } })"
+                  class="px-2 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold text-body-xs transition-all flex items-center gap-0.5 cursor-pointer shadow-sm"
+                  title="Nhập điểm"
                 >
-                  <span class="material-symbols-outlined text-[16px]">assignment_ind</span>
-                  Phân công GV
+                  <span class="material-symbols-outlined text-[14px]">edit_note</span>
+                  Điểm
                 </button>
-                <div class="border-t border-white/40 my-1.5"></div>
+
                 <button
-                  @click.stop="confirmDelete(cls)"
-                  class="w-full text-left px-4 py-2 text-body-sm text-error hover:bg-error/10 transition-colors font-semibold flex items-center gap-1 cursor-pointer"
+                  @click.stop="$router.push(`/classes/${record.classId}/schedules`)"
+                  class="px-2 py-1 rounded bg-primary-container/10 hover:bg-primary-container/20 text-primary font-semibold text-body-xs transition-all flex items-center gap-0.5 cursor-pointer"
+                  title="Lịch học"
                 >
-                  <span class="material-symbols-outlined text-[16px]">delete</span>
-                  Xóa lớp
+                  <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                  Lịch
                 </button>
+
+                <!-- Warning Hủy lớp & Giải quyết -->
+                <button
+                  v-if="isUnderEnrolled(record)"
+                  @click.stop="openResolveModal(record)"
+                  class="px-2 py-1 rounded bg-amber-600 hover:bg-amber-700 text-white font-semibold text-body-xs transition-all flex items-center gap-0.5 cursor-pointer shadow-sm"
+                  title="Giải quyết thiếu sĩ số"
+                >
+                  <span class="material-symbols-outlined text-[14px]">cancel_schedule_send</span>
+                  Hủy lớp
+                </button>
+
+                <button
+                  @click.stop="openEditDialog(record)"
+                  class="px-2 py-1 rounded bg-primary-container/15 hover:bg-primary-container/25 text-primary-container font-semibold text-body-xs transition-all flex items-center gap-0.5 cursor-pointer"
+                  title="Sửa lớp"
+                >
+                  <span class="material-symbols-outlined text-[14px]">edit</span>
+                  Sửa
+                </button>
+
+                <!-- Dropdown button -->
+                <div class="relative">
+                  <button
+                    @click.stop="toggleDropdown(record.classId)"
+                    class="w-6 h-6 rounded hover:bg-primary-container/[0.08] flex items-center justify-center text-on-surface-variant cursor-pointer"
+                  >
+                    <span class="material-symbols-outlined text-[16px]">more_vert</span>
+                  </button>
+
+                  <!-- Dropdown Items Menu -->
+                  <div v-if="activeDropdownId === record.classId" class="absolute right-0 bottom-8 w-44 rounded-xl bg-white/95 backdrop-blur-[24px] border border-white/50 shadow-[0_20px_40px_rgba(0,31,63,0.12)] py-2 z-50 animate-scale-in">
+                    <div class="px-3 py-1 text-[10px] font-bold text-on-surface-variant/80 uppercase tracking-wide border-b border-white/40 mb-1">
+                      Đổi trạng thái
+                    </div>
+                    <button
+                      v-for="statusOpt in statusOptions"
+                      :key="statusOpt.value"
+                      @click.stop="changeStatus(record.classId, statusOpt.value)"
+                      class="w-full text-left px-4 py-1.5 text-body-xs text-primary-container hover:bg-on-tertiary-container/10 transition-colors font-semibold cursor-pointer"
+                    >
+                      {{ statusOpt.title }}
+                    </button>
+                    <div class="border-t border-white/40 my-1"></div>
+                    <button
+                      @click.stop="openAssignTeacherDialog(record)"
+                      class="w-full text-left px-4 py-1.5 text-body-xs text-primary-container hover:bg-on-tertiary-container/10 transition-colors font-semibold cursor-pointer flex items-center gap-1"
+                    >
+                      <span class="material-symbols-outlined text-[14px]">assignment_ind</span>
+                      Phân công GV
+                    </button>
+                    <div class="border-t border-white/40 my-1"></div>
+                    <button
+                      @click.stop="confirmDelete(record)"
+                      class="w-full text-left px-4 py-1.5 text-body-xs text-error hover:bg-error/10 transition-colors font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      <span class="material-symbols-outlined text-[14px]">delete</span>
+                      Xóa lớp
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </template>
+        </a-table>
+      </div>
+
+      <!-- Card Layout for Students/Teachers -->
+      <div v-else>
+        <!-- Loading State -->
+        <div v-if="classStore.loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+          <div v-for="i in 3" :key="i" class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-5 space-y-4 animate-pulse">
+            <div class="flex justify-between items-center">
+              <div class="h-6 bg-surface-container-high rounded w-1/3"></div>
+              <div class="h-6 bg-surface-container-high rounded w-1/4"></div>
+            </div>
+            <div class="h-8 bg-surface-container-high rounded w-3/4"></div>
+            <div class="space-y-2">
+              <div class="h-4 bg-surface-container-high rounded w-1/2"></div>
+              <div class="h-4 bg-surface-container-high rounded w-2/3"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Class Cards Grid -->
+        <div v-else-if="classStore.classes.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+          <div
+            v-for="cls in classStore.classes"
+            :key="cls.classId"
+            class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-5 flex flex-col group hover:-translate-y-1 hover:shadow-md transition-all duration-300 relative cursor-pointer"
+            @click="onCardClick(cls)"
+          >
+            <!-- Card Header -->
+            <div class="flex justify-between items-start gap-2 mb-3">
+              <span class="px-2.5 py-1 rounded bg-primary-container/5 text-primary-container font-semibold text-[11px] truncate max-w-[180px]" :title="cls.courseName">
+                {{ cls.courseName }}
+              </span>
+              <span :class="['status-badge', getStatusBadgeClass(cls.status)]">
+                {{ getStatusLabel(cls.status) }}
+              </span>
+            </div>
+
+            <!-- Class Title -->
+            <h3 class="font-bold text-xl text-primary-container mb-3">{{ cls.className }}</h3>
+
+            <!-- Class Meta Details -->
+            <div class="flex flex-col gap-2.5 mb-4 text-body-sm text-on-surface-variant">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">account_circle</span>
+                <span>Giáo viên: <strong class="text-primary-container font-semibold">{{ cls.teacherName || 'Chưa phân công' }}</strong></span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">meeting_room</span>
+                <span>Phòng: <strong class="text-primary-container font-semibold">{{ cls.room || 'Chưa xếp phòng' }}</strong></span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">group</span>
+                <span>Học viên: <strong class="text-primary-container font-semibold">{{ cls.currentStudents }} / {{ cls.maxStudents }}</strong></span>
+              </div>
+              <div v-if="cls.startDate" class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">calendar_month</span>
+                <span>Lịch: {{ formatDate(cls.startDate) }} &rarr; {{ formatDate(cls.endDate) }}</span>
+              </div>
+            </div>
+
+            <!-- Schedules Chips List -->
+            <div v-if="cls.schedules && cls.schedules.length > 0" class="mb-4">
+              <div class="text-[11px] font-bold text-on-surface-variant/80 uppercase tracking-wide mb-1">Thời khóa biểu:</div>
+              <div class="flex flex-wrap gap-1.5">
+                <span v-for="s in cls.schedules" :key="s.scheduleId" class="px-2 py-0.5 rounded bg-on-tertiary-container/10 text-on-tertiary-container text-[11px] font-semibold">
+                  {{ s.dayOfWeekName }} {{ s.startTime }} - {{ s.endTime }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Under-enrolled warning alert -->
+            <div v-if="authStore.isAdmin && isUnderEnrolled(cls)" class="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 text-amber-800 rounded-xl text-body-sm flex flex-col gap-2 relative z-10" @click.stop>
+              <div class="flex items-start gap-1.5 font-bold">
+                <span class="material-symbols-outlined text-[18px] text-amber-600 shrink-0 mt-0.5">warning</span>
+                <span>Chưa đủ 5 học viên sau ngày khai giảng!</span>
+              </div>
+              <button
+                @click.stop="openResolveModal(cls)"
+                class="self-end px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-[12px] shadow-sm hover:shadow transition-all flex items-center gap-1 active:scale-95 cursor-pointer"
+              >
+                <span class="material-symbols-outlined text-[16px]">cancel_schedule_send</span>
+                Hủy lớp &amp; Giải quyết
+              </button>
+            </div>
+
+            <!-- Progress bar of Capacity -->
+            <div class="mb-5 space-y-1">
+              <div class="flex justify-between items-center text-[11px] font-bold text-on-surface-variant">
+                <span>Tỷ lệ lấp đầy</span>
+                <span>{{ Math.round((cls.currentStudents / cls.maxStudents) * 100) }}%</span>
+              </div>
+              <div class="w-full bg-white/40 h-2 rounded-full overflow-hidden border border-white/60">
+                <div
+                  :style="{ width: `${Math.min((cls.currentStudents / cls.maxStudents) * 100, 100)}%` }"
+                  :class="[
+                    cls.currentStudents >= cls.maxStudents ? 'bg-rose-500' : 'bg-emerald-500',
+                    'h-full rounded-full transition-all duration-500'
+                  ]"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Footer Actions row -->
+            <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/30 relative gap-1 flex-wrap" @click.stop>
+              <div class="flex items-center gap-1.5">
+                <button
+                  @click.stop="$router.push({ path: `/classes/${cls.classId}/students`, query: { tab: 'attendance' } })"
+                  class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[13px] transition-all flex items-center gap-1 active:scale-95 cursor-pointer shadow-sm"
+                  :title="authStore.isAdmin ? 'Xem chuyên cần học viên' : 'Điểm danh học viên'"
+                >
+                  <span class="material-symbols-outlined text-[16px]">fact_check</span>
+                  {{ authStore.isAdmin ? 'Xem chuyên cần' : 'Điểm danh' }}
+                </button>
+                <button
+                  @click.stop="$router.push({ path: `/classes/${cls.classId}/students`, query: { tab: 'grades' } })"
+                  class="px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-[13px] transition-all flex items-center gap-1 active:scale-95 cursor-pointer shadow-sm"
+                  :title="authStore.isAdmin ? 'Xem điểm số thi' : 'Nhập điểm thi'"
+                >
+                  <span class="material-symbols-outlined text-[16px]">edit_note</span>
+                  {{ authStore.isAdmin ? 'Xem điểm số' : 'Nhập điểm' }}
+                </button>
+                <button
+                  @click.stop="$router.push(`/classes/${cls.classId}/schedules`)"
+                  class="px-2.5 py-1.5 rounded-lg bg-primary-container/10 hover:bg-primary-container/20 text-primary font-semibold text-[13px] transition-all flex items-center gap-1 active:scale-95 cursor-pointer"
+                  title="Thời khóa biểu"
+                >
+                  <span class="material-symbols-outlined text-[16px]">calendar_today</span>
+                  Lịch học
+                </button>
+              </div>
+              
+              <div class="flex items-center gap-1" v-if="authStore.isAdmin">
+                <button
+                  @click.stop="openEditDialog(cls)"
+                  class="w-8.5 h-8.5 rounded-lg text-on-tertiary-container hover:bg-on-tertiary-container/10 flex items-center justify-center transition-colors cursor-pointer"
+                  title="Sửa lớp học"
+                >
+                  <span class="material-symbols-outlined text-[18px]">edit</span>
+                </button>
+
+                <!-- Custom Dropdown Button -->
+                <div class="relative">
+                  <button
+                    @click.stop="toggleDropdown(cls.classId)"
+                    class="w-8.5 h-8.5 rounded-lg text-on-surface-variant hover:bg-primary-container/[0.05] flex items-center justify-center transition-colors cursor-pointer"
+                    title="Thay đổi trạng thái / Xóa"
+                  >
+                    <span class="material-symbols-outlined text-[18px]">more_vert</span>
+                  </button>
+
+                  <!-- Dropdown Items Menu -->
+                  <div v-if="activeDropdownId === cls.classId" class="absolute right-0 bottom-10 w-44 rounded-xl bg-white/90 backdrop-blur-[24px] border border-white/50 shadow-[0_20px_40px_rgba(0,31,63,0.12)] py-2 z-30 animate-scale-in">
+                    <div class="px-3 py-1 text-[11px] font-bold text-on-surface-variant/80 uppercase tracking-wide border-b border-white/40 mb-1">
+                      Đổi trạng thái
+                    </div>
+                    <button
+                      v-for="statusOpt in statusOptions"
+                      :key="statusOpt.value"
+                      @click.stop="changeStatus(cls.classId, statusOpt.value)"
+                      class="w-full text-left px-4 py-2 text-body-sm text-primary-container hover:bg-on-tertiary-container/10 transition-colors font-medium cursor-pointer"
+                    >
+                      {{ statusOpt.title }}
+                    </button>
+                    <div class="border-t border-white/40 my-1.5"></div>
+                    <button
+                      @click.stop="openAssignTeacherDialog(cls)"
+                      class="w-full text-left px-4 py-2 text-body-sm text-primary-container hover:bg-on-tertiary-container/10 transition-colors font-medium cursor-pointer flex items-center gap-1"
+                    >
+                      <span class="material-symbols-outlined text-[16px]">assignment_ind</span>
+                      Phân công GV
+                    </button>
+                    <div class="border-t border-white/40 my-1.5"></div>
+                    <button
+                      @click.stop="confirmDelete(cls)"
+                      class="w-full text-left px-4 py-2 text-body-sm text-error hover:bg-error/10 transition-colors font-semibold flex items-center gap-1 cursor-pointer"
+                    >
+                      <span class="material-symbols-outlined text-[16px]">delete</span>
+                      Xóa lớp
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Empty State -->
-    <div v-else class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-12 text-center flex flex-col items-center justify-center">
-      <span class="material-symbols-outlined text-primary-container/30 text-[64px] mb-4">groups</span>
-      <p class="text-body-1 text-on-surface-variant font-medium">Chưa có lớp học nào</p>
-      <button @click="openCreateDialog" class="mt-4 px-6 py-2 bg-on-tertiary-container/10 text-on-tertiary-container border border-on-tertiary-container/20 rounded-lg font-semibold hover:bg-on-tertiary-container/20 transition-all cursor-pointer">
-        Mở lớp học đầu tiên
-      </button>
-    </div>
+        <!-- Empty State -->
+        <div v-else class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-12 text-center flex flex-col items-center justify-center">
+          <span class="material-symbols-outlined text-primary-container/30 text-[64px] mb-4">groups</span>
+          <p class="text-body-1 text-on-surface-variant font-medium">Chưa có lớp học nào</p>
+          <button @click="openCreateDialog" class="mt-4 px-6 py-2 bg-on-tertiary-container/10 text-on-tertiary-container border border-on-tertiary-container/20 rounded-lg font-semibold hover:bg-on-tertiary-container/20 transition-all cursor-pointer">
+            Mở lớp học đầu tiên
+          </button>
+        </div>
+      </div>
+    </section>
+
 
     <!-- Resolution Modal -->
     <teleport to="body">
@@ -688,6 +864,54 @@ import { ref, computed, onMounted, inject, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useClassStore, useCourseStore, useAuthStore } from '../../stores'
 import api from '../../services/api'
+
+const classColumns = [
+  {
+    title: 'Lớp học',
+    dataIndex: 'className',
+    key: 'className',
+    sorter: (a, b) => a.className.localeCompare(b.className),
+  },
+  {
+    title: 'Môn học',
+    dataIndex: 'courseName',
+    key: 'courseName',
+    sorter: (a, b) => a.courseName.localeCompare(b.courseName),
+  },
+  {
+    title: 'Giáo viên',
+    dataIndex: 'teacherName',
+    key: 'teacherName',
+  },
+  {
+    title: 'Phòng',
+    dataIndex: 'room',
+    key: 'room',
+  },
+  {
+    title: 'Sĩ số',
+    key: 'students',
+    sorter: (a, b) => a.currentStudents - b.currentStudents,
+  },
+  {
+    title: 'Thời khóa biểu',
+    key: 'schedules',
+  },
+  {
+    title: 'Thời gian học',
+    key: 'dates',
+  },
+  {
+    title: 'Trạng thái',
+    dataIndex: 'status',
+    key: 'status',
+  },
+  {
+    title: 'Thao tác',
+    key: 'actions',
+    width: 320,
+  },
+]
 
 const router = useRouter()
 const classStore = useClassStore()
@@ -1163,5 +1387,31 @@ onMounted(async () => {
 }
 .animate-scale-in {
   animation: scaleIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.custom-antd-table :deep(.ant-table) {
+  background: transparent !important;
+}
+.custom-antd-table :deep(.ant-table-thead > tr > th) {
+  background: rgba(0, 31, 63, 0.05) !important;
+  color: #001f3f !important;
+  font-weight: 700 !important;
+  border-bottom: 1px solid rgba(0, 31, 63, 0.1) !important;
+  font-size: 13px !important;
+}
+.custom-antd-table :deep(.ant-table-tbody > tr > td) {
+  border-bottom: 1px solid rgba(0, 31, 63, 0.05) !important;
+  padding: 12px 16px !important;
+  font-size: 13px !important;
+}
+.custom-antd-table :deep(.ant-table-tbody > tr:hover > td) {
+  background: rgba(0, 31, 63, 0.02) !important;
+}
+.custom-antd-table :deep(.ant-pagination-item-active) {
+  border-color: #001f3f !important;
+  background: #001f3f !important;
+}
+.custom-antd-table :deep(.ant-pagination-item-active a) {
+  color: #ffffff !important;
 }
 </style>

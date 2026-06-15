@@ -98,162 +98,283 @@
       </div>
     </section>
 
-    <!-- Courses Grid (Card-based Layout) -->
+    <!-- Courses Layout (Table for Admin, Cards for Teacher/Student) -->
     <section>
-      <!-- Loading State -->
-      <div v-if="store.loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
-        <div v-for="i in 3" :key="i" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl p-5 space-y-4 animate-pulse">
-          <div class="flex justify-between items-center">
-            <div class="w-10 h-10 bg-surface-container rounded-lg"></div>
-            <div class="h-6 bg-surface-container rounded w-1/4"></div>
-          </div>
-          <div class="h-8 bg-surface-container rounded w-3/4"></div>
-          <div class="space-y-2">
-            <div class="h-4 bg-surface-container rounded w-1/2"></div>
-            <div class="h-4 bg-surface-container rounded w-2/3"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Course Cards -->
-      <div v-else-if="filteredCourses.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
-        <div
-          v-for="course in filteredCourses"
-          :key="course.courseId"
-          class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl overflow-hidden flex flex-col group hover:-translate-y-1 hover:shadow-md transition-all duration-300 relative cursor-pointer"
-          @click="authStore.isAdmin && openEditDialog(course)"
+      <!-- Table Layout for Admin -->
+      <div v-if="authStore.isAdmin" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl overflow-hidden p-4">
+        <a-table
+          :data-source="filteredCourses"
+          :columns="courseColumns"
+          :loading="store.loading"
+          row-key="courseId"
+          :pagination="{ pageSize: 10, showSizeChanger: true, showTotal: (total) => `Tổng số ${total} môn học` }"
+          class="custom-antd-table"
         >
-          <!-- Card Banner Image -->
-          <div class="h-40 w-full overflow-hidden relative">
-            <img
-              :src="getCourseImage(course.imageUrl, course.category)"
-              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              alt="Course cover image"
-            />
-            <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
-            
-            <!-- Floating Category Badge -->
-            <div class="absolute left-4 bottom-3 flex items-center gap-1.5">
-              <div :class="[getCategoryBgClass(course.category), 'w-8 h-8 rounded-lg flex items-center justify-center border shadow-md backdrop-blur-sm bg-white/70']">
-                <span class="material-symbols-outlined text-[18px]">{{ getCategoryIcon(course.category) }}</span>
+          <template #bodyCell="{ column, record }">
+            <template v-if="column.key === 'courseName'">
+              <div class="flex items-center gap-3">
+                <img
+                  :src="getCourseImage(record.imageUrl, record.category)"
+                  class="w-10 h-10 object-cover rounded border border-outline-variant/30 shrink-0"
+                  alt=""
+                />
+                <div>
+                  <div class="font-semibold text-primary-container text-body-sm">{{ record.courseName }}</div>
+                  <div class="text-[11px] text-on-surface-variant line-clamp-1 max-w-[220px]" :title="record.description">
+                    {{ record.description || 'Chưa có mô tả' }}
+                  </div>
+                </div>
               </div>
-              <span class="text-white text-[13px] font-bold drop-shadow-md">
-                {{ getCategoryLabel(course.category) }}
-              </span>
-            </div>
+            </template>
 
-            <!-- Floating Admin Controls -->
-            <div v-if="authStore.isAdmin" class="absolute right-3 top-3 flex items-center gap-1 bg-white/80 backdrop-blur-md p-1 rounded-lg shadow-md" @click.stop>
-              <button
-                @click="openEditDialog(course)"
-                class="w-8 h-8 rounded-lg hover:bg-on-tertiary-container/10 flex items-center justify-center text-on-tertiary-container transition-colors cursor-pointer"
-                title="Sửa môn học"
-              >
-                <span class="material-symbols-outlined text-[18px]">edit</span>
-              </button>
-              <button
-                @click="confirmDelete(course)"
-                class="w-8 h-8 rounded-lg hover:bg-error/10 flex items-center justify-center text-error transition-colors cursor-pointer"
-                title="Xóa môn học"
-              >
-                <span class="material-symbols-outlined text-[18px]">delete</span>
-              </button>
+            <template v-else-if="column.key === 'category'">
+              <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-primary-container/5 border border-primary-container/10">
+                <span class="material-symbols-outlined text-[16px] text-primary">{{ getCategoryIcon(record.category) }}</span>
+                <span class="text-body-xs font-semibold text-primary-container">{{ getCategoryLabel(record.category) }}</span>
+              </span>
+            </template>
+
+            <template v-else-if="column.key === 'level'">
+              <span :class="[getLevelBorderClass(record.level), 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold border']">
+                {{ getLevelLabel(record.level) }}
+              </span>
+            </template>
+
+            <template v-else-if="column.key === 'totalSessions'">
+              <span class="font-bold text-primary-container text-body-sm">{{ record.totalSessions }} buổi</span>
+            </template>
+
+            <template v-else-if="column.key === 'fee'">
+              <span class="font-bold text-on-tertiary-container text-body-sm">{{ formatCurrency(record.fee) }}</span>
+            </template>
+
+            <template v-else-if="column.key === 'studentCount'">
+              <span class="font-bold text-primary-container text-body-sm">{{ getCourseStudentCount(record.courseId) }} HV</span>
+            </template>
+
+            <template v-else-if="column.key === 'queueCount'">
+              <span class="font-bold text-on-tertiary-container text-body-sm">{{ getQueueCount(record.courseId) }}/5 HV</span>
+            </template>
+
+            <template v-else-if="column.key === 'isActive'">
+              <span :class="[record.isActive ? 'status-opened' : 'status-cancelled', 'status-badge inline-flex']">
+                <span :class="[record.isActive ? 'bg-emerald-600' : 'bg-error', 'w-1.5 h-1.5 rounded-full mr-1.5']"></span>
+                {{ record.isActive ? 'Hoạt động' : 'Đã đóng' }}
+              </span>
+            </template>
+
+            <template v-else-if="column.key === 'actions'">
+              <div class="flex flex-wrap gap-1.5 items-center">
+                <button
+                  @click="openEditDialog(record)"
+                  class="px-2.5 py-1 rounded bg-primary-container/15 hover:bg-primary-container/25 text-primary-container font-semibold text-body-xs transition-all flex items-center gap-1 cursor-pointer"
+                  title="Sửa môn học"
+                >
+                  <span class="material-symbols-outlined text-[14px]">edit</span>
+                  Sửa
+                </button>
+                
+                <button
+                  @click="confirmDelete(record)"
+                  class="px-2.5 py-1 rounded bg-error/15 hover:bg-error/25 text-error font-semibold text-body-xs transition-all flex items-center gap-1 cursor-pointer"
+                  title="Xóa môn học"
+                >
+                  <span class="material-symbols-outlined text-[14px]">delete</span>
+                  Xóa
+                </button>
+
+                <button
+                  v-if="record.isActive"
+                  @click="handleEnrollQueue(record)"
+                  class="px-2.5 py-1 rounded bg-on-tertiary-container/15 hover:bg-on-tertiary-container/25 text-on-tertiary-container font-semibold text-body-xs transition-all flex items-center gap-1 cursor-pointer"
+                  title="Ghép lớp học viên"
+                >
+                  <span class="material-symbols-outlined text-[14px]">group_add</span>
+                  Ghép lớp
+                </button>
+
+                <button
+                  v-if="record.isActive && getQueueCount(record.courseId) >= 1 && getQueueCount(record.courseId) < 5"
+                  @click="openVipLaunchModal(record)"
+                  class="px-2.5 py-1 rounded bg-amber-500 hover:bg-amber-600 text-white font-semibold text-body-xs transition-all flex items-center gap-1 cursor-pointer shadow-sm"
+                  title="Khai giảng sớm lớp VIP"
+                >
+                  <span class="material-symbols-outlined text-[14px]">workspace_premium</span>
+                  Mở VIP
+                </button>
+
+                <button
+                  v-if="record.isActive && getQueueCount(record.courseId) >= 5"
+                  @click="openStandardLaunchModal(record)"
+                  class="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-body-xs transition-all flex items-center gap-1 cursor-pointer shadow-sm"
+                  title="Khai giảng lớp học đầy đủ"
+                >
+                  <span class="material-symbols-outlined text-[14px]">rocket_launch</span>
+                  Mở Lớp
+                </button>
+              </div>
+            </template>
+          </template>
+        </a-table>
+      </div>
+
+      <!-- Card Layout for Teacher / Student -->
+      <div v-else>
+        <!-- Loading State -->
+        <div v-if="store.loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+          <div v-for="i in 3" :key="i" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl p-5 space-y-4 animate-pulse">
+            <div class="flex justify-between items-center">
+              <div class="w-10 h-10 bg-surface-container rounded-lg"></div>
+              <div class="h-6 bg-surface-container rounded w-1/4"></div>
+            </div>
+            <div class="h-8 bg-surface-container rounded w-3/4"></div>
+            <div class="space-y-2">
+              <div class="h-4 bg-surface-container rounded w-1/2"></div>
+              <div class="h-4 bg-surface-container rounded w-2/3"></div>
             </div>
           </div>
+        </div>
 
-          <!-- Card Content Body -->
-          <div class="p-5 flex-1 flex flex-col justify-between">
-            <div>
-              <!-- Course Title & Description -->
-              <h3 class="font-bold text-lg text-primary-container mb-2 line-clamp-1" :title="course.courseName">{{ course.courseName }}</h3>
-              <p class="text-body-sm text-on-surface-variant line-clamp-2 mb-4 h-10" :title="course.description">
-                {{ course.description || 'Chưa có mô tả' }}
-              </p>
+        <!-- Course Cards -->
+        <div v-else-if="filteredCourses.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+          <div
+            v-for="course in filteredCourses"
+            :key="course.courseId"
+            class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl overflow-hidden flex flex-col group hover:-translate-y-1 hover:shadow-md transition-all duration-300 relative cursor-pointer"
+            @click="authStore.isAdmin && openEditDialog(course)"
+          >
+            <!-- Card Banner Image -->
+            <div class="h-40 w-full overflow-hidden relative">
+              <img
+                :src="getCourseImage(course.imageUrl, course.category)"
+                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                alt="Course cover image"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+              
+              <!-- Floating Category Badge -->
+              <div class="absolute left-4 bottom-3 flex items-center gap-1.5">
+                <div :class="[getCategoryBgClass(course.category), 'w-8 h-8 rounded-lg flex items-center justify-center border shadow-md backdrop-blur-sm bg-white/70']">
+                  <span class="material-symbols-outlined text-[18px]">{{ getCategoryIcon(course.category) }}</span>
+                </div>
+                <span class="text-white text-[13px] font-bold drop-shadow-md">
+                  {{ getCategoryLabel(course.category) }}
+                </span>
+              </div>
 
-              <!-- Course Details -->
-              <div class="space-y-2 mb-4">
-                <div class="flex justify-between items-center text-body-sm">
-                  <span class="text-on-surface-variant font-medium">Trình độ:</span>
-                  <span :class="[getLevelBorderClass(course.level), 'px-2.5 py-0.5 rounded-full text-[12px] font-semibold border']">
-                    {{ getLevelLabel(course.level) }}
-                  </span>
-                </div>
-                <div class="flex justify-between items-center text-body-sm">
-                  <span class="text-on-surface-variant font-medium">Số buổi học:</span>
-                  <span class="font-bold text-primary-container">{{ course.totalSessions }} buổi</span>
-                </div>
-                <div class="flex justify-between items-center text-body-sm">
-                  <span class="text-on-surface-variant font-medium">Học phí:</span>
-                  <span class="font-bold text-on-tertiary-container">{{ formatCurrency(course.fee) }}</span>
-                </div>
-                <!-- For teachers, show total students in their classes -->
-                <div v-if="authStore.isTeacher" class="flex justify-between items-center text-body-sm">
-                  <span class="text-on-surface-variant font-medium">Số học viên:</span>
-                  <span class="text-primary-container font-bold">{{ getCourseStudentCount(course.courseId) }} học viên</span>
-                </div>
-                
-                <!-- For students and admins, show waitlist queue status -->
-                <div v-if="!authStore.isTeacher" class="flex justify-between items-center text-body-sm">
-                  <span class="text-on-surface-variant font-medium">Chờ ghép lớp:</span>
-                  <span class="text-on-tertiary-container font-bold">{{ getQueueCount(course.courseId) }}/5 học viên</span>
-                </div>
+              <!-- Floating Admin Controls -->
+              <div v-if="authStore.isAdmin" class="absolute right-3 top-3 flex items-center gap-1 bg-white/80 backdrop-blur-md p-1 rounded-lg shadow-md" @click.stop>
+                <button
+                  @click="openEditDialog(course)"
+                  class="w-8 h-8 rounded-lg hover:bg-on-tertiary-container/10 flex items-center justify-center text-on-tertiary-container transition-colors cursor-pointer"
+                  title="Sửa môn học"
+                >
+                  <span class="material-symbols-outlined text-[18px]">edit</span>
+                </button>
+                <button
+                  @click="confirmDelete(course)"
+                  class="w-8 h-8 rounded-lg hover:bg-error/10 flex items-center justify-center text-error transition-colors cursor-pointer"
+                  title="Xóa môn học"
+                >
+                  <span class="material-symbols-outlined text-[18px]">delete</span>
+                </button>
+              </div>
+            </div>
 
-                <!-- For admins, show total students studying across all active classes -->
-                <div v-if="authStore.isAdmin" class="flex justify-between items-center text-body-sm">
-                  <span class="text-on-surface-variant font-medium">Số học viên đang học:</span>
-                  <span class="text-primary-container font-bold">{{ getCourseStudentCount(course.courseId) }} học viên</span>
-                </div>
-                <div class="mt-3 flex justify-between items-center">
-                  <span :class="[course.isActive ? 'status-opened' : 'status-cancelled', 'status-badge']">
-                    <span :class="[course.isActive ? 'bg-emerald-600' : 'bg-error', 'w-1.5 h-1.5 rounded-full mr-1.5']"></span>
-                    {{ course.isActive ? 'Đang hoạt động' : 'Đã đóng' }}
-                  </span>
-                </div>
+            <!-- Card Content Body -->
+            <div class="p-5 flex-1 flex flex-col justify-between">
+              <div>
+                <!-- Course Title & Description -->
+                <h3 class="font-bold text-lg text-primary-container mb-2 line-clamp-1" :title="course.courseName">{{ course.courseName }}</h3>
+                <p class="text-body-sm text-on-surface-variant line-clamp-2 mb-4 h-10" :title="course.description">
+                  {{ course.description || 'Chưa có mô tả' }}
+                </p>
 
-                <!-- Waitlist / VIP buttons -->
-                <div v-if="course.isActive && (authStore.isStudent || authStore.isAdmin)" class="mt-3 pt-2 w-full space-y-2" @click.stop>
-                  <button
-                    @click="handleEnrollQueue(course)"
-                    class="w-full bg-on-tertiary-container/10 hover:bg-on-tertiary-container/20 text-on-tertiary-container border border-on-tertiary-container/20 hover:border-on-tertiary-container/30 py-2 rounded-lg font-semibold text-body-sm transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
-                  >
-                    <span class="material-symbols-outlined text-[18px]">group_add</span>
-                    {{ authStore.isStudent ? 'Đăng ký ghép lớp' : 'Ghép lớp học viên' }}
-                  </button>
+                <!-- Course Details -->
+                <div class="space-y-2 mb-4">
+                  <div class="flex justify-between items-center text-body-sm">
+                    <span class="text-on-surface-variant font-medium">Trình độ:</span>
+                    <span :class="[getLevelBorderClass(course.level), 'px-2.5 py-0.5 rounded-full text-[12px] font-semibold border']">
+                      {{ getLevelLabel(course.level) }}
+                    </span>
+                  </div>
+                  <div class="flex justify-between items-center text-body-sm">
+                    <span class="text-on-surface-variant font-medium">Số buổi học:</span>
+                    <span class="font-bold text-primary-container">{{ course.totalSessions }} buổi</span>
+                  </div>
+                  <div class="flex justify-between items-center text-body-sm">
+                    <span class="text-on-surface-variant font-medium">Học phí:</span>
+                    <span class="font-bold text-on-tertiary-container">{{ formatCurrency(course.fee) }}</span>
+                  </div>
+                  <!-- For teachers, show total students in their classes -->
+                  <div v-if="authStore.isTeacher" class="flex justify-between items-center text-body-sm">
+                    <span class="text-on-surface-variant font-medium">Số học viên:</span>
+                    <span class="text-primary-container font-bold">{{ getCourseStudentCount(course.courseId) }} học viên</span>
+                  </div>
+                  
+                  <!-- For students and admins, show waitlist queue status -->
+                  <div v-if="!authStore.isTeacher" class="flex justify-between items-center text-body-sm">
+                    <span class="text-on-surface-variant font-medium">Chờ ghép lớp:</span>
+                    <span class="text-on-tertiary-container font-bold">{{ getQueueCount(course.courseId) }}/5 học viên</span>
+                  </div>
 
-                  <button
-                    v-if="authStore.isAdmin && getQueueCount(course.courseId) >= 1 && getQueueCount(course.courseId) < 5"
-                    @click="openVipLaunchModal(course)"
-                    class="w-full bg-amber-500 hover:bg-amber-600 text-white py-2 rounded-lg font-semibold text-body-sm transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 shadow-sm"
-                  >
-                    <span class="material-symbols-outlined text-[18px]">workspace_premium</span>
-                    Khai giảng nhóm nhỏ (VIP)
-                  </button>
+                  <!-- For admins, show total students studying across all active classes -->
+                  <div v-if="authStore.isAdmin" class="flex justify-between items-center text-body-sm">
+                    <span class="text-on-surface-variant font-medium">Số học viên đang học:</span>
+                    <span class="text-primary-container font-bold">{{ getCourseStudentCount(course.courseId) }} học viên</span>
+                  </div>
+                  <div class="mt-3 flex justify-between items-center">
+                    <span :class="[course.isActive ? 'status-opened' : 'status-cancelled', 'status-badge']">
+                      <span :class="[course.isActive ? 'bg-emerald-600' : 'bg-error', 'w-1.5 h-1.5 rounded-full mr-1.5']"></span>
+                      {{ course.isActive ? 'Đang hoạt động' : 'Đã đóng' }}
+                    </span>
+                  </div>
 
-                  <button
-                    v-if="authStore.isAdmin && getQueueCount(course.courseId) >= 5"
-                    @click="openStandardLaunchModal(course)"
-                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-semibold text-body-sm transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 shadow-sm"
-                  >
-                    <span class="material-symbols-outlined text-[18px]">rocket_launch</span>
-                    Khai giảng lớp học (Đủ 5+ học viên)
-                  </button>
+                  <!-- Waitlist / VIP buttons -->
+                  <div v-if="course.isActive && (authStore.isStudent || authStore.isAdmin)" class="mt-3 pt-2 w-full space-y-2" @click.stop>
+                    <button
+                      @click="handleEnrollQueue(course)"
+                      class="w-full bg-on-tertiary-container/10 hover:bg-on-tertiary-container/20 text-on-tertiary-container border border-on-tertiary-container/20 hover:border-on-tertiary-container/30 py-2 rounded-lg font-semibold text-body-sm transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                    >
+                      <span class="material-symbols-outlined text-[18px]">group_add</span>
+                      {{ authStore.isStudent ? 'Đăng ký ghép lớp' : 'Ghép lớp học viên' }}
+                    </button>
+
+                    <button
+                      v-if="authStore.isAdmin && getQueueCount(course.courseId) >= 1 && getQueueCount(course.courseId) < 5"
+                      @click="openVipLaunchModal(course)"
+                      class="w-full bg-amber-500 hover:bg-amber-600 text-white py-2 rounded-lg font-semibold text-body-sm transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 shadow-sm"
+                    >
+                      <span class="material-symbols-outlined text-[18px]">workspace_premium</span>
+                      Khai giảng nhóm nhỏ (VIP)
+                    </button>
+
+                    <button
+                      v-if="authStore.isAdmin && getQueueCount(course.courseId) >= 5"
+                      @click="openStandardLaunchModal(course)"
+                      class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-semibold text-body-sm transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 shadow-sm"
+                    >
+                      <span class="material-symbols-outlined text-[18px]">rocket_launch</span>
+                      Khai giảng lớp học (Đủ 5+ học viên)
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Empty State -->
-      <div v-else class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl p-12 text-center flex flex-col items-center justify-center">
-        <span class="material-symbols-outlined text-primary/30 text-[64px] mb-4">school</span>
-        <h3 class="font-title-md text-title-md font-bold text-primary mt-2">Chưa có môn học nào</h3>
-        <p class="text-body-sm text-on-surface-variant mt-2">
-          Thử tìm kiếm với từ khóa khác hoặc tạo một môn học mới.
-        </p>
-        <button v-if="authStore.isAdmin" @click="openCreateDialog" class="mt-4 bg-primary-container text-white px-5 py-2.5 rounded-lg font-semibold text-[13px] hover:bg-primary shadow transition-all active:scale-95 cursor-pointer">
-          Thêm môn học đầu tiên
-        </button>
+        <!-- Empty State -->
+        <div v-else class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl p-12 text-center flex flex-col items-center justify-center">
+          <span class="material-symbols-outlined text-primary/30 text-[64px] mb-4">school</span>
+          <h3 class="font-title-md text-title-md font-bold text-primary mt-2">Chưa có môn học nào</h3>
+          <p class="text-body-sm text-on-surface-variant mt-2">
+            Thử tìm kiếm với từ khóa khác hoặc tạo một môn học mới.
+          </p>
+          <button v-if="authStore.isAdmin" @click="openCreateDialog" class="mt-4 bg-primary-container text-white px-5 py-2.5 rounded-lg font-semibold text-[13px] hover:bg-primary shadow transition-all active:scale-95 cursor-pointer">
+            Thêm môn học đầu tiên
+          </button>
+        </div>
       </div>
     </section>
 
@@ -757,6 +878,57 @@ import artImg from '../../assets/course_art.png'
 import scienceImg from '../../assets/course_science.png'
 
 const store = useCourseStore()
+
+const courseColumns = [
+  {
+    title: 'Môn học',
+    dataIndex: 'courseName',
+    key: 'courseName',
+    sorter: (a, b) => a.courseName.localeCompare(b.courseName),
+  },
+  {
+    title: 'Danh mục',
+    dataIndex: 'category',
+    key: 'category',
+  },
+  {
+    title: 'Trình độ',
+    dataIndex: 'level',
+    key: 'level',
+  },
+  {
+    title: 'Số buổi',
+    dataIndex: 'totalSessions',
+    key: 'totalSessions',
+    sorter: (a, b) => a.totalSessions - b.totalSessions,
+  },
+  {
+    title: 'Học phí',
+    dataIndex: 'fee',
+    key: 'fee',
+    sorter: (a, b) => a.fee - b.fee,
+  },
+  {
+    title: 'Đang học',
+    key: 'studentCount',
+    sorter: (a, b) => getCourseStudentCount(a.courseId) - getCourseStudentCount(b.courseId),
+  },
+  {
+    title: 'Hàng chờ',
+    key: 'queueCount',
+    sorter: (a, b) => getQueueCount(a.courseId) - getQueueCount(b.courseId),
+  },
+  {
+    title: 'Trạng thái',
+    dataIndex: 'isActive',
+    key: 'isActive',
+  },
+  {
+    title: 'Thao tác',
+    key: 'actions',
+    width: 280,
+  },
+]
 
 function getCourseImage(imageUrl, cat) {
   if (imageUrl === 'preset_foreign_language') return foreignLanguageImg
@@ -1348,5 +1520,31 @@ onUnmounted(() => {
 }
 .animate-scale-in {
   animation: scaleIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.custom-antd-table :deep(.ant-table) {
+  background: transparent !important;
+}
+.custom-antd-table :deep(.ant-table-thead > tr > th) {
+  background: rgba(0, 31, 63, 0.05) !important;
+  color: #001f3f !important;
+  font-weight: 700 !important;
+  border-bottom: 1px solid rgba(0, 31, 63, 0.1) !important;
+  font-size: 13px !important;
+}
+.custom-antd-table :deep(.ant-table-tbody > tr > td) {
+  border-bottom: 1px solid rgba(0, 31, 63, 0.05) !important;
+  padding: 12px 16px !important;
+  font-size: 13px !important;
+}
+.custom-antd-table :deep(.ant-table-tbody > tr:hover > td) {
+  background: rgba(0, 31, 63, 0.02) !important;
+}
+.custom-antd-table :deep(.ant-pagination-item-active) {
+  border-color: #001f3f !important;
+  background: #001f3f !important;
+}
+.custom-antd-table :deep(.ant-pagination-item-active a) {
+  color: #ffffff !important;
 }
 </style>
