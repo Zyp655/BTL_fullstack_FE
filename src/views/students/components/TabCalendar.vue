@@ -357,4 +357,26 @@ function isConflicted(schedule) {
     return startA < endB && startB < endA
   })
 }
+
+function getSchedulesForDayAndSession(dayValue, sessionKey) {
+  return combinedSchedules.value.filter(s => s.dayOfWeek === dayValue && getSessionLabel(s.startTime) === sessionKey)
+}
+
+function getSessionIcon(session) {
+  if (session === 'Sáng') return 'wb_sunny'
+  if (session === 'Chiều') return 'light_mode'
+  return 'dark_mode'
+}
+
+function getSessionIconClass(session) {
+  if (session === 'Sáng') return 'text-emerald-500'
+  if (session === 'Chiều') return 'text-amber-500'
+  return 'text-purple-500'
+}
+
+function getSessionTextColorClass(session) {
+  if (session === 'Sáng') return 'text-emerald-700 font-semibold'
+  if (session === 'Chiều') return 'text-amber-700 font-semibold'
+  return 'text-purple-700 font-semibold'
+}
 </script>

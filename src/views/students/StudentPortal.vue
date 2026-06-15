@@ -363,6 +363,7 @@ const selectedStudentId = ref(null)
 
 const loading = ref(true)
 const studentProfile = ref(null)
+const enrolledClasses = ref([])
 const selectedClass = ref(null)
 const selectedClassDetails = ref(null)
 const schedules = ref([])
