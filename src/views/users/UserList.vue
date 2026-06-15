@@ -126,7 +126,7 @@
               <td class="py-3.5 px-4 text-secondary truncate max-w-[180px]" :title="user.email">{{ user.email || '—' }}</td>
               <td class="py-3.5 px-4 font-medium">{{ user.phone || '—' }}</td>
               <td class="py-3.5 px-4">
-                <span :class="[getRoleBadgeClass(user.role), 'px-2 py-0.5 rounded text-[11px] font-bold tracking-wider uppercase border']">
+                <span :class="[getRoleBadgeClass(user.role), 'px-2 py-0.5 rounded text-[11px] font-bold tracking-wider uppercase border whitespace-nowrap']">
                   {{ getRoleLabel(user.role) }}
                 </span>
               </td>
