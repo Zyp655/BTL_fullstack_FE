@@ -108,6 +108,7 @@
           :loading="store.loading"
           row-key="courseId"
           :pagination="{ pageSize: 10, showSizeChanger: true, showTotal: (total) => `Tổng số ${total} môn học` }"
+          :scroll="{ x: 'max-content' }"
           class="custom-antd-table"
         >
           <template #bodyCell="{ column, record }">
@@ -1531,11 +1532,13 @@ onUnmounted(() => {
   font-weight: 700 !important;
   border-bottom: 1px solid rgba(0, 31, 63, 0.1) !important;
   font-size: 13px !important;
+  white-space: nowrap !important;
 }
 .custom-antd-table :deep(.ant-table-tbody > tr > td) {
   border-bottom: 1px solid rgba(0, 31, 63, 0.05) !important;
   padding: 12px 16px !important;
   font-size: 13px !important;
+  white-space: nowrap !important;
 }
 .custom-antd-table :deep(.ant-table-tbody > tr:hover > td) {
   background: rgba(0, 31, 63, 0.02) !important;

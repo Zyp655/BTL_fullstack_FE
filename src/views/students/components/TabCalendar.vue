@@ -51,85 +51,100 @@
         </span>
       </div>
 
-      <!-- Desktop View: Grid 7 Columns -->
-      <div class="hidden lg:grid grid-cols-7 gap-3">
-        <div v-for="day in weekDays" :key="day.value" class="flex flex-col min-h-[350px] border border-white/20 rounded-xl bg-white/20 p-2.5">
-          <div class="text-center mb-3">
-            <span
-              :class="[
-                getSchedulesForDay(day.value).length > 0 
-                  ? 'bg-blue-600 text-white font-bold shadow-sm' 
-                  : 'bg-blue-500/10 text-blue-700/80 font-semibold border-blue-500/20',
-                'px-2.5 py-1.5 rounded-full text-[10.5px] block uppercase tracking-wide border'
-              ]"
-            >
-              {{ day.label }}
-              <span class="block text-[8.5px] font-normal opacity-90 mt-0.5">({{ getDayDateString(day.value) }})</span>
-            </span>
-          </div>
-
-          <div class="flex-1 space-y-2.5 flex flex-col">
-            <!-- Schedule blocks -->
-            <div
-              v-for="s in getSchedulesForDay(day.value)"
-              :key="s.scheduleId"
-              class="p-3 rounded-xl border transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 duration-200 flex flex-col justify-between relative overflow-hidden"
-              :class="[
-                isConflicted(s)
-                  ? 'border-error/30 bg-error/[0.08] hover:bg-error/[0.14]'
-                  : 'border-primary-container/10 bg-white/80 hover:bg-white'
-              ]"
-            >
-              <!-- Alert indicator badge for conflict -->
-              <div 
-                v-if="isConflicted(s)" 
-                class="absolute right-1.5 top-1.5 text-error bg-error/10 p-1.5 rounded-full border border-error/20 z-10 flex items-center justify-center cursor-help transition-all hover:bg-error/20 hover:scale-110" 
-                title="Trùng lịch học"
+      <!-- Desktop View: Timetable Grid -->
+      <div class="hidden lg:block overflow-x-auto">
+        <table class="w-full border-collapse border border-outline-variant/30 text-body-sm rounded-xl overflow-hidden">
+          <thead>
+            <tr class="bg-primary-container/5">
+              <th class="border border-outline-variant/20 p-3 text-center font-bold text-primary-container w-28">
+                Buổi / Thứ
+              </th>
+              <th 
+                v-for="day in weekDays" 
+                :key="day.value" 
+                class="border border-outline-variant/20 p-3 text-center"
               >
-                <span class="material-symbols-outlined text-[13px] animate-pulse" style="font-variation-settings: 'FILL' 1;">warning</span>
-              </div>
-
-              <div>
-                <div class="flex items-center justify-between gap-1.5 pr-8">
-                  <div 
-                    class="text-[11px] font-extrabold leading-tight line-clamp-1 flex-1" 
-                    :class="isConflicted(s) ? 'text-error' : 'text-primary'"
-                    :title="s.className"
-                  >
-                    {{ s.className }}
-                  </div>
-                  <span 
-                    v-if="!isConflicted(s)"
-                    :class="[getSessionClass(s.startTime), 'px-1 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider shrink-0']"
-                  >
-                    {{ getSessionLabel(s.startTime) }}
+                <div class="font-bold text-primary-container text-body-xs uppercase tracking-wide">{{ day.label }}</div>
+                <div class="text-[10px] text-on-surface-variant font-medium mt-0.5">({{ getDayDateString(day.value) }})</div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="session in ['Sáng', 'Chiều', 'Tối']" :key="session" class="hover:bg-primary-container/[0.01]">
+              <!-- Session Header Cell -->
+              <td class="border border-outline-variant/20 p-4 font-bold text-center align-middle bg-primary-container/[0.03]">
+                <div class="flex flex-col items-center justify-center gap-1">
+                  <span class="material-symbols-outlined text-[20px]" :class="getSessionIconClass(session)">
+                    {{ getSessionIcon(session) }}
                   </span>
+                  <span class="text-body-sm" :class="getSessionTextColorClass(session)">{{ session }}</span>
                 </div>
-                <div class="text-[10px] leading-snug line-clamp-2 mt-1" :class="isConflicted(s) ? 'text-error/80' : 'text-on-surface-variant'" :title="s.courseName">
-                  {{ s.courseName }}
-                </div>
-              </div>
-              <div class="mt-2.5 pt-2 border-t flex flex-col gap-1" :class="isConflicted(s) ? 'border-error/20' : 'border-outline-variant/30'">
-                <div class="text-body-xs font-bold flex items-center gap-1" :class="isConflicted(s) ? 'text-error' : 'text-on-tertiary-container'">
-                  <span class="material-symbols-outlined text-[13px]" :class="isConflicted(s) ? 'text-error' : 'text-on-tertiary-container'">schedule</span>
-                  {{ s.startTime.substring(0, 5) }} - {{ s.endTime.substring(0, 5) }}
-                </div>
-                <div class="text-[9px] font-bold flex items-center gap-1.5" :class="isConflicted(s) ? 'text-error/70' : 'text-on-surface-variant/80'">
-                  Phòng: {{ s.room }}
-                </div>
-              </div>
-            </div>
+              </td>
+              
+              <!-- Days Cells -->
+              <td 
+                v-for="day in weekDays" 
+                :key="day.value" 
+                class="border border-outline-variant/20 p-3 vertical-align-top min-w-[130px] bg-white/30"
+              >
+                <div class="space-y-2.5 h-full flex flex-col justify-start">
+                  <!-- Schedule blocks -->
+                  <div
+                    v-for="s in getSchedulesForDayAndSession(day.value, session)"
+                    :key="s.scheduleId"
+                    class="p-2.5 rounded-xl border transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 duration-200 flex flex-col justify-between relative overflow-hidden"
+                    :class="[
+                      isConflicted(s)
+                        ? 'border-error/30 bg-error/[0.08] hover:bg-error/[0.14]'
+                        : 'border-primary-container/10 bg-white/80 hover:bg-white'
+                    ]"
+                  >
+                    <!-- Alert indicator badge for conflict -->
+                    <div 
+                      v-if="isConflicted(s)" 
+                      class="absolute right-1 top-1 text-error bg-error/10 p-1 rounded-full border border-error/20 z-10 flex items-center justify-center cursor-help transition-all hover:bg-error/20 hover:scale-110" 
+                      title="Trùng lịch học"
+                    >
+                      <span class="material-symbols-outlined text-[11px] animate-pulse" style="font-variation-settings: 'FILL' 1;">warning</span>
+                    </div>
 
-            <!-- Rest state -->
-            <div
-              v-if="getSchedulesForDay(day.value).length === 0"
-              class="flex-1 flex flex-col items-center justify-center p-4 rounded-xl border border-dashed border-outline-variant/40 bg-white/10 select-none"
-            >
-              <span class="material-symbols-outlined text-on-surface-variant/20 text-[20px] mb-1">hotel</span>
-              <span class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-wider">Nghỉ học</span>
-            </div>
-          </div>
-        </div>
+                    <div>
+                      <div class="flex items-center justify-between gap-1 pr-4">
+                        <div 
+                          class="text-[10px] font-extrabold leading-tight line-clamp-1 flex-1 text-primary" 
+                          :class="{ 'text-error': isConflicted(s) }"
+                          :title="s.className"
+                        >
+                          {{ s.className }}
+                        </div>
+                      </div>
+                      <div class="text-[9px] leading-snug line-clamp-2 mt-0.5" :class="isConflicted(s) ? 'text-error/80' : 'text-on-surface-variant'" :title="s.courseName">
+                        {{ s.courseName }}
+                      </div>
+                    </div>
+                    <div class="mt-2 pt-1.5 border-t flex flex-col gap-0.5" :class="isConflicted(s) ? 'border-error/20' : 'border-outline-variant/30'">
+                      <div class="text-[9.5px] font-bold flex items-center gap-1" :class="isConflicted(s) ? 'text-error' : 'text-on-tertiary-container'">
+                        <span class="material-symbols-outlined text-[11px]" :class="isConflicted(s) ? 'text-error' : 'text-on-tertiary-container'">schedule</span>
+                        {{ s.startTime.substring(0, 5) }} - {{ s.endTime.substring(0, 5) }}
+                      </div>
+                      <div class="text-[8.5px] font-bold flex items-center gap-1" :class="isConflicted(s) ? 'text-error/70' : 'text-on-surface-variant/80'">
+                        Phòng: {{ s.room }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Empty spacer to make it look uniform if there's no classes -->
+                  <div 
+                    v-if="getSchedulesForDayAndSession(day.value, session).length === 0" 
+                    class="flex-1 min-h-[40px] flex items-center justify-center border border-dashed border-outline-variant/10 rounded-lg text-on-surface-variant/10 text-[9px] font-medium uppercase tracking-wider select-none hover:bg-slate-50/50 transition-colors"
+                  >
+                    Trống
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <!-- Mobile / Tablet View: Vertical List of Days -->

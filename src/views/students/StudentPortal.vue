@@ -163,6 +163,8 @@
           :my-support-messages="mySupportMessages"
           :current-conflicts="currentConflicts"
           :attendance-summaries="attendanceSummaries"
+          :exam-results="examResults"
+          :selected-class-details="selectedClassDetails"
           @select-class="selectClass"
           @open-support-conflict="({ targetClass, conflictClass }) => openSupportDialogWithConflict(targetClass, conflictClass)"
           @open-transfer-modal="openTransferModal"
@@ -361,8 +363,8 @@ const selectedStudentId = ref(null)
 
 const loading = ref(true)
 const studentProfile = ref(null)
-const enrolledClasses = ref([])
 const selectedClass = ref(null)
+const selectedClassDetails = ref(null)
 const schedules = ref([])
 const loadingSchedules = ref(false)
 const examResults = ref({}) // mapped by enrollmentId
@@ -503,6 +505,12 @@ async function loadPortalData(isBackground = false) {
       if (enrolledClasses.value.length > 0) {
         selectedClass.value = enrolledClasses.value[0]
         
+        if (!isClassUnpaid(selectedClass.value.classId)) {
+          fetchClassDetails(selectedClass.value.classId)
+        } else {
+          selectedClassDetails.value = null
+        }
+
         const schedulesPromise = !isClassUnpaid(selectedClass.value.classId)
           ? fetchClassSchedules(selectedClass.value.classId)
           : Promise.resolve(schedules.value = [])
@@ -632,6 +640,12 @@ async function loadPortalDataForStudent(studentId, userId) {
     if (enrolledClasses.value.length > 0) {
       selectedClass.value = enrolledClasses.value[0]
       
+      if (!isClassUnpaid(selectedClass.value.classId)) {
+        fetchClassDetails(selectedClass.value.classId)
+      } else {
+        selectedClassDetails.value = null
+      }
+
       const schedulesPromise = !isClassUnpaid(selectedClass.value.classId)
         ? fetchClassSchedules(selectedClass.value.classId)
         : Promise.resolve(schedules.value = [])
@@ -694,9 +708,13 @@ function isClassUnpaid(classId) {
 async function selectClass(cls) {
   selectedClass.value = cls
   if (!isClassUnpaid(cls.classId)) {
-    await fetchClassSchedules(cls.classId)
+    await Promise.all([
+      fetchClassSchedules(cls.classId),
+      fetchClassDetails(cls.classId)
+    ])
   } else {
     schedules.value = []
+    selectedClassDetails.value = null
   }
 }
 
@@ -710,6 +728,16 @@ async function fetchClassSchedules(classId) {
     schedules.value = []
   } finally {
     loadingSchedules.value = false
+  }
+}
+
+async function fetchClassDetails(classId) {
+  try {
+    const res = await api.get(`/api/v1/classes/${classId}`)
+    selectedClassDetails.value = res.data
+  } catch (e) {
+    console.error('Error fetching class details:', e)
+    selectedClassDetails.value = null
   }
 }
 

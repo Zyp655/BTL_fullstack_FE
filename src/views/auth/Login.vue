@@ -58,6 +58,7 @@
                 placeholder=" " 
                 required 
                 type="text"
+                autocomplete="username"
                 @input="errors.username = ''"
               />
               <label 
@@ -82,6 +83,7 @@
                 name="password" 
                 placeholder=" " 
                 required 
+                autocomplete="current-password"
                 @input="errors.password = ''"
               />
               <label 
@@ -92,7 +94,7 @@
               </label>
               <button 
                 aria-label="Toggle password visibility" 
-                class="absolute right-3 top-3.5 text-slate-400 hover:text-slate-600 active:text-slate-800 transition-colors focus:outline-none rounded p-1 z-10 cursor-pointer flex items-center justify-center" 
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 active:text-slate-800 transition-colors focus:outline-none rounded p-1 z-20 cursor-pointer flex items-center justify-center" 
                 @click="togglePasswordVisibility" 
                 type="button"
               >
@@ -104,17 +106,6 @@
                 <span class="material-symbols-outlined text-[14px]">error</span>
                 {{ errors.password }}
               </p>
-            </div>
-
-            <!-- Options -->
-            <div class="flex justify-end items-center mt-2 mb-1">
-              <button 
-                type="button"
-                @click="openForgotPasswordModal"
-                class="font-body-sm text-body-sm text-blue-600 hover:text-blue-800 hover:underline font-semibold transition-colors focus:outline-none rounded px-1 bg-transparent border-none p-0 cursor-pointer"
-              >
-                Quên mật khẩu?
-              </button>
             </div>
 
             <!-- Alert -->
@@ -137,6 +128,17 @@
               <span v-if="loading" class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
               <span v-else>Đăng nhập</span>
             </button>
+
+            <!-- Forgot Password (Under Login Button) -->
+            <div class="flex justify-center items-center mt-3">
+              <button 
+                type="button"
+                @click="openForgotPasswordModal"
+                class="font-body-sm text-body-sm text-blue-600 hover:text-blue-800 hover:underline font-semibold transition-colors focus:outline-none rounded px-1 bg-transparent border-none p-0 cursor-pointer"
+              >
+                Quên mật khẩu?
+              </button>
+            </div>
           </form>
 
         </div>
@@ -476,9 +478,13 @@ const resetPassword = async () => {
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus, 
-input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 100px white inset !important;
+input:-webkit-autofill:active,
+input:-internal-autofill-previewed,
+input:-internal-autofill-selected {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
   -webkit-text-fill-color: #191c1d !important;
+  color: #191c1d !important;
   border: 1px solid #cbd5e1 !important;
   transition: background-color 5000s ease-in-out 0s;
 }
