@@ -316,6 +316,7 @@ const navItems = computed(() => {
   }
 
   const items = [
+    { title: 'Tổng quan', icon: 'dashboard', path: '/dashboard' },
     { title: 'Môn học', icon: 'school', path: '/courses' },
     { title: 'Lớp học', icon: 'groups', path: '/classes' },
     { title: 'Học viên', icon: 'person', path: '/students' }
