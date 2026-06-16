@@ -3,21 +3,21 @@
     <!-- Split Layout Container -->
     <main class="flex w-full min-h-screen">
       <!-- Left Pane: Brand & Graphic (Hidden on small screens) -->
-      <section class="hidden xl:flex xl:w-3/4 bg-primary-container relative overflow-hidden flex-col justify-between p-stack-lg">
+      <section class="hidden xl:flex xl:w-3/4 bg-primary-container relative overflow-hidden flex-col justify-between p-stack-lg animate-fade-in-left">
         <!-- Graphic Background -->
         <div class="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
           <img 
             alt="Abstract flowing glowing shapes representing education and connectivity" 
-            class="w-full h-full object-cover" 
+            class="w-full h-full object-cover animate-ken-burns" 
             src="../../assets/education_login_bg.png"
           />
         </div>
         <!-- Content Overlay -->
-        <router-link to="/" class="relative z-10 flex items-center gap-base cursor-pointer hover:opacity-90 transition-all no-underline hover:scale-[1.02] active:scale-[0.98]">
+        <router-link to="/" class="relative z-10 flex items-center gap-base cursor-pointer hover:opacity-90 transition-all no-underline hover:scale-[1.02] active:scale-[0.98] animate-fade-in-up">
           <span class="material-symbols-outlined text-headline-lg text-on-primary">school</span>
           <span class="font-title-md text-title-md text-on-primary tracking-tight">EduManager Pro</span>
         </router-link>
-        <div class="relative z-10 max-w-3xl mb-20">
+        <div class="relative z-10 max-w-3xl mb-20 animate-fade-in-up delay-200">
           <h1 class="font-display-lg text-display-lg text-on-primary mb-stack-md leading-tight drop-shadow-md whitespace-nowrap">
             Kiến tạo Tương lai Giáo dục
           </h1>
@@ -39,17 +39,17 @@
         
         <!-- Login Container (Glassmorphism) -->
         <div 
-          class="glass-panel w-full max-w-[420px] rounded-xl p-stack-md flex flex-col gap-stack-md relative z-10 mt-12 xl:mt-0"
+          class="glass-panel w-full max-w-[420px] rounded-xl p-stack-md flex flex-col gap-stack-md relative z-10 mt-12 xl:mt-0 animate-fade-in-right"
           :class="{ 'shake': shouldShake }"
         >
-          <div class="text-center mb-base">
+          <div class="text-center mb-base animate-fade-in-up">
             <h2 class="font-headline-lg text-headline-lg text-on-surface mb-2">Welcome Back</h2>
             <p class="font-body-sm text-body-sm text-on-surface-variant">Đăng nhập vào cổng quản trị & học vụ</p>
           </div>
           
           <form @submit.prevent="handleLogin" class="flex flex-col gap-stack-sm">
             <!-- Username/Email Input (Floating Label) -->
-            <div class="relative group">
+            <div class="relative group animate-fade-in-up delay-100">
               <input 
                 v-model="username"
                 class="floating-input peer w-full h-14 bg-slate-50/50 border border-slate-300 rounded-lg px-4 pt-6 pb-2 text-body-lg font-body-lg text-on-surface focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 hover:bg-slate-50/85 focus:bg-white transition-all shadow-inner" 
@@ -75,7 +75,7 @@
             </div>
 
             <!-- Password Input (Floating Label & Toggle) -->
-            <div class="relative group">
+            <div class="relative group animate-fade-in-up delay-200">
               <input 
                 v-model="password"
                 :type="passwordVisible ? 'text' : 'password'"
@@ -113,7 +113,7 @@
             <transition name="fade">
               <div 
                 v-if="error" 
-                class="flex items-start gap-2.5 p-3 rounded-lg bg-error-container border border-error/20 text-on-error-container text-body-sm font-medium"
+                class="flex items-start gap-2.5 p-3 rounded-lg bg-error-container border border-error/20 text-on-error-container text-body-sm font-medium animate-pulse"
               >
                 <span class="material-symbols-outlined text-error text-[18px]">error</span>
                 <span>{{ error }}</span>
@@ -122,7 +122,7 @@
 
             <!-- Submit Action -->
             <button 
-              class="w-full bg-tertiary text-on-tertiary font-title-md text-title-md py-3 rounded-lg mt-2 hover:bg-primary-container transition-all active:scale-[0.98] shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-container cursor-pointer flex items-center justify-center gap-2" 
+              class="w-full bg-tertiary text-on-tertiary font-title-md text-title-md py-3 rounded-lg mt-2 hover:bg-primary-container transition-all active:scale-[0.98] shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-container cursor-pointer flex items-center justify-center gap-2 btn-shine-effect animate-fade-in-up delay-300" 
               type="submit"
               :disabled="loading"
             >
@@ -131,11 +131,11 @@
             </button>
 
             <!-- Forgot Password (Under Login Button) -->
-            <div class="flex justify-center items-center mt-3">
+            <div class="flex justify-center items-center mt-3 animate-fade-in-up delay-400">
               <button 
                 type="button"
                 @click="openForgotPasswordModal"
-                class="font-body-sm text-body-sm text-blue-600 hover:text-blue-800 hover:underline font-semibold transition-colors focus:outline-none rounded px-1 bg-transparent border-none p-0 cursor-pointer"
+                class="font-body-sm text-body-sm text-blue-600 hover:text-blue-800 hover:underline font-semibold transition-all hover:scale-105 focus:outline-none rounded px-1 bg-transparent border-none p-0 cursor-pointer"
               >
                 Quên mật khẩu?
               </button>
@@ -145,7 +145,7 @@
         </div>
 
         <!-- Subtle Footer Links -->
-        <div class="absolute bottom-container-padding flex gap-stack-md font-body-sm text-body-sm text-on-surface-variant">
+        <div class="absolute bottom-container-padding flex gap-stack-md font-body-sm text-body-sm text-on-surface-variant animate-fade-in-up delay-500">
           <a class="hover:text-on-surface transition-colors hover:underline focus:outline-none focus:text-on-tertiary-container rounded px-1" href="#">Chính sách bảo mật</a>
           <a class="hover:text-on-surface transition-colors hover:underline focus:outline-none focus:text-on-tertiary-container rounded px-1" href="#">Điều khoản dịch vụ</a>
         </div>
@@ -520,5 +520,95 @@ input:-internal-autofill-selected {
 .floating-input:not(:focus):not(:placeholder-shown) ~ .floating-label,
 .floating-input:not(:focus):-webkit-autofill ~ .floating-label {
   color: #64748b !important;
+}
+
+/* --- Transitions & Animations --- */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes kenburns {
+  0% { transform: scale(1) translate(0, 0); }
+  50% { transform: scale(1.04) translate(-0.5%, -0.5%); }
+  100% { transform: scale(1) translate(0, 0); }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade-in-left {
+  animation: fadeInLeft 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade-in-right {
+  animation: fadeInRight 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-ken-burns {
+  animation: kenburns 35s ease-in-out infinite;
+}
+
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
+/* Button shine effect */
+.btn-shine-effect {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shine-effect::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.25) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  transition: 0.75s;
+  opacity: 0;
+}
+.btn-shine-effect:hover::after {
+  left: 125%;
+  opacity: 1;
+  transition: all 0.75s cubic-bezier(0.19, 1, 0.22, 1);
 }
 </style>

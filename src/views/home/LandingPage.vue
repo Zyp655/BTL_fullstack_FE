@@ -114,12 +114,6 @@
           <!-- 3D Interactive Hero Showcase -->
           <div class="relative w-full h-[380px] md:h-[420px] rounded-xl overflow-hidden border border-slate-200 bg-white shadow-2xl flex items-center justify-center">
             <canvas ref="heroCanvas" class="w-full h-full block cursor-grab active:cursor-grabbing"></canvas>
-            
-            <!-- Floating interactive tip -->
-            <div class="absolute bottom-4 left-4 bg-slate-900/80 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-lg text-[10px] font-bold text-white/90 uppercase tracking-widest flex items-center gap-1.5 pointer-events-none select-none">
-              <span class="material-symbols-outlined text-[13px] text-[#2b83ff]">3d_rotation</span>
-              Di chuột để xoay thiết bị 3D
-            </div>
           </div>
           <!-- Blur glow background behind image -->
           <div class="absolute -inset-10 bg-gradient-to-tr from-[#2b83ff]/10 to-cyan-500/10 blur-3xl -z-10 rounded-full opacity-50"></div>
