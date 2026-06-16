@@ -279,51 +279,99 @@
         </div>
 
         <!-- Form Body -->
-        <div class="p-6 space-y-4 text-left">
-          <div class="space-y-1.5">
-            <label class="block font-title-md text-body-sm text-on-surface-variant font-semibold">Ngày học trong tuần <span class="text-error">*</span></label>
-            <div class="relative">
-              <select
-                v-model="formData.dayOfWeek"
-                class="w-full glass-input rounded-lg pl-4 pr-10 py-2.5 font-body-sm text-body-sm text-on-surface appearance-none bg-no-repeat bg-[right_0.75rem_center] bg-[length:16px_16px] cursor-pointer"
-                style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%235d5f5f%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E');"
-              >
-                <option v-for="d in weekDays" :key="d.value" :value="d.value">{{ d.label }}</option>
-              </select>
+        <div class="p-6 space-y-4 text-left overflow-y-auto max-h-[60vh]">
+          <!-- Cấu hình lớp học (Start Date, End Date, Total Sessions) -->
+          <div class="bg-primary-container/[0.02] border border-primary-container/15 rounded-xl p-4 space-y-4">
+            <h4 class="text-xs font-bold text-primary uppercase tracking-wider mb-1 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm">settings</span>
+              Thông tin thời gian lớp học
+            </h4>
+            
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-1.5">
+                <label class="block font-title-md text-body-sm text-on-surface-variant font-semibold">Ngày bắt đầu <span class="text-error">*</span></label>
+                <input
+                  v-model="formData.startDate"
+                  type="date"
+                  class="w-full glass-input rounded-lg px-4 py-2 font-body-sm text-body-sm text-on-surface cursor-pointer"
+                />
+              </div>
+              <div class="space-y-1.5">
+                <label class="block font-title-md text-body-sm text-on-surface-variant font-semibold">Ngày kết thúc <span class="text-error">*</span></label>
+                <input
+                  v-model="formData.endDate"
+                  type="date"
+                  class="w-full glass-input rounded-lg px-4 py-2 font-body-sm text-body-sm text-on-surface cursor-pointer"
+                />
+              </div>
+            </div>
+            <p v-if="formData.startDate && formData.endDate && formData.startDate > formData.endDate" class="text-error text-[11px] font-semibold mt-1">Ngày kết thúc phải sau hoặc bằng ngày bắt đầu</p>
+
+            <div class="space-y-1.5">
+              <label class="block font-title-md text-body-sm text-on-surface-variant font-semibold">Tổng số buổi học <span class="text-error">*</span></label>
+              <input
+                v-model.number="formData.totalSessions"
+                type="number"
+                min="1"
+                placeholder="Nhập tổng số buổi..."
+                class="w-full glass-input rounded-lg px-4 py-2 font-body-sm text-body-sm text-on-surface"
+              />
+              <p v-if="formData.totalSessions !== undefined && formData.totalSessions <= 0" class="text-error text-[11px] font-semibold mt-1">Tổng số buổi học phải lớn hơn 0</p>
             </div>
           </div>
 
-          <div class="space-y-1.5">
-            <label class="block font-title-md text-body-sm text-on-surface-variant font-semibold">Buổi học <span class="text-error">*</span></label>
-            <div class="relative">
-              <select
-                v-model="formData.session"
-                class="w-full glass-input rounded-lg pl-4 pr-10 py-2.5 font-body-sm text-body-sm text-on-surface appearance-none bg-no-repeat bg-[right_0.75rem_center] bg-[length:16px_16px] cursor-pointer"
-                style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%235d5f5f%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E');"
-              >
-                <option v-for="opt in sessionOptions" :key="opt.value" :value="opt.value">{{ opt.title }}</option>
-              </select>
-            </div>
-          </div>
+          <!-- Chi tiết buổi học (Day, Session, Times) -->
+          <div class="bg-primary-container/[0.02] border border-primary-container/15 rounded-xl p-4 space-y-4">
+            <h4 class="text-xs font-bold text-primary uppercase tracking-wider mb-1 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm">event</span>
+              Chi tiết buổi học trong tuần
+            </h4>
 
-          <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1.5">
-              <label class="block font-title-md text-body-sm text-on-surface-variant font-semibold">Giờ bắt đầu <span class="text-error">*</span></label>
-              <input
-                v-model="formData.startTime"
-                type="time"
-                class="w-full glass-input rounded-lg px-4 py-2 font-body-sm text-body-sm text-on-surface cursor-pointer"
-              />
-              <p v-if="validationErrors.startTime" class="text-error text-[11px] font-semibold mt-1">{{ validationErrors.startTime }}</p>
+              <label class="block font-title-md text-body-sm text-on-surface-variant font-semibold">Ngày học trong tuần <span class="text-error">*</span></label>
+              <div class="relative">
+                <select
+                  v-model="formData.dayOfWeek"
+                  class="w-full glass-input rounded-lg pl-4 pr-10 py-2.5 font-body-sm text-body-sm text-on-surface appearance-none bg-no-repeat bg-[right_0.75rem_center] bg-[length:16px_16px] cursor-pointer"
+                  style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%235d5f5f%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E');"
+                >
+                  <option v-for="d in weekDays" :key="d.value" :value="d.value">{{ d.label }}</option>
+                </select>
+              </div>
             </div>
+
             <div class="space-y-1.5">
-              <label class="block font-title-md text-body-sm text-on-surface-variant font-semibold">Giờ kết thúc <span class="text-error">*</span></label>
-              <input
-                v-model="formData.endTime"
-                type="time"
-                class="w-full glass-input rounded-lg px-4 py-2 font-body-sm text-body-sm text-on-surface cursor-pointer"
-              />
-              <p v-if="validationErrors.endTime" class="text-error text-[11px] font-semibold mt-1">{{ validationErrors.endTime }}</p>
+              <label class="block font-title-md text-body-sm text-on-surface-variant font-semibold">Buổi học <span class="text-error">*</span></label>
+              <div class="relative">
+                <select
+                  v-model="formData.session"
+                  class="w-full glass-input rounded-lg pl-4 pr-10 py-2.5 font-body-sm text-body-sm text-on-surface appearance-none bg-no-repeat bg-[right_0.75rem_center] bg-[length:16px_16px] cursor-pointer"
+                  style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%235d5f5f%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E');"
+                >
+                  <option v-for="opt in sessionOptions" :key="opt.value" :value="opt.value">{{ opt.title }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-1.5">
+                <label class="block font-title-md text-body-sm text-on-surface-variant font-semibold">Giờ bắt đầu <span class="text-error">*</span></label>
+                <input
+                  v-model="formData.startTime"
+                  type="time"
+                  class="w-full glass-input rounded-lg px-4 py-2 font-body-sm text-body-sm text-on-surface cursor-pointer"
+                />
+                <p v-if="validationErrors.startTime" class="text-error text-[11px] font-semibold mt-1">{{ validationErrors.startTime }}</p>
+              </div>
+              <div class="space-y-1.5">
+                <label class="block font-title-md text-body-sm text-on-surface-variant font-semibold">Giờ kết thúc <span class="text-error">*</span></label>
+                <input
+                  v-model="formData.endTime"
+                  type="time"
+                  class="w-full glass-input rounded-lg px-4 py-2 font-body-sm text-body-sm text-on-surface cursor-pointer"
+                />
+                <p v-if="validationErrors.endTime" class="text-error text-[11px] font-semibold mt-1">{{ validationErrors.endTime }}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -921,9 +969,17 @@ const validationErrors = ref({
 })
 
 const isFormValid = computed(() => {
-  return formData.value.startTime.trim().length > 0 &&
+  const isTimeOk = formData.value.startTime.trim().length > 0 &&
          formData.value.endTime.trim().length > 0 &&
          formData.value.startTime < formData.value.endTime
+         
+  const isDateOk = formData.value.startDate &&
+         formData.value.endDate &&
+         formData.value.startDate <= formData.value.endDate
+         
+  const isSessionsOk = formData.value.totalSessions > 0
+  
+  return isTimeOk && isDateOk && isSessionsOk
 })
 
 watch(() => formData.value.startTime, (val) => {
@@ -997,7 +1053,15 @@ function getStatusBadgeClass(status) {
 function openCreateDialog() {
   isEdit.value = false
   validationErrors.value = { startTime: '', endTime: '' }
-  formData.value = { dayOfWeek: 2, session: 'Sang', startTime: '08:00', endTime: '10:00' }
+  formData.value = {
+    dayOfWeek: 2,
+    session: 'Sang',
+    startTime: '08:00',
+    endTime: '10:00',
+    startDate: classInfo.value?.startDate?.split('T')[0] || '',
+    endDate: classInfo.value?.endDate?.split('T')[0] || '',
+    totalSessions: classInfo.value?.totalSessions || 0,
+  }
   dialog.value = true
 }
 
@@ -1010,6 +1074,9 @@ function openEditDialog(item) {
     session: item.session,
     startTime: item.startTime,
     endTime: item.endTime,
+    startDate: classInfo.value?.startDate?.split('T')[0] || '',
+    endDate: classInfo.value?.endDate?.split('T')[0] || '',
+    totalSessions: classInfo.value?.totalSessions || 0,
   }
   dialog.value = true
 }
@@ -1018,17 +1085,39 @@ async function saveForm() {
   if (!isFormValid.value) return
   saving.value = true
   try {
+    // 1. Update the class details first (startDate, endDate, totalSessions)
+    if (classInfo.value) {
+      await classStore.updateClass(classId, {
+        ...classInfo.value,
+        startDate: formData.value.startDate || null,
+        endDate: formData.value.endDate || null,
+        totalSessions: formData.value.totalSessions || 0
+      })
+      classInfo.value = await classStore.getClass(classId)
+    }
+
+    // 2. Create or Update the schedule slot
     if (isEdit.value) {
-      await scheduleStore.updateSchedule(classId, formData.value.scheduleId, formData.value)
+      await scheduleStore.updateSchedule(classId, formData.value.scheduleId, {
+        dayOfWeek: formData.value.dayOfWeek,
+        session: formData.value.session,
+        startTime: formData.value.startTime,
+        endTime: formData.value.endTime
+      })
       showSnackbar('Cập nhật lịch học thành công', 'success')
     } else {
-      await scheduleStore.createSchedule(classId, formData.value)
+      await scheduleStore.createSchedule(classId, {
+        dayOfWeek: formData.value.dayOfWeek,
+        session: formData.value.session,
+        startTime: formData.value.startTime,
+        endTime: formData.value.endTime
+      })
       showSnackbar('Thêm lịch học thành công', 'success')
     }
     dialog.value = false
     await scheduleStore.fetchSchedules(classId)
   } catch (e) {
-    showSnackbar('Có lỗi xảy ra khi lưu lịch học', 'error')
+    showSnackbar(e.response?.data?.message || 'Có lỗi xảy ra khi lưu lịch học', 'error')
   } finally {
     saving.value = false
   }

@@ -21,6 +21,12 @@ const routes = [
     meta: { title: 'Cổng thanh toán giả lập', public: true }
   },
   {
+    path: '/dashboard',
+    name: 'Dashboard',
+    component: () => import('../views/dashboard/DashboardView.vue'),
+    meta: { title: 'Tổng quan', icon: 'dashboard', roles: ['Admin', 'GiaoVien'] }
+  },
+  {
     path: '/courses',
     name: 'Courses',
     component: () => import('../views/courses/CourseList.vue'),
@@ -123,8 +129,8 @@ router.beforeEach((to, from, next) => {
   document.title = to.meta?.title ? `${to.meta.title} — Trung tâm đào tạo` : 'Trung tâm đào tạo'
   
   const getHomeRoute = (role) => {
-    if (role === 'Admin') return '/courses'
-    if (role === 'GiaoVien') return '/classes'
+    if (role === 'Admin') return '/dashboard'
+    if (role === 'GiaoVien') return '/dashboard'
     if (role === 'HocVien') return '/student-portal'
     return '/login'
   }
