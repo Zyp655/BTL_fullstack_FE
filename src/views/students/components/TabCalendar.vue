@@ -56,18 +56,18 @@
         <table class="w-full border-collapse border border-slate-300 text-body-sm bg-white rounded-xl overflow-hidden shadow-[0_12px_24px_rgba(0,0,0,0.03)]">
           <thead>
             <tr class="bg-[#237f94] text-white">
-              <th class="border border-slate-300/40 p-3 text-center font-bold w-28 text-xs uppercase tracking-wider">
+              <th class="border border-slate-300 p-3 text-center font-bold w-28 text-xs uppercase tracking-wider">
                 BUỔI
               </th>
               <th 
                 v-for="day in weekDays" 
                 :key="day.value" 
-                class="border border-slate-300/40 p-3 text-center w-40"
+                class="border border-slate-300 p-3 text-center w-40"
               >
-                <div class="font-bold text-xs uppercase tracking-wider">{{ day.label }}</div>
+                <div class="font-bold text-xs uppercase tracking-wider">{{ day.label.toUpperCase() }}</div>
                 <div class="text-[10px] text-white/85 font-medium mt-0.5">({{ getDayDateString(day.value) }})</div>
               </th>
-              <th class="border border-slate-300/40 p-3 text-center font-bold w-24 text-xs uppercase tracking-wider">
+              <th class="border border-slate-300 p-3 text-center font-bold w-24 text-xs uppercase tracking-wider">
                 Ghi chú
               </th>
             </tr>
@@ -76,7 +76,7 @@
             <tr v-for="session in ['Sáng', 'Chiều', 'Tối']" :key="session" class="hover:bg-slate-50/30">
               <!-- Session Header Cell -->
               <td class="border border-slate-300 p-4 font-bold text-center align-middle bg-slate-50/80 text-slate-800 w-28 uppercase">
-                <div class="font-bold text-slate-800 text-[12px] tracking-wide">{{ session }}</div>
+                <div class="font-bold text-slate-800 text-[12px] tracking-wide">{{ session.toUpperCase() }}</div>
                 <div class="text-[10px] text-slate-500 font-medium normal-case mt-1">(4 Tiết)</div>
               </td>
               
@@ -84,53 +84,31 @@
               <td 
                 v-for="day in weekDays" 
                 :key="day.value" 
-                class="border border-slate-300 p-3 align-top min-w-[150px] bg-white transition-colors"
+                class="border border-slate-300 p-3 align-middle bg-white text-center min-w-[150px]"
               >
-                <div class="space-y-2.5 h-full flex flex-col justify-start">
+                <div class="h-full flex flex-col justify-center items-center divide-y divide-slate-100 space-y-2">
                   <!-- Schedule blocks -->
                   <div
                     v-for="s in getSchedulesForDayAndSession(day.value, session)"
                     :key="s.scheduleId"
-                    class="p-2.5 rounded-lg border text-left flex flex-col justify-between relative overflow-hidden transition-all shadow-sm"
-                    :class="[
-                      isConflicted(s)
-                        ? 'border-error/30 bg-error/[0.04]'
-                        : 'border-slate-200 bg-[#f8fafc]/85 hover:bg-[#f1f5f9]'
-                    ]"
+                    class="text-center font-sans space-y-0.5 text-slate-900 leading-relaxed py-1"
                   >
-                    <!-- Alert indicator badge for conflict -->
-                    <div 
-                      v-if="isConflicted(s)" 
-                      class="absolute right-1 top-1 text-error bg-error/10 p-1 rounded-full border border-error/20 z-10 flex items-center justify-center cursor-help transition-all hover:bg-error/20 hover:scale-110" 
-                      title="Trùng lịch học"
-                    >
-                      <span class="material-symbols-outlined text-[11px] animate-pulse" style="font-variation-settings: 'FILL' 1;">warning</span>
+                    <div class="text-[12px] font-bold text-slate-800">
+                      {{ s.courseName || s.className }}
                     </div>
-
-                    <div class="space-y-1 text-body-xs">
-                      <div class="font-bold text-slate-900 leading-snug line-clamp-2" :class="{ 'text-error': isConflicted(s) }">
-                        {{ s.courseName || s.className }}
-                      </div>
-                      <div class="text-[10px] text-slate-600 font-medium">
-                        Phòng: {{ s.room }}
-                      </div>
-                      <div class="text-[10px] text-slate-650 font-semibold flex items-center gap-0.5">
-                        Tiết: {{ s.startTime.substring(0, 5) }} - {{ s.endTime.substring(0, 5) }}
-                      </div>
-                      <div v-if="s.startDate && s.endDate" class="text-[9px] text-slate-500 font-medium">
-                        ({{ formatDateRange(s.startDate, s.endDate) }})
-                      </div>
-                      <div v-if="s.teacherName" class="text-[10px] text-slate-700 font-semibold mt-1">
-                        GV: {{ s.teacherName }}
-                      </div>
+                    <div class="text-[11px] text-slate-600">
+                      {{ s.room.startsWith('Phòng') ? s.room : 'Phòng: ' + s.room }}
+                    </div>
+                    <div class="text-[11px] text-slate-700 font-medium">
+                      Tiết: {{ getLessonRange(s.startTime, s.endTime) }}
+                    </div>
+                    <div v-if="s.startDate && s.endDate" class="text-[10px] text-slate-500 font-mono">
+                      ({{ formatDateRange(s.startDate, s.endDate) }})
+                    </div>
+                    <div v-if="s.teacherName" class="text-[11px] text-slate-650">
+                      GV: {{ s.teacherName }}
                     </div>
                   </div>
-
-                  <!-- Empty spacer -->
-                  <div 
-                    v-if="getSchedulesForDayAndSession(day.value, session).length === 0" 
-                    class="h-12"
-                  ></div>
                 </div>
               </td>
 
@@ -160,40 +138,22 @@
             <div
               v-for="s in getSchedulesForDay(day.value)"
               :key="s.scheduleId"
-              class="p-4 rounded-xl border shadow-sm flex items-center justify-between gap-3 transition-colors relative overflow-hidden"
-              :class="[
-                isConflicted(s)
-                  ? 'border-error/30 bg-error/[0.08] hover:bg-error/[0.14]'
-                  : 'border-primary-container/10 bg-white/80 hover:bg-white'
-              ]"
+              class="p-4 rounded-xl border border-primary-container/10 bg-white/80 hover:bg-white shadow-sm flex items-center justify-between gap-3 transition-colors relative overflow-hidden"
             >
               <div class="space-y-1">
-                <div class="text-body-sm font-bold flex items-center gap-2" :class="isConflicted(s) ? 'text-error' : 'text-primary-container'">
+                <div class="text-body-sm font-bold flex items-center gap-2 text-primary-container">
                   {{ s.className }}
-                  <span 
-                    v-if="isConflicted(s)" 
-                    class="p-1 rounded-full bg-error/10 text-error border border-error/25 flex items-center justify-center cursor-help"
-                    title="Trùng lịch học"
-                  >
-                    <span class="material-symbols-outlined text-[11px] animate-pulse" style="font-variation-settings: 'FILL' 1;">warning</span>
-                  </span>
-                  <span 
-                    v-else
-                    :class="[getSessionClass(s.startTime), 'px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider shrink-0']"
-                  >
+                  <span :class="[getSessionClass(s.startTime), 'px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider shrink-0']">
                     {{ getSessionLabel(s.startTime) }}
                   </span>
                 </div>
-                <div class="text-body-xs font-medium" :class="isConflicted(s) ? 'text-error/80' : 'text-on-surface-variant/80'">{{ s.courseName }}</div>
-                <div class="text-body-xs flex items-center gap-1.5 mt-1" :class="isConflicted(s) ? 'text-error/70' : 'text-on-surface-variant'">
+                <div class="text-body-xs font-medium text-on-surface-variant/80">{{ s.courseName }}</div>
+                <div class="text-body-xs flex items-center gap-1.5 mt-1 text-on-surface-variant">
                   Phòng: {{ s.room }}
                 </div>
               </div>
               <div class="text-right shrink-0">
-                <span 
-                  class="inline-block px-3 py-1.5 text-body-xs font-bold rounded-lg"
-                  :class="isConflicted(s) ? 'bg-error/15 text-error' : 'bg-on-tertiary-container/10 text-on-tertiary-container'"
-                >
+                <span class="inline-block px-3 py-1.5 text-body-xs font-bold rounded-lg bg-on-tertiary-container/10 text-on-tertiary-container">
                   {{ s.startTime.substring(0, 5) }} - {{ s.endTime.substring(0, 5) }}
                 </span>
               </div>
@@ -375,6 +335,14 @@ function getSessionTextColorClass(session) {
   if (session === 'Sáng') return 'text-emerald-700 font-semibold'
   if (session === 'Chiều') return 'text-amber-700 font-semibold'
   return 'text-purple-700 font-semibold'
+}
+
+function getLessonRange(startTime, endTime) {
+  if (!startTime) return '1 - 5'
+  const hour = parseInt(startTime.split(':')[0], 10)
+  if (hour < 12) return '1 - 5'
+  if (hour < 18) return '6 - 10'
+  return '11 - 13'
 }
 
 function formatDateRange(startDate, endDate) {

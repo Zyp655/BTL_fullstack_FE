@@ -143,7 +143,7 @@
                 Ghi danh: {{ getCourseQueueCount(course.courseId) }} HV
               </div>
               <div class="text-[13px] font-bold text-tertiary-container">
-                {{ formatCurrency(course.price) }}
+                {{ formatCurrency(course.fee) }}
               </div>
             </div>
 
@@ -211,7 +211,7 @@
               <p class="text-body-xs text-on-surface-variant mt-1 line-clamp-2">{{ selectedCourseToEnroll?.description }}</p>
               <div class="flex justify-between items-center mt-3 pt-3 border-t border-primary-container/10">
                 <span class="text-body-xs font-semibold text-on-surface-variant">Học phí môn học:</span>
-                <span class="text-body-sm font-bold text-tertiary-container">{{ formatCurrency(selectedCourseToEnroll?.price) }}</span>
+                <span class="text-body-sm font-bold text-tertiary-container">{{ formatCurrency(selectedCourseToEnroll?.fee) }}</span>
               </div>
             </div>
             <p class="text-[11px] text-on-surface-variant leading-relaxed italic">
@@ -312,7 +312,7 @@
               </div>
               <div>
                 <p class="text-[11px] font-medium text-on-surface-variant">Học phí trọn gói</p>
-                <p class="font-bold text-tertiary-container text-body-sm mt-0.5">{{ formatCurrency(selectedCourseForDetail.price) }}</p>
+                <p class="font-bold text-tertiary-container text-body-sm mt-0.5">{{ formatCurrency(selectedCourseForDetail?.fee) }}</p>
               </div>
             </div>
 

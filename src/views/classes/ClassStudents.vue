@@ -364,16 +364,40 @@
                 >
                   <td class="py-4 px-6 font-semibold text-primary-container">HV-{{ String(st.studentId).padStart(4, '0') }}</td>
                   <td class="py-4 px-6 font-semibold text-on-surface">{{ st.studentName }}</td>
-                  <td class="py-4 px-6 text-center font-semibold text-on-surface">
-                    {{ getScoreVal(st.results, 'KiemTra') }}
+                  <td class="py-2 px-4 text-center">
+                    <input
+                      v-model.number="st.editKiemTra.score"
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.1"
+                      class="w-16 bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-2 py-1 text-body-sm font-bold text-center text-on-surface focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all placeholder-on-surface-variant/40"
+                      placeholder="-"
+                    />
                   </td>
-                  <td class="py-4 px-6 text-center font-semibold text-on-surface">
-                    {{ getScoreVal(st.results, 'GiuaKy') }}
+                  <td class="py-2 px-4 text-center">
+                    <input
+                      v-model.number="st.editGiuaKy.score"
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.1"
+                      class="w-16 bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-2 py-1 text-body-sm font-bold text-center text-on-surface focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all placeholder-on-surface-variant/40"
+                      placeholder="-"
+                    />
                   </td>
-                  <td class="py-4 px-6 text-center font-semibold text-on-surface">
-                    {{ getScoreVal(st.results, 'CuoiKy') }}
+                  <td class="py-2 px-4 text-center">
+                    <input
+                      v-model.number="st.editCuoiKy.score"
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.1"
+                      class="w-16 bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-2 py-1 text-body-sm font-bold text-center text-on-surface focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all placeholder-on-surface-variant/40"
+                      placeholder="-"
+                    />
                   </td>
-                  <td class="py-4 px-6 text-center">
+                  <td class="py-2 px-4 text-center">
                     <span
                       v-if="st.averageScore !== null"
                       :class="[
@@ -387,15 +411,25 @@
                     </span>
                     <span v-else class="text-on-surface-variant">-</span>
                   </td>
-                  <td class="py-4 px-6 text-right">
-                    <button
-                      v-if="!authStore.isAdmin"
-                      @click="openGradingDialog(st)"
-                      class="px-3.5 py-1.5 rounded-lg bg-on-tertiary-container/10 hover:bg-on-tertiary-container/20 text-on-tertiary-container font-semibold text-[11px] transition-colors inline-flex items-center gap-1 opacity-0 group-hover:opacity-100"
-                    >
-                      <span class="material-symbols-outlined text-[15px]">edit_note</span>
-                      Nhập/Sửa điểm
-                    </button>
+                  <td class="py-2 px-6 text-right whitespace-nowrap">
+                    <div class="flex items-center justify-end gap-1">
+                      <button
+                        @click="saveStudentGradesInline(st)"
+                        :disabled="st.saving"
+                        class="p-1.5 rounded-lg bg-transparent hover:bg-black/5 text-black transition-colors inline-flex items-center justify-center cursor-pointer active:scale-95 disabled:opacity-50"
+                        title="Lưu điểm"
+                      >
+                        <span v-if="st.saving" class="animate-spin w-5 h-5 border-2 border-black border-t-transparent rounded-full"></span>
+                        <span v-else class="material-symbols-outlined text-[20px]">save</span>
+                      </button>
+                      <button
+                        @click="openGradingDialog(st)"
+                        class="p-1.5 rounded-lg bg-transparent hover:bg-black/5 text-black transition-colors inline-flex items-center justify-center cursor-pointer active:scale-95"
+                        title="Ghi chú chi tiết"
+                      >
+                        <span class="material-symbols-outlined text-[20px]">edit_note</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -939,11 +973,99 @@ async function fetchGrades() {
   loadingGrades.value = true
   try {
     const { data } = await api.get(`/api/v1/results/class/${classId}/summary`)
-    gradesList.value = data.students || []
+    const students = data.students || []
+    gradesList.value = students.map(st => {
+      const kiemTraRes = st.results?.find(x => x.examType === 'KiemTra')
+      const giuaKyRes = st.results?.find(x => x.examType === 'GiuaKy')
+      const cuoiKyRes = st.results?.find(x => x.examType === 'CuoiKy')
+      return {
+        ...st,
+        editKiemTra: {
+          resultId: kiemTraRes ? kiemTraRes.resultId : null,
+          score: kiemTraRes ? (kiemTraRes.score !== null ? kiemTraRes.score : '') : '',
+          note: kiemTraRes ? kiemTraRes.note || '' : ''
+        },
+        editGiuaKy: {
+          resultId: giuaKyRes ? giuaKyRes.resultId : null,
+          score: giuaKyRes ? (giuaKyRes.score !== null ? giuaKyRes.score : '') : '',
+          note: giuaKyRes ? giuaKyRes.note || '' : ''
+        },
+        editCuoiKy: {
+          resultId: cuoiKyRes ? cuoiKyRes.resultId : null,
+          score: cuoiKyRes ? (cuoiKyRes.score !== null ? cuoiKyRes.score : '') : '',
+          note: cuoiKyRes ? cuoiKyRes.note || '' : ''
+        },
+        saving: false
+      }
+    })
   } catch (e) {
     showSnackbar('Lỗi tải bảng điểm số', 'error')
   } finally {
     loadingGrades.value = false
+  }
+}
+
+async function saveStudentGradesInline(student) {
+  if (student.saving) return
+  student.saving = true
+  try {
+    const promises = []
+    
+    // Find matching enrollment
+    const enrollment = roster.value.find(r => r.studentId === student.studentId)
+    if (!enrollment) {
+      showSnackbar('Không tìm thấy bản ghi đăng ký học viên', 'error')
+      student.saving = false
+      return
+    }
+    
+    const examTypes = [
+      { key: 'editKiemTra', type: 'KiemTra' },
+      { key: 'editGiuaKy', type: 'GiuaKy' },
+      { key: 'editCuoiKy', type: 'CuoiKy' }
+    ]
+    
+    for (const item of examTypes) {
+      const f = student[item.key]
+      if (f.score !== '' && f.score !== null) {
+        // Validation check
+        if (f.score < 0 || f.score > 10) {
+          showSnackbar(`Điểm số ${getExamTypeLabel(item.type)} phải từ 0 đến 10`, 'error')
+          student.saving = false
+          return
+        }
+        
+        if (f.resultId) {
+          // Update
+          promises.push(api.put(`/api/v1/results/${f.resultId}`, {
+            id: f.resultId,
+            score: Number(f.score),
+            note: f.note || null
+          }))
+        } else {
+          // Create
+          promises.push(api.post('/api/v1/results', {
+            enrollmentId: enrollment.enrollmentId,
+            examType: item.type,
+            score: Number(f.score),
+            note: f.note || null,
+            examDate: new Date().toISOString()
+          }))
+        }
+      }
+    }
+    
+    if (promises.length > 0) {
+      await Promise.all(promises)
+      showSnackbar(`Lưu điểm cho học viên ${student.studentName} thành công`, 'success')
+      await fetchGrades()
+    } else {
+      showSnackbar('Không có thay đổi điểm số nào để lưu', 'info')
+    }
+  } catch (e) {
+    showSnackbar(e.response?.data?.message || 'Có lỗi xảy ra khi lưu điểm', 'error')
+  } finally {
+    student.saving = false
   }
 }
 
