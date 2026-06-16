@@ -13,13 +13,7 @@
           Theo dõi danh sách học viên, thực hiện điểm danh và nhập điểm thi cho lớp.
         </p>
       </div>
-      <router-link
-        to="/classes"
-        class="bg-transparent border border-outline-variant text-on-surface-variant px-5 py-2.5 rounded-lg font-semibold text-body-sm shadow-sm hover:bg-surface-container-high transition-all flex items-center gap-1.5 active:scale-95 self-start md:self-auto"
-      >
-        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
-        Quay lại
-      </router-link>
+
     </div>
 
     <!-- Class Detail Overview Panel -->
@@ -183,24 +177,23 @@
                       {{ getEnrollmentStatusLabel(en.status) }}
                     </span>
                   </td>
-                  <td class="py-4 px-6 text-right relative">
-                    <div v-if="authStore.isAdmin" class="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <td class="py-2 px-6 text-right relative">
+                    <div class="flex items-center justify-end gap-1">
                       <button
                         @click="toggleRosterDropdown(en.enrollmentId)"
-                        class="px-2.5 py-1.5 rounded-lg bg-transparent border border-outline-variant hover:bg-surface-container-high text-on-surface-variant font-semibold text-[11px] transition-colors flex items-center gap-1"
+                        class="p-1.5 rounded-lg bg-transparent hover:bg-black/5 text-black transition-colors inline-flex items-center justify-center cursor-pointer active:scale-95"
                         title="Đổi trạng thái học"
                       >
-                        Đổi trạng thái
-                        <span class="material-symbols-outlined text-[14px]">expand_more</span>
+                        <span class="material-symbols-outlined text-[20px]">assignment_ind</span>
                       </button>
 
                       <!-- Dropdown menu -->
-                      <div v-if="activeRosterDropdownId === en.enrollmentId" class="absolute right-6 top-12 w-40 rounded-xl bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-2xl py-2 z-30 animate-scale-in text-left">
+                      <div v-if="activeRosterDropdownId === en.enrollmentId" class="absolute right-24 top-10 w-40 rounded-xl bg-white/95 backdrop-blur-[20px] border border-white/40 shadow-2xl py-2 z-30 animate-scale-in text-left">
                         <button
                           v-for="opt in enrollmentStatusOptions"
                           :key="opt.value"
                           @click="changeEnrollmentStatus(en.enrollmentId, opt.value)"
-                          class="w-full text-left px-4 py-2 text-body-sm text-on-surface hover:bg-on-tertiary-container/10 transition-colors font-medium"
+                          class="w-full text-left px-4 py-2 text-body-sm text-on-surface hover:bg-black/5 transition-colors font-medium cursor-pointer"
                         >
                           {{ opt.label }}
                         </button>
@@ -208,11 +201,18 @@
 
                       <button
                         @click="openAdminTransferModal(en)"
-                        class="px-2.5 py-1.5 rounded-lg bg-transparent border border-outline-variant hover:bg-surface-container-high text-on-surface-variant font-semibold text-[11px] transition-colors flex items-center gap-1 cursor-pointer"
-                        title="Chuyển học viên này sang lớp khác"
+                        class="p-1.5 rounded-lg bg-transparent hover:bg-black/5 text-black transition-colors inline-flex items-center justify-center cursor-pointer active:scale-95"
+                        title="Chuyển lớp"
                       >
-                        <span class="material-symbols-outlined text-[14px]">sync_alt</span>
-                        Chuyển lớp
+                        <span class="material-symbols-outlined text-[20px]">sync_alt</span>
+                      </button>
+
+                      <button
+                        @click="deleteEnrollmentConfirm(en)"
+                        class="p-1.5 rounded-lg bg-transparent hover:bg-black/5 text-black transition-colors inline-flex items-center justify-center cursor-pointer active:scale-95"
+                        title="Xóa học viên khỏi lớp"
+                      >
+                        <span class="material-symbols-outlined text-[20px]">delete</span>
                       </button>
                     </div>
                   </td>
@@ -231,24 +231,43 @@
       <!-- TAB 2: ĐIỂM DANH HÀNG LOẠT -->
       <div v-if="activeTab === 'attendance'" class="space-y-gutter">
         <!-- Date selector & Controls -->
-        <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl p-gutter shadow-[0_12px_24px_rgba(0,0,0,0.05)] flex flex-col sm:flex-row gap-4 items-center justify-between">
-          <div class="flex items-center gap-3 w-full sm:w-auto">
-            <span class="text-body-sm font-semibold text-on-surface shrink-0">Ngày điểm danh:</span>
-            <input
-              v-model="attendanceDate"
-              type="date"
-              @change="fetchAttendanceForDate"
-              class="bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm font-body-sm text-on-surface w-full sm:w-48"
-            />
+        <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl p-gutter shadow-[0_12px_24px_rgba(0,0,0,0.05)] flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto flex-1">
+            <div class="flex items-center gap-2 w-full sm:w-auto shrink-0">
+              <span class="text-body-sm font-semibold text-on-surface shrink-0">Ngày:</span>
+              <input
+                v-model="attendanceDate"
+                type="date"
+                @change="fetchAttendanceForDate"
+                class="bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-3 py-2 text-body-sm font-body-sm text-on-surface w-full sm:w-40"
+              />
+            </div>
+            <div class="relative w-full flex-1">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+              <input
+                v-model="attendanceSearch"
+                class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg pl-9 pr-8 py-2 text-body-sm font-body-sm text-on-surface focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all"
+                placeholder="Tìm học viên điểm danh theo tên hoặc mã HV..."
+                type="text"
+              />
+              <button
+                v-if="attendanceSearch"
+                @click="attendanceSearch = ''"
+                type="button"
+                class="absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer flex items-center justify-center w-5 h-5 rounded-full hover:bg-primary-container/10"
+              >
+                <span class="material-symbols-outlined text-[16px]">close</span>
+              </button>
+            </div>
           </div>
-          <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <div class="flex items-center gap-2 w-full md:w-auto justify-end shrink-0">
             <span class="text-body-sm text-on-surface-variant italic mr-2" v-if="attendanceLoaded">
-              {{ attendanceRecordExists ? 'Đã có dữ liệu điểm danh ngày này' : 'Chưa điểm danh cho ngày này' }}
+              {{ attendanceRecordExists ? 'Đã điểm danh' : 'Chưa điểm danh' }}
             </span>
             <button
               v-if="!authStore.isAdmin"
               @click="setAllAttendanceStatus('CoMat')"
-              class="px-3 py-2 bg-transparent border border-outline-variant hover:bg-surface-container-high text-on-surface-variant rounded-lg font-semibold text-body-sm transition-colors"
+              class="px-3 py-1.5 bg-transparent border border-outline-variant hover:bg-surface-container-high text-on-surface-variant rounded-lg font-semibold text-body-sm transition-colors cursor-pointer"
             >
               Chọn Có mặt tất cả
             </button>
@@ -263,7 +282,7 @@
           </div>
 
           <div v-else-if="attendanceList.length > 0" class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+            <table v-if="filteredAttendance.length > 0" class="w-full text-left border-collapse">
               <thead>
                 <tr class="bg-surface-container-high text-on-surface-variant font-title-md text-body-sm">
                   <th class="py-4 px-6 font-semibold whitespace-nowrap">Mã HV</th>
@@ -274,7 +293,7 @@
               </thead>
               <tbody class="font-body-sm text-body-sm">
                 <tr
-                  v-for="att in attendanceList"
+                  v-for="att in filteredAttendance"
                   :key="att.enrollmentId"
                   class="border-t border-white/40 hover:bg-white/30 transition-colors"
                 >
@@ -312,6 +331,10 @@
                 </tr>
               </tbody>
             </table>
+            <div v-else class="p-12 text-center flex flex-col items-center justify-center">
+              <span class="material-symbols-outlined text-outline/30 text-[48px] mb-2">search</span>
+              <p class="text-body-sm text-on-surface-variant font-medium">Không tìm thấy học viên nào phù hợp với từ khóa</p>
+            </div>
           </div>
           
           <div v-else class="p-12 text-center flex flex-col items-center justify-center">
@@ -336,6 +359,27 @@
 
       <!-- TAB 3: ĐIỂM SỐ HỌC TẬP -->
       <div v-if="activeTab === 'grades'" class="space-y-gutter">
+        <!-- Grades Search -->
+        <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl p-gutter shadow-[0_12px_24px_rgba(0,0,0,0.05)] flex flex-col sm:flex-row gap-4 justify-between items-center">
+          <div class="relative w-full flex-1">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+            <input
+              v-model="gradesSearch"
+              class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg pl-10 pr-10 py-2.5 text-body-sm font-body-sm text-on-surface focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all"
+              placeholder="Tìm học viên theo tên hoặc mã HV..."
+              type="text"
+            />
+            <button
+              v-if="gradesSearch"
+              @click="gradesSearch = ''"
+              type="button"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer flex items-center justify-center w-6 h-6 rounded-full hover:bg-primary-container/10"
+            >
+              <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Roster grades report table -->
         <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl overflow-hidden shadow-[0_12px_24px_rgba(0,0,0,0.05)]">
           <div v-if="loadingGrades" class="p-12 space-y-4 animate-pulse">
@@ -344,7 +388,7 @@
           </div>
 
           <div v-else-if="gradesList.length > 0" class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+            <table v-if="filteredGrades.length > 0" class="w-full text-left border-collapse">
               <thead>
                 <tr class="bg-surface-container-high text-on-surface-variant font-title-md text-body-sm">
                   <th class="py-4 px-6 font-semibold whitespace-nowrap">Mã HV</th>
@@ -358,7 +402,7 @@
               </thead>
               <tbody class="font-body-sm text-body-sm">
                 <tr
-                  v-for="st in gradesList"
+                  v-for="st in filteredGrades"
                   :key="st.studentId"
                   class="border-t border-white/40 hover:bg-white/30 transition-colors group"
                 >
@@ -434,6 +478,10 @@
                 </tr>
               </tbody>
             </table>
+            <div v-else class="p-12 text-center flex flex-col items-center justify-center">
+              <span class="material-symbols-outlined text-outline/30 text-[48px] mb-2">search</span>
+              <p class="text-body-sm text-on-surface-variant font-medium">Không tìm thấy học viên nào phù hợp với từ khóa</p>
+            </div>
           </div>
 
           <div v-else class="p-12 text-center flex flex-col items-center justify-center">
@@ -681,6 +729,26 @@ import { useRoute, useRouter } from 'vue-router'
 import { useClassStore, useStudentStore, useAuthStore } from '../../stores'
 import api from '../../services/api'
 
+function matchSearch(studentName, studentId, phone, searchVal) {
+  const query = searchVal.trim().toLowerCase()
+  if (!query) return true
+  
+  const idStr = `hv-${String(studentId).padStart(4, '0')}`
+  const idStrNoDash = `hv${String(studentId).padStart(4, '0')}`
+  const idShort = String(studentId)
+  const idZeroPadded = String(studentId).padStart(4, '0')
+  
+  const nameMatch = studentName?.toLowerCase().includes(query)
+  const idMatch = idStr.includes(query) ||
+                  idStrNoDash.includes(query) ||
+                  idStrNoDash.includes(query.replace('-', '')) ||
+                  idShort.includes(query) ||
+                  idZeroPadded.includes(query)
+  const phoneMatch = phone?.toLowerCase().includes(query)
+  
+  return nameMatch || idMatch || phoneMatch
+}
+
 const router = useRouter()
 const authStore = useAuthStore()
 
@@ -762,10 +830,7 @@ const rosterSearch = ref('')
 const activeRosterDropdownId = ref(null)
 
 const filteredRoster = computed(() => {
-  if (!rosterSearch.value.trim()) return roster.value
-  return roster.value.filter(en =>
-    en.studentName?.toLowerCase().includes(rosterSearch.value.toLowerCase())
-  )
+  return roster.value.filter(en => matchSearch(en.studentName, en.studentId, en.phone, rosterSearch.value))
 })
 
 async function fetchRoster() {
@@ -801,6 +866,19 @@ async function changeEnrollmentStatus(enrollmentId, status) {
   }
 }
 
+async function deleteEnrollmentConfirm(en) {
+  if (confirm(`Bạn có chắc chắn muốn xóa học viên ${en.studentName} khỏi lớp học này?`)) {
+    try {
+      await api.delete(`/api/v1/enrollments/${en.enrollmentId}`)
+      showSnackbar(`Xóa học viên ${en.studentName} khỏi lớp thành công`, 'success')
+      await fetchRoster()
+      await fetchClassDetails()
+    } catch (e) {
+      showSnackbar(e.response?.data?.message || 'Lỗi khi xóa học viên khỏi lớp', 'error')
+    }
+  }
+}
+
 const enrollmentStatusOptions = [
   { label: 'Đang học', value: 'Active' },
   { label: 'Hoàn thành', value: 'Completed' },
@@ -821,9 +899,7 @@ const unassignedStudents = computed(() => {
   let list = studentStore.students.filter(s => !enrolledStudentIds.includes(s.studentId))
   
   if (studentSearch.value.trim()) {
-    list = list.filter(s =>
-      s.fullName?.toLowerCase().includes(studentSearch.value.toLowerCase())
-    )
+    list = list.filter(s => matchSearch(s.fullName, s.studentId, s.phone, studentSearch.value))
   }
   return list
 })
@@ -870,6 +946,10 @@ const savingAttendance = ref(false)
 const attendanceList = ref([])
 const attendanceRecordExists = ref(false)
 const attendanceLoaded = ref(false)
+const attendanceSearch = ref('')
+const filteredAttendance = computed(() => {
+  return attendanceList.value.filter(att => matchSearch(att.studentName, att.studentId, att.phone, attendanceSearch.value))
+})
 
 const attendanceStatusOptions = [
   { label: 'Có mặt', value: 'CoMat', activeClass: 'bg-emerald-500 text-white' },
@@ -897,6 +977,7 @@ async function fetchAttendanceForDate() {
           enrollmentId: r.enrollmentId,
           studentId: r.studentId,
           studentName: r.studentName,
+          phone: r.phone,
           status: found ? found.status : 'CoMat',
           note: found ? found.note : '',
           attendanceId: found ? found.attendanceId : null
@@ -910,6 +991,7 @@ async function fetchAttendanceForDate() {
         enrollmentId: r.enrollmentId,
         studentId: r.studentId,
         studentName: r.studentName,
+        phone: r.phone,
         status: 'CoMat',
         note: '',
         attendanceId: null
@@ -959,6 +1041,10 @@ async function saveAttendance() {
 // ----------------------------------------------------
 const loadingGrades = ref(false)
 const gradesList = ref([])
+const gradesSearch = ref('')
+const filteredGrades = computed(() => {
+  return gradesList.value.filter(st => matchSearch(st.studentName, st.studentId, st.phone, gradesSearch.value))
+})
 const gradingModal = ref(false)
 const selectedStudentForGrading = ref(null)
 const savingGrades = ref(false)

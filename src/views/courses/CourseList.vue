@@ -237,9 +237,9 @@
         </div>
 
         <!-- Course Cards -->
-        <div v-else-if="filteredCourses.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+        <div v-else-if="paginatedCourses.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
           <div
-            v-for="course in filteredCourses"
+            v-for="course in paginatedCourses"
             :key="course.courseId"
             class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] rounded-xl overflow-hidden flex flex-col group hover:-translate-y-1 hover:shadow-md transition-all duration-300 relative cursor-pointer"
             @click="authStore.isAdmin && openEditDialog(course)"
@@ -389,6 +389,28 @@
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- Cards Pagination Footer -->
+        <div v-if="filteredCourses.length > cardPagination.pageSize" class="mt-8 px-6 py-4 border border-white/40 rounded-xl flex justify-between items-center text-body-sm text-secondary bg-white/50 backdrop-blur-md shadow-[0_12px_24px_rgba(0,0,0,0.05)]">
+          <span>Hiển thị {{ (cardPagination.page - 1) * cardPagination.pageSize + 1 }} - {{ Math.min(cardPagination.page * cardPagination.pageSize, filteredCourses.length) }} trong số {{ filteredCourses.length }} môn học</span>
+          <div class="flex items-center gap-1">
+            <button
+              @click="cardPagination.page--"
+              :disabled="cardPagination.page === 1"
+              class="w-8 h-8 rounded-lg flex items-center justify-center text-secondary hover:bg-primary/10 transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              <span class="material-symbols-outlined text-[20px]">chevron_left</span>
+            </button>
+            <span class="px-3 font-semibold text-primary">Trang {{ cardPagination.page }} / {{ Math.ceil(filteredCourses.length / cardPagination.pageSize) || 1 }}</span>
+            <button
+              @click="cardPagination.page++"
+              :disabled="cardPagination.page >= Math.ceil(filteredCourses.length / cardPagination.pageSize)"
+              class="w-8 h-8 rounded-lg flex items-center justify-center text-secondary hover:bg-primary/10 transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+            </button>
           </div>
         </div>
 
@@ -1051,6 +1073,17 @@ const filteredCourses = computed(() => {
   return store.courses
 })
 
+const cardPagination = ref({
+  page: 1,
+  pageSize: 9,
+})
+
+const paginatedCourses = computed(() => {
+  const start = (cardPagination.value.page - 1) * cardPagination.value.pageSize
+  const end = start + cardPagination.value.pageSize
+  return filteredCourses.value.slice(start, end)
+})
+
 const dialog = ref(false)
 const deleteDialog = ref(false)
 const isEdit = ref(false)
@@ -1224,6 +1257,10 @@ const filters = ref({
   level: null,
   isActive: true,
 })
+
+watch(filters, () => {
+  cardPagination.value.page = 1
+}, { deep: true })
 
 const categoryOptions = computed(() => {
   return categoryStore.categories.map(c => ({

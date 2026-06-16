@@ -54,54 +54,7 @@
     </div>
 
     <template v-if="studentProfile">
-      <!-- Hero Profile Section -->
-      <section class="glass-panel rounded-xl p-[21px] flex flex-col md:flex-row gap-[21px] items-start md:items-center relative overflow-hidden">
-        <!-- Background decorative gradients -->
-        <div class="absolute -right-16 -top-16 w-48 h-48 rounded-full bg-primary/10 blur-3xl pointer-events-none"></div>
-        <div class="absolute -left-16 -bottom-16 w-48 h-48 rounded-full bg-on-tertiary-container/10 blur-3xl pointer-events-none"></div>
 
-        <div class="flex-shrink-0">
-          <div class="w-[93px] h-[93px] rounded-full bg-gradient-to-br from-tertiary-container to-primary-container flex items-center justify-center font-display-lg text-[45px] text-on-primary shadow-lg shadow-primary-container/20 border-4 border-white overflow-hidden">
-            <img v-if="studentAvatar" :src="studentAvatar" class="w-full h-full object-cover" alt="Student Avatar" />
-            <template v-else>
-              {{ (studentProfile?.fullName || authStore.currentUser?.fullName || 'P').charAt(0).toUpperCase() }}
-            </template>
-          </div>
-        </div>
-        <div class="flex-1 space-y-4">
-          <div>
-            <div class="flex flex-wrap items-center gap-3">
-              <h2 class="font-headline-lg text-[29px] text-primary-container leading-tight">{{ studentProfile?.fullName || authStore.currentUser?.fullName }}</h2>
-              <span class="px-3 py-1 bg-surface-tint/10 text-surface-tint rounded-full font-label-caps text-[9px] uppercase tracking-wider border border-surface-tint/20">
-                Mã HV: {{ studentProfile?.studentId ? `HV-${String(studentProfile.studentId).padStart(4, '0')}` : 'HV-0000' }}
-              </span>
-            </div>
-            <p class="text-on-surface-variant text-[17px] font-normal mt-0.5">Cổng thông tin học tập & học phí cá nhân</p>
-          </div>
-          <div class="flex flex-wrap gap-x-6 gap-y-2 text-[11px] font-medium text-on-surface-variant">
-            <div class="flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-[15px]">mail</span>
-              {{ studentProfile?.email || authStore.currentUser?.email || 'Chưa cập nhật email' }}
-            </div>
-            <div class="flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-[15px]">phone</span>
-              {{ studentProfile?.phone || authStore.currentUser?.phone || 'Chưa cập nhật SĐT' }}
-            </div>
-            <div class="flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-[15px]">person</span>
-              {{ studentProfile?.gender || 'Chưa cập nhật' }}
-            </div>
-            <div class="flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-[15px]">cake</span>
-              {{ formatDate(studentProfile?.dateOfBirth) }}
-            </div>
-            <div class="flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-[15px]">location_on</span>
-              {{ studentProfile?.address || 'Chưa cập nhật địa chỉ' }}
-            </div>
-          </div>
-        </div>
-      </section>
 
       <!-- Stats Row -->
       <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
