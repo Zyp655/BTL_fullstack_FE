@@ -10,7 +10,7 @@
         <button
           @click="fetchClassrooms"
           :disabled="loading"
-          class="flex items-center gap-2 bg-primary-container text-on-primary-container hover:bg-primary-container/90 px-4 py-2 rounded-lg font-semibold text-body-sm shadow transition-all duration-200"
+          class="flex items-center gap-2 bg-primary-container text-white hover:bg-primary-container/90 px-4 py-2 rounded-lg font-semibold text-body-sm shadow transition-all duration-200"
         >
           <span class="material-symbols-outlined text-[18px]" :class="{ 'animate-spin': loading }">refresh</span>
           Làm mới
@@ -75,7 +75,7 @@
           @click="activeFilter = filter.value"
           class="px-4 py-1.5 rounded-lg text-body-sm font-semibold transition-all duration-200"
           :class="activeFilter === filter.value 
-            ? 'bg-primary-container text-on-primary-container shadow' 
+            ? 'bg-primary-container text-white shadow' 
             : 'bg-primary-container/[0.05] text-primary-container hover:bg-primary-container/10'"
         >
           {{ filter.label }}
@@ -200,11 +200,11 @@
       <div class="bg-surface w-full max-w-md rounded-2xl shadow-xl border border-primary-container/15 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         <!-- Modal header -->
         <div class="bg-primary-container px-6 py-4 flex items-center justify-between border-b border-primary-container/10">
-          <h3 class="text-body-lg font-bold text-on-primary-container flex items-center gap-2">
+          <h3 class="text-body-lg font-bold text-white flex items-center gap-2">
             <span class="material-symbols-outlined text-[20px]">build</span>
             Cấu hình bảo trì phòng {{ modal.room?.roomNumber }}
           </h3>
-          <button @click="closeModal" class="text-on-primary-container/85 hover:text-on-primary-container">
+          <button @click="closeModal" class="text-white/80 hover:text-white">
             <span class="material-symbols-outlined">close</span>
           </button>
         </div>
