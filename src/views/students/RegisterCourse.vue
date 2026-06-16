@@ -190,7 +190,7 @@
                 <p class="text-body-sm text-on-surface-variant line-clamp-3 min-h-[50px]">{{ course.description || 'Chưa có mô tả chi tiết cho môn học này.' }}</p>
                 <div class="pt-3 border-t border-outline-variant/20 flex justify-between items-center">
                   <span class="text-body-sm text-on-surface-variant">Học phí khóa:</span>
-                  <span class="text-on-tertiary-container font-semibold text-body-lg">{{ formatCurrency(course.fee) }}</span>
+                  <span class="text-body-sm font-black text-indigo-700 bg-indigo-50/70 px-2.5 py-0.5 rounded-md border border-indigo-100/80 shadow-sm">{{ formatCurrency(course.fee) }}</span>
                 </div>
               </div>
 
@@ -277,7 +277,7 @@
               <p class="text-body-sm text-on-surface">Bạn có chắc chắn muốn đăng ký vào danh sách hàng chờ của môn học:</p>
               <div class="p-4 rounded-xl bg-on-tertiary-container/5 border border-on-tertiary-container/15">
                 <div class="font-title-md text-title-md text-primary-container">{{ selectedCourseToEnroll?.courseName }}</div>
-                <div class="text-body-sm text-on-surface-variant mt-1">Học phí: <span class="font-semibold text-on-tertiary-container">{{ formatCurrency(selectedCourseToEnroll?.fee) }}</span></div>
+                <div class="text-body-sm text-on-surface-variant mt-1 flex items-center gap-1.5">Học phí: <span class="font-black text-indigo-700 bg-indigo-50/70 px-2.5 py-0.5 rounded-md border border-indigo-100/80 shadow-sm">{{ formatCurrency(selectedCourseToEnroll?.fee) }}</span></div>
                 <div class="text-body-sm text-on-surface-variant">Thời gian: {{ selectedCourseToEnroll?.totalSessions }} buổi</div>
               </div>
               <p class="text-body-sm text-on-surface-variant italic">
@@ -387,8 +387,8 @@
                 </div>
                 <div class="space-y-0.5">
                   <div class="text-[11px] font-bold text-on-surface-variant/70 uppercase">Học phí khóa học</div>
-                  <div class="text-body-lg font-bold text-on-tertiary-container flex items-center gap-1.5">
-                    <span class="material-symbols-outlined text-[20px] text-on-tertiary-container">payments</span>
+                  <div class="text-body-sm font-black text-indigo-700 flex items-center gap-1.5 bg-indigo-50/70 px-2.5 py-0.5 rounded-md border border-indigo-100/80 shadow-sm inline-flex">
+                    <span class="material-symbols-outlined text-[20px] text-indigo-700">payments</span>
                     {{ formatCurrency(selectedCourseForDetail?.fee) }}
                   </div>
                 </div>

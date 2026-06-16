@@ -142,7 +142,7 @@
                 <span class="material-symbols-outlined text-[16px] text-primary">group</span>
                 Ghi danh: {{ getCourseQueueCount(course.courseId) }} HV
               </div>
-              <div class="text-[13px] font-bold text-tertiary-container">
+              <div class="text-[14px] font-black text-indigo-700 bg-indigo-50/70 px-2.5 py-0.5 rounded-md border border-indigo-100/80 shadow-sm">
                 {{ formatCurrency(course.fee) }}
               </div>
             </div>
@@ -210,8 +210,8 @@
               <h4 class="font-semibold text-primary-container text-body-sm">{{ selectedCourseToEnroll?.courseName }}</h4>
               <p class="text-body-xs text-on-surface-variant mt-1 line-clamp-2">{{ selectedCourseToEnroll?.description }}</p>
               <div class="flex justify-between items-center mt-3 pt-3 border-t border-primary-container/10">
-                <span class="text-body-xs font-semibold text-on-surface-variant">Học phí môn học:</span>
-                <span class="text-body-sm font-bold text-tertiary-container">{{ formatCurrency(selectedCourseToEnroll?.fee) }}</span>
+                 <span class="text-body-xs font-semibold text-on-surface-variant">Học phí môn học:</span>
+                <span class="text-body-sm font-black text-indigo-700 bg-indigo-50/70 px-2.5 py-0.5 rounded-md border border-indigo-100/80 shadow-sm">{{ formatCurrency(selectedCourseToEnroll?.fee) }}</span>
               </div>
             </div>
             <p class="text-[11px] text-on-surface-variant leading-relaxed italic">
@@ -311,8 +311,8 @@
                 <p class="font-bold text-primary-container text-body-sm mt-0.5">{{ getCourseQueueCount(selectedCourseForDetail.courseId) }} học viên</p>
               </div>
               <div>
-                <p class="text-[11px] font-medium text-on-surface-variant">Học phí trọn gói</p>
-                <p class="font-bold text-tertiary-container text-body-sm mt-0.5">{{ formatCurrency(selectedCourseForDetail?.fee) }}</p>
+                 <p class="text-[11px] font-medium text-on-surface-variant">Học phí trọn gói</p>
+                <p class="font-black text-indigo-700 text-body-sm mt-0.5 bg-indigo-50/70 px-2.5 py-0.5 rounded-md border border-indigo-100/80 shadow-sm inline-block">{{ formatCurrency(selectedCourseForDetail?.fee) }}</p>
               </div>
             </div>
 

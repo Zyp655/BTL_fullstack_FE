@@ -1,7 +1,7 @@
 <template>
   <div class="flex min-h-screen text-on-surface font-body-lg text-body-lg">
     <!-- Sidebar Navigation -->
-    <nav v-if="!route.meta.public" :class="[mobileMenuOpen ? 'left-0' : '-left-72 md:left-0', 'w-72 h-screen fixed top-0 bg-primary-container shadow-[0px_12px_24px_rgba(0,0,0,0.15)] flex flex-col py-base z-50 transition-all duration-300 md:flex']">
+    <nav v-if="!route.meta.public" :class="[mobileMenuOpen ? 'left-0' : '-left-60 md:left-0', 'w-60 h-screen fixed top-0 bg-primary-container shadow-[0px_12px_24px_rgba(0,0,0,0.15)] flex flex-col py-base z-50 transition-all duration-300 md:flex']">
       <!-- Brand/Header -->
       <div class="px-6 py-6 mb-4 flex items-center gap-4 border-b border-white/10">
         <div class="w-10 h-10 rounded-lg bg-white/15 flex items-center justify-center shadow-inner overflow-hidden shrink-0">
@@ -108,7 +108,7 @@
         <transition name="fade">
           <div
             v-if="profileDropdownOpen"
-            class="absolute left-4 bottom-20 w-[256px] bg-white border border-outline-variant/60 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.15)] py-2 z-50 animate-scale-in"
+            class="absolute left-4 bottom-20 w-[208px] bg-white border border-outline-variant/60 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.15)] py-2 z-50 animate-scale-in"
           >
             <router-link
               to="/profile"
@@ -441,7 +441,7 @@ provide('showSnackbar', showSnackbar)
 <style scoped>
 @media (min-width: 768px) {
   .main-content-layout {
-    margin-left: 288px !important;
+    margin-left: 240px !important;
   }
 }
 </style>
