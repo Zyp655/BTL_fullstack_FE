@@ -19,11 +19,20 @@
       </div>
       <div>
         <button
+          v-if="authStore.isAdmin"
           @click="openCreateDialog"
           class="bg-primary-container text-white px-6 py-3 rounded-lg font-semibold text-[14px] shadow-sm hover:bg-primary hover:shadow-md transition-all flex items-center gap-2 active:scale-95"
         >
           <span class="material-symbols-outlined text-[20px]">add</span>
           Thêm lịch học
+        </button>
+        <button
+          v-else
+          @click="openRescheduleDialog(null)"
+          class="bg-primary-container text-white px-6 py-3 rounded-lg font-semibold text-[14px] shadow-sm hover:bg-primary hover:shadow-md transition-all flex items-center gap-2 active:scale-95"
+        >
+          <span class="material-symbols-outlined text-[20px]">edit_calendar</span>
+          Yêu cầu đổi lịch
         </button>
       </div>
     </div>
@@ -88,7 +97,7 @@
                 {{ item.startTime }} &mdash; {{ item.endTime }}
               </td>
               <td class="py-4 px-6 text-right">
-                <div class="flex justify-end gap-1.5">
+                <div class="flex justify-end gap-1.5" v-if="authStore.isAdmin">
                   <button
                     @click.stop="openEditDialog(item)"
                     class="w-8 h-8 rounded-lg bg-on-tertiary-container/10 hover:bg-on-tertiary-container/20 text-on-tertiary-container flex items-center justify-center transition-colors cursor-pointer"
@@ -102,6 +111,16 @@
                     title="Xóa lịch"
                   >
                     <span class="material-symbols-outlined text-[16px]">delete</span>
+                  </button>
+                </div>
+                <div class="flex justify-end gap-1.5" v-else>
+                  <button
+                    @click.stop="openRescheduleDialog(item)"
+                    class="px-3 py-1.5 rounded-lg bg-on-tertiary-container/10 hover:bg-on-tertiary-container/20 text-on-tertiary-container flex items-center justify-center gap-1 transition-colors cursor-pointer font-semibold text-xs"
+                    title="Yêu cầu đổi lịch"
+                  >
+                    <span class="material-symbols-outlined text-[15px]">swap_horiz</span>
+                    Yêu cầu đổi lịch
                   </button>
                 </div>
               </td>
@@ -274,20 +293,236 @@
         </div>
       </div>
     </div>
+
+    <!-- Reschedule Request Dialog Modal -->
+    <div v-if="rescheduleDialog" class="fixed inset-0 glass-backdrop z-[9999] flex items-center justify-center p-4">
+      <div class="bg-white/90 backdrop-blur-[20px] border border-white/40 shadow-2xl max-w-md w-full rounded-2xl overflow-hidden animate-scale-in flex flex-col">
+        <!-- Title -->
+        <div class="px-6 py-4 border-b border-white/40 flex items-center justify-between">
+          <h3 class="font-title-md text-[18px] font-bold text-primary-container flex items-center gap-2">
+            <span class="material-symbols-outlined text-on-tertiary-container">edit_calendar</span>
+            Yêu cầu đổi lịch học
+          </h3>
+          <button @click="rescheduleDialog = false" class="text-on-surface-variant hover:text-primary-container transition-colors">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <!-- Form Body -->
+        <div class="p-6 space-y-4 text-left">
+          <!-- Current Slot Info if selected -->
+          <div v-if="selectedRescheduleSlot" class="bg-primary-container/5 p-4 rounded-xl border border-primary-container/10 text-body-sm space-y-1">
+            <div class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wide">Buổi học cần đổi:</div>
+            <div class="font-bold text-primary-container text-[15px]">
+              Thứ {{ formatDayOfWeek(selectedRescheduleSlot.dayOfWeek) }} ({{ selectedRescheduleSlot.startTime }} - {{ selectedRescheduleSlot.endTime }})
+            </div>
+          </div>
+          <!-- Otherwise select from current slots dropdown -->
+          <div v-else class="space-y-1">
+            <label class="text-body-sm font-semibold text-primary-container">Chọn buổi học cần đổi *</label>
+            <div class="relative">
+              <select
+                v-model="rescheduleFormData.scheduleId"
+                class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-primary-container bg-transparent focus:outline-none focus:border-on-tertiary-container/30 transition-colors cursor-pointer"
+              >
+                <option v-for="s in scheduleStore.schedules" :key="s.scheduleId" :value="s.scheduleId">
+                  Thứ {{ formatDayOfWeek(s.dayOfWeek) }} ({{ s.startTime }} - {{ s.endTime }})
+                </option>
+              </select>
+              <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+            </div>
+          </div>
+
+          <div class="border-t border-dashed border-outline-variant/40 my-4"></div>
+
+          <div class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wide">Đề xuất lịch mới:</div>
+
+          <div class="space-y-1">
+            <label class="text-body-sm font-semibold text-primary-container">Ngày học mới *</label>
+            <div class="relative">
+              <select
+                v-model="rescheduleFormData.newDayOfWeek"
+                class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-primary-container bg-transparent focus:outline-none focus:border-on-tertiary-container/30 transition-colors cursor-pointer"
+              >
+                <option v-for="d in weekDays" :key="d.value" :value="d.value">{{ d.label }}</option>
+              </select>
+              <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-body-sm font-semibold text-primary-container">Buổi học đề xuất *</label>
+            <div class="relative">
+              <select
+                v-model="rescheduleFormData.newSession"
+                class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-primary-container bg-transparent focus:outline-none focus:border-on-tertiary-container/30 transition-colors cursor-pointer"
+              >
+                <option v-for="opt in sessionOptions" :key="opt.value" :value="opt.value">{{ opt.title }}</option>
+              </select>
+              <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label class="text-body-sm font-semibold text-primary-container">Giờ bắt đầu *</label>
+              <input
+                v-model="rescheduleFormData.newStartTime"
+                type="time"
+                class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary-container bg-transparent focus:outline-none focus:border-on-tertiary-container/30 transition-colors"
+              />
+            </div>
+            <div class="space-y-1">
+              <label class="text-body-sm font-semibold text-primary-container">Giờ kết thúc *</label>
+              <input
+                v-model="rescheduleFormData.newEndTime"
+                type="time"
+                class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary-container bg-transparent focus:outline-none focus:border-on-tertiary-container/30 transition-colors"
+              />
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-body-sm font-semibold text-primary-container">Lý do đổi lịch *</label>
+            <textarea
+              v-model="rescheduleFormData.reason"
+              rows="3"
+              placeholder="Nhập lý do chi tiết..."
+              class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary-container focus:outline-none focus:border-on-tertiary-container/30 transition-colors resize-none"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="px-6 py-4 border-t border-white/40 flex justify-end gap-3 bg-white/20">
+          <button
+            @click="rescheduleDialog = false"
+            class="px-5 py-2.5 rounded-lg border border-outline-variant/40 text-on-surface-variant font-semibold text-[13px] hover:bg-white/40 transition-colors cursor-pointer"
+          >
+            Hủy bỏ
+          </button>
+          <button
+            @click="submitRescheduleRequest"
+            :disabled="submittingReschedule || !isRescheduleFormValid"
+            class="px-5 py-2.5 rounded-lg bg-primary-container text-white font-semibold text-[13px] hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer active:scale-95"
+          >
+            <span v-if="submittingReschedule" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
+            Gửi yêu cầu
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, inject, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { useScheduleStore, useClassStore } from '../../stores'
+import { useScheduleStore, useClassStore, useAuthStore } from '../../stores'
+import api from '../../services/api'
 
 const route = useRoute()
 const scheduleStore = useScheduleStore()
 const classStore = useClassStore()
+const authStore = useAuthStore()
 const showSnackbar = inject('showSnackbar')
-
 const classId = parseInt(route.params.id)
+
+// Reschedule dialog states
+const rescheduleDialog = ref(false)
+const submittingReschedule = ref(false)
+const selectedRescheduleSlot = ref(null)
+const rescheduleFormData = ref({
+  scheduleId: null,
+  newDayOfWeek: 2,
+  newSession: 'Sang',
+  newStartTime: '08:00',
+  newEndTime: '10:00',
+  reason: ''
+})
+
+const isRescheduleFormValid = computed(() => {
+  return rescheduleFormData.value.newStartTime.trim().length > 0 &&
+         rescheduleFormData.value.newEndTime.trim().length > 0 &&
+         rescheduleFormData.value.newStartTime < rescheduleFormData.value.newEndTime &&
+         rescheduleFormData.value.reason.trim().length > 0 &&
+         (selectedRescheduleSlot.value !== null || rescheduleFormData.value.scheduleId !== null)
+})
+
+function formatDayOfWeek(day) {
+  const found = weekDays.find(d => d.value === day)
+  return found ? found.label : day
+}
+
+function openRescheduleDialog(item) {
+  selectedRescheduleSlot.value = item
+  rescheduleFormData.value = {
+    scheduleId: item ? item.scheduleId : (scheduleStore.schedules[0]?.scheduleId || null),
+    newDayOfWeek: 2,
+    newSession: 'Sang',
+    newStartTime: '08:00',
+    newEndTime: '10:00',
+    reason: ''
+  }
+  rescheduleDialog.value = true
+}
+
+async function submitRescheduleRequest() {
+  if (!isRescheduleFormValid.value) return
+  submittingReschedule.value = true
+  try {
+    let targetStudentId = null
+    if (authStore.isStudent) {
+      const userRes = await api.get('/api/v1/students/by-user/' + authStore.currentUser.userId)
+      targetStudentId = userRes.data?.studentId
+    } else {
+      try {
+        const classStudRes = await api.get(`/api/v1/classes/${classId}/students`)
+        const studentsList = classStudRes.data || []
+        if (studentsList.length > 0) {
+          targetStudentId = studentsList[0].studentId
+        } else {
+          const allStudRes = await api.get('/api/v1/students')
+          targetStudentId = allStudRes.data?.items?.[0]?.studentId || 1
+        }
+      } catch (err) {
+        targetStudentId = 1
+      }
+    }
+
+    const selectedSlot = selectedRescheduleSlot.value || scheduleStore.schedules.find(s => s.scheduleId === rescheduleFormData.value.scheduleId)
+    const dayOfWeekName = selectedSlot ? formatDayOfWeek(selectedSlot.dayOfWeek) : ''
+    const slotDetails = selectedSlot ? `Thứ ${dayOfWeekName} (${selectedSlot.startTime} - ${selectedSlot.endTime})` : ''
+    const proposedDayName = weekDays.find(d => d.value === rescheduleFormData.value.newDayOfWeek)?.label || ''
+    const senderType = authStore.isTeacher ? `Giảng viên (${classInfo.value?.teacherName || 'GiaoVien'})` : `Học viên (${authStore.currentUser?.fullName || 'HocVien'})`
+
+    const messageBody = `[Yêu cầu đổi lịch học từ ${senderType}]
+Lớp: ${classInfo.value?.className || ''}
+Môn học: ${classInfo.value?.courseName || ''}
+Lịch hiện tại cần đổi: ${slotDetails}
+Lịch đề xuất mới: ${proposedDayName}, Buổi ${getSessionLabel(rescheduleFormData.value.newSession)} (${rescheduleFormData.value.newStartTime} - ${rescheduleFormData.value.newEndTime})
+Lý do: ${rescheduleFormData.value.reason}`
+
+    await api.post('/api/v1/support-messages', {
+      studentId: targetStudentId,
+      message: messageBody,
+      fromClassId: classId,
+      fromClassName: classInfo.value?.className,
+      toClassId: null,
+      toClassName: null
+    })
+
+    showSnackbar('Đã gửi yêu cầu đổi lịch lên Admin thành công!', 'success')
+    rescheduleDialog.value = false
+  } catch (err) {
+    console.error('Error submitting reschedule request:', err)
+    showSnackbar('Có lỗi xảy ra khi gửi yêu cầu đổi lịch', 'error')
+  } finally {
+    submittingReschedule.value = false
+  }
+}
+
+
 const classInfo = ref(null)
 
 const dialog = ref(false)
