@@ -29,10 +29,10 @@
         <button
           v-else
           @click="openRescheduleDialog(null)"
-          class="bg-primary-container text-white px-6 py-3 rounded-lg font-semibold text-[14px] shadow-sm hover:bg-primary hover:shadow-md transition-all flex items-center gap-2 active:scale-95"
+          class="bg-primary-container text-white px-6 py-3 rounded-lg font-semibold text-[14px] shadow-sm hover:bg-primary hover:shadow-md transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
         >
-          <span class="material-symbols-outlined text-[20px]">edit_calendar</span>
-          Yêu cầu đổi lịch
+          <span class="material-symbols-outlined text-[20px]">calendar_add_on</span>
+          Yêu cầu thêm lịch học
         </button>
       </div>
     </div>
@@ -360,8 +360,10 @@
         <!-- Title -->
         <div class="px-6 py-4 border-b border-outline-variant/30 flex items-center justify-between bg-slate-50/50">
           <h3 class="font-title-md text-[18px] font-bold text-primary flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary">edit_calendar</span>
-            Yêu cầu đổi lịch học
+            <span class="material-symbols-outlined text-primary">
+              {{ isRequestTypeAdd ? 'calendar_add_on' : 'edit_calendar' }}
+            </span>
+            {{ isRequestTypeAdd ? 'Yêu cầu thêm lịch học' : 'Yêu cầu đổi lịch học' }}
           </h3>
           <button @click="rescheduleDialog = false" class="w-8 h-8 rounded-full flex items-center justify-center text-secondary hover:bg-error/10 hover:text-error transition-colors cursor-pointer">
             <span class="material-symbols-outlined">close</span>
@@ -371,7 +373,7 @@
         <!-- Form Body -->
         <div class="p-6 space-y-4 text-left">
           <!-- Current Slot Info if selected -->
-          <div v-if="selectedRescheduleSlot" class="bg-primary-container/[0.03] border border-primary-container/10 rounded-xl p-4 space-y-1">
+          <div v-if="!isRequestTypeAdd && selectedRescheduleSlot" class="bg-primary-container/[0.03] border border-primary-container/10 rounded-xl p-4 space-y-1">
             <div class="text-[11px] font-bold text-secondary uppercase tracking-wider">Buổi học cần đổi:</div>
             <div class="font-bold text-primary text-[15px] flex items-center gap-1.5">
               <span class="material-symbols-outlined text-[18px] text-primary">calendar_today</span>
@@ -379,7 +381,7 @@
             </div>
           </div>
           <!-- Otherwise select from current slots dropdown -->
-          <div v-else class="space-y-1.5">
+          <div v-else-if="!isRequestTypeAdd" class="space-y-1.5">
             <label class="block font-title-md text-body-sm text-on-surface-variant font-semibold">Chọn buổi học cần đổi <span class="text-error">*</span></label>
             <div class="relative">
               <select
@@ -394,7 +396,7 @@
             </div>
           </div>
 
-          <div class="relative flex py-2 items-center">
+          <div v-if="!isRequestTypeAdd" class="relative flex py-2 items-center">
             <div class="flex-grow border-t border-slate-200"></div>
             <span class="flex-shrink mx-4 text-[11px] font-bold text-secondary uppercase tracking-wider">Đề xuất lịch mới</span>
             <div class="flex-grow border-t border-slate-200"></div>
@@ -402,7 +404,9 @@
 
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1.5">
-              <label class="block font-title-md text-body-sm text-on-surface-variant font-semibold">Ngày học mới <span class="text-error">*</span></label>
+              <label class="block font-title-md text-body-sm text-on-surface-variant font-semibold">
+                {{ isRequestTypeAdd ? 'Ngày học đề xuất *' : 'Ngày học mới *' }}
+              </label>
               <div class="relative">
                 <select
                   v-model="rescheduleFormData.newDayOfWeek"
@@ -449,7 +453,9 @@
           <p v-if="rescheduleFormData.newStartTime && rescheduleFormData.newEndTime && rescheduleFormData.newStartTime >= rescheduleFormData.newEndTime" class="text-error text-[11px] font-semibold mt-1">Giờ kết thúc phải sau giờ bắt đầu</p>
 
           <div class="space-y-1.5">
-            <label class="block font-title-md text-body-sm text-on-surface-variant font-semibold">Lý do đổi lịch <span class="text-error">*</span></label>
+            <label class="block font-title-md text-body-sm text-on-surface-variant font-semibold">
+              {{ isRequestTypeAdd ? 'Lý do thêm lịch *' : 'Lý do đổi lịch *' }}
+            </label>
             <textarea
               v-model="rescheduleFormData.reason"
               rows="3"
@@ -498,6 +504,7 @@ const classId = parseInt(route.params.id)
 const rescheduleDialog = ref(false)
 const submittingReschedule = ref(false)
 const selectedRescheduleSlot = ref(null)
+const isRequestTypeAdd = ref(false)
 const rescheduleFormData = ref({
   scheduleId: null,
   newDayOfWeek: 2,
@@ -512,7 +519,7 @@ const isRescheduleFormValid = computed(() => {
          rescheduleFormData.value.newEndTime.trim().length > 0 &&
          rescheduleFormData.value.newStartTime < rescheduleFormData.value.newEndTime &&
          rescheduleFormData.value.reason.trim().length > 0 &&
-         (selectedRescheduleSlot.value !== null || rescheduleFormData.value.scheduleId !== null)
+         (isRequestTypeAdd.value || selectedRescheduleSlot.value !== null || rescheduleFormData.value.scheduleId !== null)
 })
 
 function formatDayOfWeek(day) {
@@ -521,6 +528,7 @@ function formatDayOfWeek(day) {
 }
 
 function openRescheduleDialog(item) {
+  isRequestTypeAdd.value = (item === null)
   selectedRescheduleSlot.value = item
   rescheduleFormData.value = {
     scheduleId: item ? item.scheduleId : (scheduleStore.schedules[0]?.scheduleId || null),
@@ -556,18 +564,28 @@ async function submitRescheduleRequest() {
       }
     }
 
-    const selectedSlot = selectedRescheduleSlot.value || scheduleStore.schedules.find(s => s.scheduleId === rescheduleFormData.value.scheduleId)
-    const dayOfWeekName = selectedSlot ? formatDayOfWeek(selectedSlot.dayOfWeek) : ''
-    const slotDetails = selectedSlot ? `${dayOfWeekName} (${selectedSlot.startTime} - ${selectedSlot.endTime})` : ''
     const proposedDayName = weekDays.find(d => d.value === rescheduleFormData.value.newDayOfWeek)?.label || ''
     const senderType = authStore.isTeacher ? `Giảng viên (${classInfo.value?.teacherName || 'GiaoVien'})` : `Học viên (${authStore.currentUser?.fullName || 'HocVien'})`
-
-    const messageBody = `[Yêu cầu đổi lịch học từ ${senderType}]
+    
+    let messageBody = ''
+    if (isRequestTypeAdd.value) {
+      messageBody = `[Yêu cầu thêm lịch học từ ${senderType}]
+Lớp: ${classInfo.value?.className || ''}
+Môn học: ${classInfo.value?.courseName || ''}
+Lịch đề xuất thêm mới: ${proposedDayName}, Buổi ${getSessionLabel(rescheduleFormData.value.newSession)} (${rescheduleFormData.value.newStartTime} - ${rescheduleFormData.value.newEndTime})
+Lý do: ${rescheduleFormData.value.reason}`
+    } else {
+      const selectedSlot = selectedRescheduleSlot.value || scheduleStore.schedules.find(s => s.scheduleId === rescheduleFormData.value.scheduleId)
+      const dayOfWeekName = selectedSlot ? formatDayOfWeek(selectedSlot.dayOfWeek) : ''
+      const slotDetails = selectedSlot ? `Thứ ${dayOfWeekName} (${selectedSlot.startTime} - ${selectedSlot.endTime})` : ''
+      
+      messageBody = `[Yêu cầu đổi lịch học từ ${senderType}]
 Lớp: ${classInfo.value?.className || ''}
 Môn học: ${classInfo.value?.courseName || ''}
 Lịch hiện tại cần đổi: ${slotDetails}
 Lịch đề xuất mới: ${proposedDayName}, Buổi ${getSessionLabel(rescheduleFormData.value.newSession)} (${rescheduleFormData.value.newStartTime} - ${rescheduleFormData.value.newEndTime})
 Lý do: ${rescheduleFormData.value.reason}`
+    }
 
     await api.post('/api/v1/support-messages', {
       studentId: targetStudentId,
@@ -578,11 +596,13 @@ Lý do: ${rescheduleFormData.value.reason}`
       toClassName: null
     })
 
-    showSnackbar('Đã gửi yêu cầu đổi lịch lên Admin thành công!', 'success')
+    const typeLabel = isRequestTypeAdd.value ? 'thêm lịch học' : 'đổi lịch học'
+    showSnackbar(`Đã gửi yêu cầu ${typeLabel} lên Admin thành công!`, 'success')
     rescheduleDialog.value = false
   } catch (err) {
     console.error('Error submitting reschedule request:', err)
-    showSnackbar('Có lỗi xảy ra khi gửi yêu cầu đổi lịch', 'error')
+    const typeLabel = isRequestTypeAdd.value ? 'thêm lịch học' : 'đổi lịch học'
+    showSnackbar(`Có lỗi xảy ra khi gửi yêu cầu ${typeLabel}`, 'error')
   } finally {
     submittingReschedule.value = false
   }

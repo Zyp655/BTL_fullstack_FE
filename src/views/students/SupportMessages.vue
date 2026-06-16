@@ -88,13 +88,17 @@
             <!-- Left Info: Student details, request details -->
             <div class="space-y-3 flex-1 min-w-0">
               <div class="flex flex-wrap items-center gap-2">
-                <span class="font-bold text-primary text-body-lg">{{ msg.studentName }}</span>
-                <span class="bg-primary-container/10 text-primary-container rounded-full px-2.5 py-0.5 text-[11px] font-semibold">
+                <span class="font-bold text-primary text-body-lg">{{ getRequesterName(msg) }}</span>
+                <span v-if="getRequesterRole(msg) === 'Giảng viên'" class="bg-purple-500/10 text-purple-600 border border-purple-500/20 rounded-full px-2.5 py-0.5 text-[11px] font-semibold flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[13px]">school</span>
+                  Giảng viên
+                </span>
+                <span v-else class="bg-primary-container/10 text-primary-container rounded-full px-2.5 py-0.5 text-[11px] font-semibold">
                   Mã HV: HV-{{ String(msg.studentId).padStart(4, '0') }}
                 </span>
-                <span v-if="msg.message && msg.message.includes('[Yêu cầu đổi lịch học')" class="bg-amber-500/15 text-amber-700 border border-amber-500/20 rounded-full px-2.5 py-0.5 text-[11px] font-semibold flex items-center gap-1">
+                <span v-if="msg.message && (msg.message.includes('[Yêu cầu đổi lịch học') || msg.message.includes('[Yêu cầu thêm lịch học'))" class="bg-amber-500/15 text-amber-700 border border-amber-500/20 rounded-full px-2.5 py-0.5 text-[11px] font-semibold flex items-center gap-1">
                   <span class="material-symbols-outlined text-[13px]">calendar_today</span>
-                  Yêu cầu đổi lịch
+                  {{ msg.message.includes('[Yêu cầu thêm lịch học') ? 'Yêu cầu thêm lịch' : 'Yêu cầu đổi lịch' }}
                 </span>
                 <span :class="[getStatusClass(msg.status), 'status-badge text-[10px] font-bold']">
                   {{ getStatusLabel(msg.status) }}
@@ -151,13 +155,13 @@
               Từ chối
             </button>
             <button
-              v-if="msg.message && msg.message.includes('[Yêu cầu đổi lịch học')"
+              v-if="msg.message && (msg.message.includes('[Yêu cầu đổi lịch học') || msg.message.includes('[Yêu cầu thêm lịch học'))"
               @click="openRescheduleApprovalModal(msg)"
               :disabled="actioningId === msg.id"
               class="px-4 py-2 rounded-lg bg-primary-container text-white font-semibold text-[13px] hover:bg-primary hover:shadow-sm transition-all flex items-center gap-1 cursor-pointer active:scale-95 disabled:opacity-50"
             >
               <span class="material-symbols-outlined text-[18px]">done</span>
-              Phê duyệt &amp; Đổi lịch
+              {{ msg.message.includes('[Yêu cầu thêm lịch học') ? 'Phê duyệt & Thêm lịch' : 'Phê duyệt & Đổi lịch' }}
             </button>
             <button
               v-else
@@ -300,7 +304,7 @@
 
           <div class="p-6 space-y-4">
             <div class="bg-error/5 p-4 rounded-xl border border-error/10 text-body-sm space-y-1">
-              <div>Học viên: <span class="font-bold text-primary-container">{{ rejectStudentName }}</span></div>
+              <div>Người yêu cầu: <span class="font-bold text-primary-container">{{ rejectStudentName }}</span></div>
               <div>Yêu cầu: <span class="italic text-on-surface-variant">"{{ rejectMessageText }}"</span></div>
             </div>
 
@@ -343,8 +347,10 @@
           <!-- Title -->
           <div class="px-6 py-4 border-b border-white/40 flex items-center justify-between">
             <h3 class="font-title-md text-title-md font-bold text-primary-container flex items-center gap-2">
-              <span class="material-symbols-outlined text-on-tertiary-container">edit_calendar</span>
-              Phê duyệt &amp; Đổi lịch học
+              <span class="material-symbols-outlined text-on-tertiary-container">
+                {{ isAddRequestState ? 'calendar_add_on' : 'edit_calendar' }}
+              </span>
+              {{ isAddRequestState ? 'Phê duyệt & Thêm lịch học' : 'Phê duyệt & Đổi lịch học' }}
             </h3>
             <button @click="rescheduleApprovalDialog = false" class="text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer">
               <span class="material-symbols-outlined">close</span>
@@ -354,12 +360,19 @@
           <!-- Body -->
           <div class="p-6 space-y-4 text-left">
             <div class="bg-primary-container/5 p-4 rounded-xl border border-primary-container/10 text-body-sm space-y-1">
-              <div>Yêu cầu từ: <span class="font-bold text-primary-container">{{ rescheduleStudentName }}</span></div>
+              <div class="flex items-center flex-wrap gap-2">
+                <span>Yêu cầu từ:</span>
+                <span class="font-bold text-primary-container">{{ rescheduleStudentName }}</span>
+                <span v-if="rescheduleStudentRole === 'Giảng viên'" class="bg-purple-500/10 text-purple-600 border border-purple-500/20 rounded-full px-2 py-0.5 text-[10px] font-semibold inline-flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[12px]">school</span>
+                  Giảng viên
+                </span>
+              </div>
               <div v-if="rescheduleReason" class="italic text-on-surface-variant mt-1">"{{ rescheduleReason }}"</div>
             </div>
 
             <!-- Select Schedule to Replace -->
-            <div class="space-y-1">
+            <div v-if="!isAddRequestState" class="space-y-1">
               <label class="text-body-sm font-semibold text-on-surface">Chọn buổi học muốn thay thế *</label>
               <div v-if="loadingRescheduleSchedules" class="flex items-center justify-center py-2 gap-2">
                 <span class="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full"></span>
@@ -382,12 +395,16 @@
               </div>
             </div>
 
-            <div class="border-t border-dashed border-outline-variant/40 my-4"></div>
-            <div class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wide">Cập nhật lịch học mới:</div>
+            <div v-if="!isAddRequestState" class="border-t border-dashed border-outline-variant/40 my-4"></div>
+            <div class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wide">
+              {{ isAddRequestState ? 'Chi tiết lịch học thêm mới:' : 'Cập nhật lịch học mới:' }}
+            </div>
 
             <!-- Day of Week -->
             <div class="space-y-1">
-              <label class="text-body-sm font-semibold text-on-surface">Ngày học mới *</label>
+              <label class="text-body-sm font-semibold text-on-surface">
+                {{ isAddRequestState ? 'Ngày học đề xuất *' : 'Ngày học mới *' }}
+              </label>
               <div class="relative">
                 <select
                   v-model="rescheduleProposedDay"
@@ -451,11 +468,11 @@
             </button>
             <button
               @click="submitRescheduleApproval"
-              :disabled="submittingRescheduleApproval || !selectedScheduleIdToReplace"
+              :disabled="submittingRescheduleApproval || (!isAddRequestState && !selectedScheduleIdToReplace)"
               class="px-5 py-2.5 rounded-lg bg-primary-container text-white font-semibold text-body-sm hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer active:scale-95"
             >
               <span v-if="submittingRescheduleApproval" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
-              Xác nhận &amp; Đổi lịch
+              Xác nhận &amp; {{ isAddRequestState ? 'Thêm lịch' : 'Đổi lịch' }}
             </button>
           </div>
         </div>
@@ -489,11 +506,14 @@ const rescheduleReason = ref('')
 const rescheduleClassId = ref(null)
 const rescheduleMessageId = ref(null)
 const rescheduleStudentName = ref('')
+const rescheduleStudentRole = ref('Học viên')
 const submittingRescheduleApproval = ref(false)
+const isAddRequestState = ref(false)
 
 function parseRescheduleRequest(message) {
   const result = {
     isReschedule: false,
+    isAddRequest: false,
     className: '',
     courseName: '',
     currentSlot: '',
@@ -504,53 +524,88 @@ function parseRescheduleRequest(message) {
     reason: ''
   }
   
-  if (!message || !message.includes('[Yêu cầu đổi lịch học')) {
-    return result
-  }
+  if (!message) return result
   
-  result.isReschedule = true
-  const lines = message.split('\n')
-  for (const line of lines) {
-    if (line.startsWith('Lớp:')) {
-      result.className = line.replace('Lớp:', '').trim()
-    } else if (line.startsWith('Môn học:')) {
-      result.courseName = line.replace('Môn học:', '').trim()
-    } else if (line.startsWith('Lịch hiện tại cần đổi:')) {
-      result.currentSlot = line.replace('Lịch hiện tại cần đổi:', '').trim()
-    } else if (line.startsWith('Lịch đề xuất mới:')) {
-      const details = line.replace('Lịch đề xuất mới:', '').trim()
-      // Extract proposed day
-      if (details.toLowerCase().includes('chủ nhật')) {
-        result.proposedDay = 0
-      } else {
-        const dayMatch = details.match(/Thứ\s+(\d)/i)
-        if (dayMatch) {
-          result.proposedDay = parseInt(dayMatch[1])
+  if (message.includes('[Yêu cầu đổi lịch học') || message.includes('[Yêu cầu thêm lịch học')) {
+    result.isReschedule = true
+    if (message.includes('[Yêu cầu thêm lịch học')) {
+      result.isAddRequest = true
+    }
+    const lines = message.split('\n')
+    for (const line of lines) {
+      if (line.startsWith('Lớp:')) {
+        result.className = line.replace('Lớp:', '').trim()
+      } else if (line.startsWith('Môn học:')) {
+        result.courseName = line.replace('Môn học:', '').trim()
+      } else if (line.startsWith('Lịch hiện tại cần đổi:')) {
+        result.currentSlot = line.replace('Lịch hiện tại cần đổi:', '').trim()
+      } else if (line.startsWith('Lịch đề xuất mới:') || line.startsWith('Lịch đề xuất thêm mới:')) {
+        const details = line.replace('Lịch đề xuất mới:', '').replace('Lịch đề xuất thêm mới:', '').trim()
+        // Extract proposed day
+        if (details.toLowerCase().includes('chủ nhật')) {
+          result.proposedDay = 0
+        } else {
+          const dayMatch = details.match(/Thứ\s+(\d)/i)
+          if (dayMatch) {
+            result.proposedDay = parseInt(dayMatch[1])
+          }
         }
+        
+        // Extract session
+        if (details.includes('Buổi Sáng') || details.toLowerCase().includes('buổi sáng')) result.proposedSession = 'Sang'
+        else if (details.includes('Buổi Chiều') || details.toLowerCase().includes('buổi chiều')) result.proposedSession = 'Chieu'
+        else if (details.includes('Buổi Tối') || details.toLowerCase().includes('buổi tối')) result.proposedSession = 'Toi'
+        
+        // Extract start/end times
+        const timeMatch = details.match(/\((\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})\)/)
+        if (timeMatch) {
+          result.proposedStartTime = timeMatch[1]
+          result.proposedEndTime = timeMatch[2]
+        }
+      } else if (line.startsWith('Lý do:')) {
+        result.reason = line.replace('Lý do:', '').trim()
       }
-      
-      // Extract session
-      if (details.includes('Buổi Sáng') || details.toLowerCase().includes('buổi sáng')) result.proposedSession = 'Sang'
-      else if (details.includes('Buổi Chiều') || details.toLowerCase().includes('buổi chiều')) result.proposedSession = 'Chieu'
-      else if (details.includes('Buổi Tối') || details.toLowerCase().includes('buổi tối')) result.proposedSession = 'Toi'
-      
-      // Extract start/end times
-      const timeMatch = details.match(/\((\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})\)/)
-      if (timeMatch) {
-        result.proposedStartTime = timeMatch[1]
-        result.proposedEndTime = timeMatch[2]
-      }
-    } else if (line.startsWith('Lý do:')) {
-      result.reason = line.replace('Lý do:', '').trim()
     }
   }
   return result
 }
 
+function getRequesterName(msg) {
+  if (msg.message) {
+    const match = msg.message.match(/\[Yêu cầu\s+.*?\s+từ\s+([^\]]+)\]/)
+    if (match && match[1]) {
+      const sender = match[1] // e.g. "Giảng viên (Lê Thị Hoa)" or "Học viên (Phạm Văn Dũng)"
+      const nameMatch = sender.match(/\(([^)]+)\)/)
+      if (nameMatch && nameMatch[1]) {
+        return nameMatch[1] // "Lê Thị Hoa" or "Phạm Văn Dũng"
+      }
+      return sender
+    }
+  }
+  return msg.studentName
+}
+
+function getRequesterRole(msg) {
+  if (msg.message) {
+    const match = msg.message.match(/\[Yêu cầu\s+.*?\s+từ\s+([^\]]+)\]/)
+    if (match && match[1]) {
+      const sender = match[1] // e.g. "Giảng viên (Lê Thị Hoa)" or "Học viên (Phạm Văn Dũng)"
+      if (sender.startsWith('Giảng viên')) {
+        return 'Giảng viên'
+      }
+      if (sender.startsWith('Học viên')) {
+        return 'Học viên'
+      }
+    }
+  }
+  return 'Học viên'
+}
+
 async function openRescheduleApprovalModal(msg) {
   const parsed = parseRescheduleRequest(msg.message)
   rescheduleMessageId.value = msg.id
-  rescheduleStudentName.value = msg.studentName
+  rescheduleStudentName.value = getRequesterName(msg)
+  rescheduleStudentRole.value = getRequesterRole(msg)
   rescheduleClassId.value = msg.fromClassId
   rescheduleReason.value = parsed.reason
   rescheduleProposedDay.value = parsed.proposedDay
@@ -559,10 +614,11 @@ async function openRescheduleApprovalModal(msg) {
   rescheduleProposedEndTime.value = parsed.proposedEndTime
   selectedScheduleIdToReplace.value = null
   rescheduleSchedules.value = []
+  isAddRequestState.value = parsed.isAddRequest
   
   rescheduleApprovalDialog.value = true
   
-  if (msg.fromClassId) {
+  if (!parsed.isAddRequest && msg.fromClassId) {
     loadingRescheduleSchedules.value = true
     try {
       const res = await api.get(`/api/v1/classes/${msg.fromClassId}/schedules`)
@@ -586,26 +642,38 @@ async function openRescheduleApprovalModal(msg) {
 }
 
 async function submitRescheduleApproval() {
-  if (!selectedScheduleIdToReplace.value || !rescheduleClassId.value || !rescheduleMessageId.value) return
+  if ((!isAddRequestState.value && !selectedScheduleIdToReplace.value) || !rescheduleClassId.value || !rescheduleMessageId.value) return
   submittingRescheduleApproval.value = true
   try {
-    // 1. Update the schedule in CourseService
-    await api.put(`/api/v1/classes/${rescheduleClassId.value}/schedules/${selectedScheduleIdToReplace.value}`, {
-      dayOfWeek: rescheduleProposedDay.value,
-      session: rescheduleProposedSession.value,
-      startTime: rescheduleProposedStartTime.value,
-      endTime: rescheduleProposedEndTime.value
-    })
+    if (isAddRequestState.value) {
+      // 1. Create a new schedule slot in CourseService
+      await api.post(`/api/v1/classes/${rescheduleClassId.value}/schedules`, {
+        dayOfWeek: rescheduleProposedDay.value,
+        session: rescheduleProposedSession.value,
+        startTime: rescheduleProposedStartTime.value,
+        endTime: rescheduleProposedEndTime.value
+      })
+    } else {
+      // 1. Update the existing schedule slot in CourseService
+      await api.put(`/api/v1/classes/${rescheduleClassId.value}/schedules/${selectedScheduleIdToReplace.value}`, {
+        dayOfWeek: rescheduleProposedDay.value,
+        session: rescheduleProposedSession.value,
+        startTime: rescheduleProposedStartTime.value,
+        endTime: rescheduleProposedEndTime.value
+      })
+    }
     
     // 2. Resolve the support request in StudentService
     await api.post(`/api/v1/support-messages/${rescheduleMessageId.value}/resolve`)
     
-    showSnackbar('Phê duyệt và đổi lịch học thành công!', 'success')
+    const successText = isAddRequestState.value ? 'Phê duyệt và thêm lịch học thành công!' : 'Phê duyệt và đổi lịch học thành công!'
+    showSnackbar(successText, 'success')
     rescheduleApprovalDialog.value = false
     await fetchMessages()
   } catch (e) {
     console.error('Lỗi khi phê duyệt đổi lịch:', e)
-    showSnackbar(e.response?.data?.message || 'Có lỗi xảy ra khi phê duyệt đổi lịch', 'error')
+    const errText = isAddRequestState.value ? 'Có lỗi xảy ra khi phê duyệt thêm lịch' : 'Có lỗi xảy ra khi phê duyệt đổi lịch'
+    showSnackbar(e.response?.data?.message || errText, 'error')
   } finally {
     submittingRescheduleApproval.value = false
   }
@@ -871,7 +939,7 @@ function formatDayOfWeek(day) {
 
 function rejectRequest(msg) {
   rejectActiveMessageId.value = msg.id
-  rejectStudentName.value = msg.studentName
+  rejectStudentName.value = getRequesterName(msg)
   rejectMessageText.value = msg.message
   rejectReason.value = ''
   rejectDialog.value = true
@@ -884,7 +952,7 @@ async function submitReject() {
     await api.post(`/api/v1/support-messages/${rejectActiveMessageId.value}/reject`, {
       adminResponse: rejectReason.value.trim()
     })
-    showSnackbar(`Đã từ chối yêu cầu của học viên ${rejectStudentName.value}`, 'success')
+    showSnackbar(`Đã từ chối yêu cầu của ${rejectStudentName.value}`, 'success')
     rejectDialog.value = false
     await fetchMessages()
   } catch (e) {
