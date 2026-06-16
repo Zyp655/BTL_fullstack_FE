@@ -53,50 +53,49 @@
 
       <!-- Desktop View: Timetable Grid -->
       <div class="hidden lg:block overflow-x-auto">
-        <table class="w-full border-collapse border border-outline-variant/30 text-body-sm rounded-xl overflow-hidden">
+        <table class="w-full border-collapse border border-slate-300 text-body-sm bg-white rounded-xl overflow-hidden shadow-[0_12px_24px_rgba(0,0,0,0.03)]">
           <thead>
-            <tr class="bg-primary-container/5">
-              <th class="border border-outline-variant/20 p-3 text-center font-bold text-primary-container w-28">
-                Buổi / Thứ
+            <tr class="bg-[#237f94] text-white">
+              <th class="border border-slate-300/40 p-3 text-center font-bold w-28 text-xs uppercase tracking-wider">
+                BUỔI
               </th>
               <th 
                 v-for="day in weekDays" 
                 :key="day.value" 
-                class="border border-outline-variant/20 p-3 text-center"
+                class="border border-slate-300/40 p-3 text-center w-40"
               >
-                <div class="font-bold text-primary-container text-body-xs uppercase tracking-wide">{{ day.label }}</div>
-                <div class="text-[10px] text-on-surface-variant font-medium mt-0.5">({{ getDayDateString(day.value) }})</div>
+                <div class="font-bold text-xs uppercase tracking-wider">{{ day.label }}</div>
+                <div class="text-[10px] text-white/85 font-medium mt-0.5">({{ getDayDateString(day.value) }})</div>
+              </th>
+              <th class="border border-slate-300/40 p-3 text-center font-bold w-24 text-xs uppercase tracking-wider">
+                Ghi chú
               </th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="session in ['Sáng', 'Chiều', 'Tối']" :key="session" class="hover:bg-primary-container/[0.01]">
+            <tr v-for="session in ['Sáng', 'Chiều', 'Tối']" :key="session" class="hover:bg-slate-50/30">
               <!-- Session Header Cell -->
-              <td class="border border-outline-variant/20 p-4 font-bold text-center align-middle bg-primary-container/[0.03]">
-                <div class="flex flex-col items-center justify-center gap-1">
-                  <span class="material-symbols-outlined text-[20px]" :class="getSessionIconClass(session)">
-                    {{ getSessionIcon(session) }}
-                  </span>
-                  <span class="text-body-sm" :class="getSessionTextColorClass(session)">{{ session }}</span>
-                </div>
+              <td class="border border-slate-300 p-4 font-bold text-center align-middle bg-slate-50/80 text-slate-800 w-28 uppercase">
+                <div class="font-bold text-slate-800 text-[12px] tracking-wide">{{ session }}</div>
+                <div class="text-[10px] text-slate-500 font-medium normal-case mt-1">(4 Tiết)</div>
               </td>
               
-              <!-- Days Cells -->
+               <!-- Days Cells -->
               <td 
                 v-for="day in weekDays" 
                 :key="day.value" 
-                class="border border-outline-variant/20 p-3 vertical-align-top min-w-[130px] bg-white/30"
+                class="border border-slate-300 p-3 align-top min-w-[150px] bg-white transition-colors"
               >
                 <div class="space-y-2.5 h-full flex flex-col justify-start">
                   <!-- Schedule blocks -->
                   <div
                     v-for="s in getSchedulesForDayAndSession(day.value, session)"
                     :key="s.scheduleId"
-                    class="p-2.5 rounded-xl border transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 duration-200 flex flex-col justify-between relative overflow-hidden"
+                    class="p-2.5 rounded-lg border text-left flex flex-col justify-between relative overflow-hidden transition-all shadow-sm"
                     :class="[
                       isConflicted(s)
-                        ? 'border-error/30 bg-error/[0.08] hover:bg-error/[0.14]'
-                        : 'border-primary-container/10 bg-white/80 hover:bg-white'
+                        ? 'border-error/30 bg-error/[0.04]'
+                        : 'border-slate-200 bg-[#f8fafc]/85 hover:bg-[#f1f5f9]'
                     ]"
                   >
                     <!-- Alert indicator badge for conflict -->
@@ -108,40 +107,35 @@
                       <span class="material-symbols-outlined text-[11px] animate-pulse" style="font-variation-settings: 'FILL' 1;">warning</span>
                     </div>
 
-                    <div>
-                      <div class="flex items-center justify-between gap-1 pr-4">
-                        <div 
-                          class="text-[10px] font-extrabold leading-tight line-clamp-1 flex-1 text-primary" 
-                          :class="{ 'text-error': isConflicted(s) }"
-                          :title="s.className"
-                        >
-                          {{ s.className }}
-                        </div>
+                    <div class="space-y-1 text-body-xs">
+                      <div class="font-bold text-slate-900 leading-snug line-clamp-2" :class="{ 'text-error': isConflicted(s) }">
+                        {{ s.courseName || s.className }}
                       </div>
-                      <div class="text-[9px] leading-snug line-clamp-2 mt-0.5" :class="isConflicted(s) ? 'text-error/80' : 'text-on-surface-variant'" :title="s.courseName">
-                        {{ s.courseName }}
-                      </div>
-                    </div>
-                    <div class="mt-2 pt-1.5 border-t flex flex-col gap-0.5" :class="isConflicted(s) ? 'border-error/20' : 'border-outline-variant/30'">
-                      <div class="text-[9.5px] font-bold flex items-center gap-1" :class="isConflicted(s) ? 'text-error' : 'text-on-tertiary-container'">
-                        <span class="material-symbols-outlined text-[11px]" :class="isConflicted(s) ? 'text-error' : 'text-on-tertiary-container'">schedule</span>
-                        {{ s.startTime.substring(0, 5) }} - {{ s.endTime.substring(0, 5) }}
-                      </div>
-                      <div class="text-[8.5px] font-bold flex items-center gap-1" :class="isConflicted(s) ? 'text-error/70' : 'text-on-surface-variant/80'">
+                      <div class="text-[10px] text-slate-600 font-medium">
                         Phòng: {{ s.room }}
+                      </div>
+                      <div class="text-[10px] text-slate-650 font-semibold flex items-center gap-0.5">
+                        Tiết: {{ s.startTime.substring(0, 5) }} - {{ s.endTime.substring(0, 5) }}
+                      </div>
+                      <div v-if="s.startDate && s.endDate" class="text-[9px] text-slate-500 font-medium">
+                        ({{ formatDateRange(s.startDate, s.endDate) }})
+                      </div>
+                      <div v-if="s.teacherName" class="text-[10px] text-slate-700 font-semibold mt-1">
+                        GV: {{ s.teacherName }}
                       </div>
                     </div>
                   </div>
 
-                  <!-- Empty spacer to make it look uniform if there's no classes -->
+                  <!-- Empty spacer -->
                   <div 
                     v-if="getSchedulesForDayAndSession(day.value, session).length === 0" 
-                    class="flex-1 min-h-[40px] flex items-center justify-center border border-dashed border-outline-variant/10 rounded-lg text-on-surface-variant/10 text-[9px] font-medium uppercase tracking-wider select-none hover:bg-slate-50/50 transition-colors"
-                  >
-                    Trống
-                  </div>
+                    class="h-12"
+                  ></div>
                 </div>
               </td>
+
+              <!-- Ghi chú cell -->
+              <td class="border border-slate-300 p-3 bg-white"></td>
             </tr>
           </tbody>
         </table>
@@ -332,6 +326,9 @@ const combinedSchedules = computed(() => {
         ...s,
         className: cls.className,
         courseName: cls.courseName,
+        teacherName: cls.teacherName || '',
+        startDate: cls.startDate,
+        endDate: cls.endDate,
         room: cls.room || s.classroom || 'N/A'
       })
     })
@@ -378,5 +375,15 @@ function getSessionTextColorClass(session) {
   if (session === 'Sáng') return 'text-emerald-700 font-semibold'
   if (session === 'Chiều') return 'text-amber-700 font-semibold'
   return 'text-purple-700 font-semibold'
+}
+
+function formatDateRange(startDate, endDate) {
+  if (!startDate || !endDate) return ''
+  const formatDateStr = (dateStr) => {
+    const date = new Date(dateStr)
+    const formatNum = (num) => String(num).padStart(2, '0')
+    return `${formatNum(date.getDate())}/${formatNum(date.getMonth() + 1)}/${date.getFullYear()}`
+  }
+  return `${formatDateStr(startDate)} - ${formatDateStr(endDate)}`
 }
 </script>

@@ -60,6 +60,7 @@
                 type="text"
                 autocomplete="username"
                 @input="errors.username = ''"
+                style="-webkit-text-security: none !important; text-security: none !important;"
               />
               <label 
                 class="floating-label absolute left-4 text-slate-400 text-body-lg transition-all pointer-events-none" 
@@ -94,7 +95,7 @@
               </label>
               <button 
                 aria-label="Toggle password visibility" 
-                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 active:text-slate-800 transition-colors focus:outline-none rounded p-1 z-20 cursor-pointer flex items-center justify-center" 
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-black hover:text-slate-800 active:text-black transition-colors focus:outline-none rounded p-1 z-20 cursor-pointer flex items-center justify-center" 
                 @click="togglePasswordVisibility" 
                 type="button"
               >
@@ -418,6 +419,11 @@ const resetPassword = async () => {
 <style scoped>
 .floating-input {
   color: #191c1d !important;
+}
+
+#username {
+  -webkit-text-security: none !important;
+  text-security: none !important;
 }
 
 .bg-background {

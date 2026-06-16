@@ -89,8 +89,9 @@ const routes = [
   {
     path: '/register-course',
     name: 'RegisterCourse',
-    component: () => import('../views/students/RegisterCourse.vue'),
-    meta: { title: 'Đăng ký môn học', icon: 'import_contacts', roles: ['HocVien', 'Admin'] }
+    redirect: to => {
+      return { path: '/student-portal', query: { ...to.query, tab: 'register' } }
+    }
   },
   {
     path: '/profile',

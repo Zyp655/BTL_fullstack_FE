@@ -7,8 +7,8 @@
           <span class="material-symbols-outlined text-primary text-3xl font-bold" style="font-variation-settings: 'FILL' 1;">payments</span>
         </div>
         <div>
-          <h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary font-bold tracking-tight">Thanh toán & Báo cáo doanh thu</h2>
-          <p class="font-body-sm text-body-sm text-secondary">Tổng quan tài chính trung tâm</p>
+          <h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-slate-950 font-bold tracking-tight">Thanh toán & Báo cáo doanh thu</h2>
+          <p class="font-body-sm text-body-sm text-slate-700">Tổng quan tài chính trung tâm</p>
         </div>
       </div>
     </div>
@@ -47,17 +47,17 @@
           <div class="absolute top-0 right-0 w-32 h-32 bg-primary-fixed-dim/20 rounded-full blur-3xl -mr-10 -mt-10 transition-transform group-hover:scale-110"></div>
           <div class="flex justify-between items-start mb-4 relative z-10">
             <div>
-              <p class="font-body-sm text-body-sm text-secondary mb-1">Tổng doanh thu</p>
-              <h3 class="font-title-md text-title-md text-primary text-2xl font-bold">{{ formatCurrency(totalRevenueTarget) }}</h3>
+              <p class="font-body-sm text-body-sm text-slate-700 mb-1">Tổng doanh thu</p>
+              <h3 class="font-title-md text-title-md text-slate-950 text-2xl font-bold">{{ formatCurrency(totalRevenueTarget) }}</h3>
             </div>
             <div class="p-2 bg-white/60 rounded-lg shadow-sm border border-white/50 flex items-center justify-center">
-              <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+              <span class="material-symbols-outlined text-slate-950" style="font-variation-settings: 'FILL' 1;">account_balance</span>
             </div>
           </div>
           <div class="flex items-center gap-1 text-xs text-emerald-600 relative z-10">
             <span class="material-symbols-outlined text-sm">trending_up</span>
             <span class="font-semibold">+{{ paymentCompletionRate }}%</span>
-            <span class="text-secondary ml-1">tỉ lệ hoàn thành</span>
+            <span class="text-slate-700 ml-1">tỉ lệ hoàn thành</span>
           </div>
         </div>
 
@@ -66,8 +66,8 @@
           <div class="absolute top-0 right-0 w-32 h-32 bg-error-container/30 rounded-full blur-3xl -mr-10 -mt-10 transition-transform group-hover:scale-110"></div>
           <div class="flex justify-between items-start mb-4 relative z-10">
             <div>
-              <p class="font-body-sm text-body-sm text-secondary mb-1">Chưa thanh toán</p>
-              <h3 class="font-title-md text-title-md text-primary text-2xl font-bold">{{ formatCurrency(dashboardStats.totalDebt) }}</h3>
+              <p class="font-body-sm text-body-sm text-slate-700 mb-1">Chưa thanh toán</p>
+              <h3 class="font-title-md text-title-md text-slate-950 text-2xl font-bold">{{ formatCurrency(dashboardStats.totalDebt) }}</h3>
             </div>
             <div class="p-2 bg-white/60 rounded-lg shadow-sm border border-white/50 flex items-center justify-center">
               <span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">pending</span>
@@ -84,8 +84,8 @@
           <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-100/40 rounded-full blur-3xl -mr-10 -mt-10 transition-transform group-hover:scale-110"></div>
           <div class="flex justify-between items-start mb-4 relative z-10">
             <div>
-              <p class="font-body-sm text-body-sm text-secondary mb-1">Thực thu nhận</p>
-              <h3 class="font-title-md text-title-md text-primary text-2xl font-bold">{{ formatCurrency(dashboardStats.totalRevenue) }}</h3>
+              <p class="font-body-sm text-body-sm text-slate-700 mb-1">Thực thu nhận</p>
+              <h3 class="font-title-md text-title-md text-slate-950 text-2xl font-bold">{{ formatCurrency(dashboardStats.totalRevenue) }}</h3>
             </div>
             <div class="p-2 bg-white/60 rounded-lg shadow-sm border border-white/50 flex items-center justify-center">
               <span class="material-symbols-outlined text-emerald-600" style="font-variation-settings: 'FILL' 1;">check_circle</span>
@@ -102,15 +102,15 @@
           <div class="absolute top-0 right-0 w-32 h-32 bg-on-tertiary-container/10 rounded-full blur-3xl -mr-10 -mt-10 transition-transform group-hover:scale-110"></div>
           <div class="flex justify-between items-start mb-4 relative z-10">
             <div>
-              <p class="font-body-sm text-body-sm text-secondary mb-1">Tổng số hóa đơn</p>
-              <h3 class="font-title-md text-title-md text-primary text-2xl font-bold">{{ totalPaymentsCount }}</h3>
+              <p class="font-body-sm text-body-sm text-slate-700 mb-1">Tổng số hóa đơn</p>
+              <h3 class="font-title-md text-title-md text-slate-950 text-2xl font-bold">{{ totalPaymentsCount }}</h3>
             </div>
             <div class="p-2 bg-white/60 rounded-lg shadow-sm border border-white/50 flex items-center justify-center">
               <span class="material-symbols-outlined text-on-tertiary-container" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
             </div>
           </div>
-          <div class="flex items-center gap-1 text-xs text-secondary relative z-10">
-            <span class="font-bold text-primary">{{ paymentsList.length }}</span>
+          <div class="flex items-center gap-1 text-xs text-slate-700 relative z-10">
+            <span class="font-bold text-slate-950">{{ paymentsList.length }}</span>
             <span>hóa đơn đang hiển thị</span>
           </div>
         </div>
@@ -120,14 +120,14 @@
       <div class="glass-panel rounded-xl flex flex-col overflow-hidden">
         <!-- Table Filter Header -->
         <div class="p-6 border-b border-white/40 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h3 class="font-title-md text-title-md text-primary font-bold">Lịch sử thanh toán</h3>
+          <h3 class="font-title-md text-title-md text-slate-950 font-bold">Lịch sử thanh toán</h3>
           <div class="flex flex-wrap gap-3 w-full sm:w-auto">
             <div class="glass-input rounded-lg px-3 py-2 flex items-center gap-2 w-full sm:w-auto min-w-[240px] relative pr-9">
-              <span class="material-symbols-outlined text-secondary text-sm">search</span>
+              <span class="material-symbols-outlined text-slate-600 text-sm">search</span>
               <input
                 :value="filters.search"
                 @input="handleSearchInput"
-                class="bg-transparent border-none focus:ring-0 text-sm p-0 w-full text-primary placeholder:text-secondary focus:outline-none"
+                class="bg-transparent border-none focus:ring-0 text-sm p-0 w-full text-slate-950 placeholder:text-slate-600 focus:outline-none"
                 placeholder="Tìm học viên, mã hóa đơn..."
                 type="text"
               />
@@ -144,14 +144,14 @@
               <select
                 :value="filters.status"
                 @change="handleStatusChange"
-                class="glass-input rounded-lg pl-3 pr-10 py-2 text-sm bg-transparent cursor-pointer appearance-none text-primary focus:outline-none"
+                class="glass-input rounded-lg pl-3 pr-10 py-2 text-sm bg-transparent cursor-pointer appearance-none text-slate-950 focus:outline-none"
               >
                 <option value="null">Tất cả trạng thái</option>
                 <option value="HoanTat">Đã thanh toán</option>
                 <option value="DangTT">Đóng một phần</option>
                 <option value="ChuaTT">Chưa thanh toán</option>
               </select>
-              <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-secondary pointer-events-none text-[18px]">expand_more</span>
+              <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none text-[18px]">expand_more</span>
             </div>
           </div>
         </div>
@@ -164,37 +164,32 @@
           </div>
           <table v-else-if="paymentsList.length > 0" class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-white/30 border-b border-white/50 text-secondary font-body-sm text-sm uppercase tracking-wider">
-                <th class="p-4 font-semibold w-12 text-center">STT</th>
-                <th class="p-4 font-semibold">Mã phiếu</th>
-                <th class="p-4 font-semibold">Học viên</th>
-                <th class="p-4 font-semibold">Lớp học</th>
-                <th class="p-4 font-semibold text-right">Tổng học phí</th>
-                <th class="p-4 font-semibold text-right">Đã đóng</th>
-                <th class="p-4 font-semibold text-right">Còn nợ</th>
-                <th class="p-4 font-semibold text-center">Trạng thái</th>
-                <th class="p-4 font-semibold text-center w-28">Thao tác</th>
+              <tr class="bg-white/30 border-b border-white/50 text-slate-950 font-body-sm text-sm uppercase tracking-wider">
+                <th class="p-4 font-bold text-slate-950 w-12 text-center">STT</th>
+                <th class="p-4 font-bold text-slate-950">Mã phiếu</th>
+                <th class="p-4 font-bold text-slate-950">Học viên</th>
+                <th class="p-4 font-bold text-slate-950">Lớp học</th>
+                <th class="p-4 font-bold text-slate-950 text-right">Tổng học phí</th>
+                <th class="p-4 font-bold text-slate-950 text-right">Đã đóng</th>
+                <th class="p-4 font-bold text-slate-950 text-right">Còn nợ</th>
+                <th class="p-4 font-bold text-slate-950 text-center">Trạng thái</th>
+                <th class="p-4 font-bold text-slate-950 text-center w-28">Thao tác</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-white/30 font-body-sm text-on-surface">
               <tr v-for="(payment, index) in paymentsList" :key="payment.paymentId" class="table-row-hover transition-colors">
-                <td class="p-4 text-center text-secondary">{{ (pagination.page - 1) * pagination.pageSize + index + 1 }}</td>
-                <td class="p-4 font-mono text-[13px] font-semibold text-primary">PAY-{{ String(payment.paymentId).padStart(4, '0') }}</td>
+                <td class="p-4 text-center text-slate-950 font-medium">{{ (pagination.page - 1) * pagination.pageSize + index + 1 }}</td>
+                <td class="p-4 font-mono text-[13px] font-bold text-slate-950">PAY-{{ String(payment.paymentId).padStart(4, '0') }}</td>
                 <td class="p-4">
-                  <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-primary-container/10 flex items-center justify-center font-bold text-primary text-xs border border-white/50">
-                      {{ payment.studentName?.charAt(0).toUpperCase() }}
-                    </div>
-                    <div>
-                      <p class="font-semibold text-primary leading-tight">{{ payment.studentName }}</p>
-                      <p class="text-xs text-secondary">ID: {{ payment.studentId }}</p>
-                    </div>
+                  <div>
+                    <p class="font-bold text-slate-950 leading-tight">{{ payment.studentName }}</p>
+                    <p class="text-xs text-slate-600">ID: {{ payment.studentId }}</p>
                   </div>
                 </td>
-                <td class="p-4 text-secondary">{{ payment.className }}</td>
-                <td class="p-4 text-right text-primary font-bold">{{ formatCurrency(payment.totalAmount) }}</td>
-                <td class="p-4 text-right text-emerald-600 font-bold">{{ formatCurrency(payment.paidAmount) }}</td>
-                <td class="p-4 text-right" :class="[payment.remainingAmount > 0 ? 'text-error font-bold' : 'text-secondary']">
+                <td class="p-4 text-slate-950 font-medium">{{ payment.className }}</td>
+                <td class="p-4 text-right text-slate-950 font-bold">{{ formatCurrency(payment.totalAmount) }}</td>
+                <td class="p-4 text-right text-slate-950 font-bold">{{ formatCurrency(payment.paidAmount) }}</td>
+                <td class="p-4 text-right text-slate-950 font-bold">
                   {{ formatCurrency(payment.remainingAmount) }}
                 </td>
                 <td class="p-4 text-center">
@@ -231,17 +226,17 @@
         </div>
 
         <!-- Table Pagination Footer -->
-        <div v-if="paymentsList.length > 0" class="p-4 border-t border-white/40 flex justify-between items-center text-sm text-secondary bg-white/10">
+        <div v-if="paymentsList.length > 0" class="p-4 border-t border-white/40 flex justify-between items-center text-sm text-slate-700 bg-white/10">
           <span>Hiển thị {{ (pagination.page - 1) * pagination.pageSize + 1 }} - {{ Math.min(pagination.page * pagination.pageSize, totalPaymentsCount) }} trong số {{ totalPaymentsCount }} hóa đơn</span>
           <div class="flex items-center gap-2">
             <button
               @click="prevPage"
               :disabled="pagination.page === 1"
-              class="p-1.5 rounded hover:bg-white/60 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer border border-outline-variant/30"
+              class="p-1.5 rounded hover:bg-white/60 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer border border-outline-variant/30 text-slate-950"
             >
               <span class="material-symbols-outlined text-sm">chevron_left</span>
             </button>
-            <span class="px-3 font-semibold text-primary">Trang {{ pagination.page }} / {{ totalInvoicesPages }}</span>
+            <span class="px-3 font-bold text-slate-950">Trang {{ pagination.page }} / {{ totalInvoicesPages }}</span>
             <button
               @click="nextPage"
               :disabled="pagination.page >= totalInvoicesPages"
@@ -1146,5 +1141,8 @@ onMounted(() => {
 .table-row-hover:hover {
   background: rgba(255, 255, 255, 0.8);
   box-shadow: 0 2px 8px rgba(43, 131, 255, 0.05);
+}
+* {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
 }
 </style>

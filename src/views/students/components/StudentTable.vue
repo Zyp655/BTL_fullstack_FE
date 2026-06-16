@@ -3,7 +3,9 @@
     <!-- Filters -->
     <section class="glass-panel rounded-xl p-4 flex flex-col sm:flex-row gap-4 items-center">
       <div class="relative flex-1 w-full">
-        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary">search</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3 top-1/2 -translate-y-1/2 text-secondary w-5 h-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
         <input
           :value="filters.search"
           @input="$emit('update-filter', { key: 'search', value: $event.target.value })"
@@ -17,7 +19,9 @@
           type="button"
           class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer flex items-center justify-center w-6 h-6 rounded-full hover:bg-primary-container/10"
         >
-          <span class="material-symbols-outlined text-[18px]">close</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
       </div>
       <!-- Class Filter -->
@@ -33,7 +37,6 @@
             {{ cls.className }}
           </option>
         </select>
-        <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined pointer-events-none text-secondary">expand_more</span>
       </div>
 
       <div class="relative w-full sm:w-64">
@@ -48,7 +51,6 @@
           <option value="Nữ">Nữ</option>
           <option value="Khác">Khác</option>
         </select>
-        <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined pointer-events-none text-secondary">expand_more</span>
       </div>
     </section>
 
@@ -65,11 +67,11 @@
             <tr class="bg-primary/5 border-b border-outline-variant/30">
               <th class="py-4 px-6 font-bold text-slate-950 font-label-caps uppercase whitespace-nowrap">Mã HV</th>
               <th class="py-4 px-6 font-bold text-slate-950 font-label-caps uppercase whitespace-nowrap">Họ tên</th>
-              <th class="py-4 px-6 font-bold text-slate-950 font-label-caps uppercase whitespace-nowrap">Giới tính</th>
-              <th class="py-4 px-6 font-bold text-slate-950 font-label-caps uppercase whitespace-nowrap">Ngày sinh</th>
-              <th class="py-4 px-6 font-bold text-slate-950 font-label-caps uppercase whitespace-nowrap">SĐT</th>
-              <th class="py-4 px-6 font-bold text-slate-950 font-label-caps uppercase whitespace-nowrap">Email</th>
-              <th class="py-4 px-6 font-bold text-slate-950 font-label-caps uppercase whitespace-nowrap">Địa chỉ</th>
+              <th class="py-4 px-6 font-bold text-slate-950 font-label-caps uppercase whitespace-nowrap hidden sm:table-cell">Giới tính</th>
+              <th class="py-4 px-6 font-bold text-slate-950 font-label-caps uppercase whitespace-nowrap hidden md:table-cell">Ngày sinh</th>
+              <th class="py-4 px-6 font-bold text-slate-950 font-label-caps uppercase whitespace-nowrap hidden sm:table-cell">SĐT</th>
+              <th class="py-4 px-6 font-bold text-slate-950 font-label-caps uppercase whitespace-nowrap hidden lg:table-cell">Email</th>
+              <th class="py-4 px-6 font-bold text-slate-950 font-label-caps uppercase whitespace-nowrap hidden lg:table-cell">Địa chỉ</th>
               <th class="py-4 px-6 font-bold text-slate-950 font-label-caps uppercase whitespace-nowrap text-right">Thao tác</th>
             </tr>
           </thead>
@@ -82,14 +84,9 @@
             >
               <td class="py-4 px-6 font-bold text-slate-950">HV-{{ String(student.studentId).padStart(4, '0') }}</td>
               <td class="py-4 px-6">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-bold">
-                    {{ (student.fullName || 'H').substring(0, 2).toUpperCase() }}
-                  </div>
-                  <span class="font-bold text-slate-950">{{ student.fullName }}</span>
-                </div>
+                <span class="font-bold text-slate-950">{{ student.fullName }}</span>
               </td>
-              <td class="py-4 px-6">
+              <td class="py-4 px-6 hidden sm:table-cell">
                 <span
                   :class="[
                     student.gender === 'Nam' ? 'bg-blue-100 text-blue-800' : 
@@ -101,14 +98,14 @@
                   {{ student.gender }}
                 </span>
               </td>
-              <td class="py-4 px-6 text-slate-950">{{ formatDate(student.dateOfBirth) }}</td>
-              <td class="py-4 px-6 text-slate-950 font-semibold">{{ student.phone || '-' }}</td>
-              <td class="py-4 px-6 text-slate-950">{{ student.email || '-' }}</td>
-              <td class="py-4 px-6 text-slate-950 truncate max-w-[150px]" :title="student.address">
+              <td class="py-4 px-6 text-slate-950 hidden md:table-cell">{{ formatDate(student.dateOfBirth) }}</td>
+              <td class="py-4 px-6 text-slate-950 font-semibold hidden sm:table-cell">{{ student.phone || '-' }}</td>
+              <td class="py-4 px-6 text-slate-950 hidden lg:table-cell">{{ student.email || '-' }}</td>
+              <td class="py-4 px-6 text-slate-950 truncate max-w-[150px] hidden lg:table-cell" :title="student.address">
                 {{ student.address || '-' }}
               </td>
               <td class="py-4 px-6 text-right">
-                <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                   <button
                     @click.stop="$emit('view-enrollments', student)"
                     class="w-8 h-8 rounded-lg hover:bg-primary/10 text-primary flex items-center justify-center transition-colors"

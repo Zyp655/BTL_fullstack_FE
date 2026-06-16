@@ -1227,7 +1227,7 @@ const filters = ref({
 
 const categoryOptions = computed(() => {
   return categoryStore.categories.map(c => ({
-    title: c.categoryName,
+    title: c.categoryName.split('|')[0],
     value: c.categoryCode
   }))
 })
@@ -1373,6 +1373,10 @@ function formatCurrency(val) {
 }
 
 function getCategoryIcon(cat) {
+  const found = categoryStore.categories.find(c => c.categoryCode === cat)
+  if (found && found.categoryName.includes('|')) {
+    return found.categoryName.split('|')[1]
+  }
   const map = { NgoaiNgu: 'translate', TinHoc: 'laptop_mac', KyNang: 'psychology' }
   if (map[cat]) return map[cat]
   
@@ -1385,6 +1389,22 @@ function getCategoryIcon(cat) {
 }
 
 function getCategoryBgClass(cat) {
+  const found = categoryStore.categories.find(c => c.categoryCode === cat)
+  if (found && found.categoryName.includes('|')) {
+    const icon = found.categoryName.split('|')[1]
+    const presets = {
+      translate: 'bg-sky-500/10 text-sky-600 border-sky-500/20',
+      laptop_mac: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+      psychology: 'bg-purple-500/10 text-purple-600 border-purple-500/20',
+      calculate: 'bg-red-500/10 text-red-600 border-red-500/20',
+      palette: 'bg-pink-500/10 text-pink-600 border-pink-500/20',
+      music_note: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+      sports_esports: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20',
+      science: 'bg-teal-500/10 text-teal-600 border-teal-500/20',
+      menu_book: 'bg-rose-500/10 text-rose-600 border-rose-500/20',
+    }
+    if (presets[icon]) return presets[icon]
+  }
   const map = { 
     NgoaiNgu: 'bg-sky-500/10 text-sky-600 border-sky-500/20', 
     TinHoc: 'bg-amber-500/10 text-amber-600 border-amber-500/20', 
@@ -1395,7 +1415,7 @@ function getCategoryBgClass(cat) {
 
 function getCategoryLabel(cat) {
   const found = categoryStore.categories.find(c => c.categoryCode === cat)
-  if (found) return found.categoryName
+  if (found) return found.categoryName.split('|')[0]
   const map = { NgoaiNgu: 'Ngoại ngữ', TinHoc: 'Tin học', KyNang: 'Kỹ năng' }
   return map[cat] || cat
 }

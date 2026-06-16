@@ -1,9 +1,9 @@
 <template>
   <teleport to="body">
     <div v-if="show" class="fixed inset-0 glass-backdrop z-[9999] flex items-center justify-center p-4">
-      <div class="glass-panel w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col relative overflow-hidden bg-surface/95">
+      <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col relative overflow-hidden border border-slate-200/80">
         <!-- Modal Header -->
-        <div class="px-6 py-4 border-b border-outline-variant/30 flex justify-between items-center bg-white/50">
+        <div class="px-6 py-4 border-b border-outline-variant/30 flex justify-between items-center bg-slate-50">
           <h3 class="font-headline-lg text-title-md font-bold text-primary flex items-center gap-2">
             <span class="material-symbols-outlined text-on-tertiary-container">{{ isEdit ? 'edit' : 'person_add' }}</span>
             {{ isEdit ? 'Cập nhật thông tin học viên' : 'Thêm học viên mới' }}
@@ -24,7 +24,7 @@
                 <div class="relative">
                   <select
                     v-model="formData.userId"
-                    class="w-full glass-input rounded-lg px-4 py-2 font-body-sm text-body-sm text-on-surface appearance-none pr-10 bg-no-repeat bg-[right_0.75rem_center] bg-[length:16px_16px]"
+                    class="w-full glass-input rounded-lg px-4 py-2 font-body-sm text-body-sm text-on-surface appearance-none bg-no-repeat bg-[right_0.75rem_center] bg-[length:16px_16px]"
                     style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%235d5f5f%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E');"
                     @change="onUserSelect"
                     :disabled="isEdit"
@@ -34,7 +34,6 @@
                       {{ user.fullName }} ({{ user.username }}) - {{ user.email }}
                     </option>
                   </select>
-                  <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined pointer-events-none text-secondary">expand_more</span>
                 </div>
                 <p class="text-[12px] text-secondary mt-1">Liên kết để học viên có thể đăng nhập vào portal.</p>
                 <p v-if="validationErrors.userId" class="text-error text-[11px] font-semibold">{{ validationErrors.userId }}</p>
@@ -60,14 +59,13 @@
                   <div class="relative">
                     <select
                       v-model="formData.gender"
-                      class="w-full glass-input rounded-lg px-4 py-2 font-body-sm text-body-sm text-on-surface appearance-none pr-10 bg-no-repeat bg-[right_0.75rem_center] bg-[length:16px_16px]"
+                      class="w-full glass-input rounded-lg px-4 py-2 font-body-sm text-body-sm text-on-surface appearance-none bg-no-repeat bg-[right_0.75rem_center] bg-[length:16px_16px]"
                       style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%235d5f5f%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E');"
                     >
                       <option value="Nam">Nam</option>
                       <option value="Nữ">Nữ</option>
                       <option value="Khác">Khác</option>
                     </select>
-                    <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined pointer-events-none text-secondary">expand_more</span>
                   </div>
                   <p v-if="validationErrors.gender" class="text-error text-[11px] font-semibold">{{ validationErrors.gender }}</p>
                 </div>
@@ -123,7 +121,7 @@
         </div>
 
         <!-- Modal Footer -->
-        <div class="px-6 py-4 border-t border-outline-variant/30 flex justify-end gap-3 bg-white/50">
+        <div class="px-6 py-4 border-t border-outline-variant/30 flex justify-end gap-3 bg-slate-50">
           <button
             @click="$emit('close')"
             class="px-5 py-2 rounded-lg border border-outline-variant text-secondary font-title-md text-body-sm hover:bg-secondary/10 transition-colors cursor-pointer"
