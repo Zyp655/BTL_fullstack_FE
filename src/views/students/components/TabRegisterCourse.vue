@@ -163,10 +163,14 @@
                 </div>
               </template>
               <template v-else-if="isPendingPayment(course.courseId, course.courseName)">
-                <div class="flex-1 px-4 py-2 bg-amber-500/10 border border-amber-500/20 text-amber-600 font-bold rounded-lg text-body-sm text-center flex items-center justify-center gap-1 cursor-default">
+                <router-link
+                  :to="{ path: '/student-portal', query: { tab: 'payments', courseId: course.courseId, courseName: course.courseName, ...(studentProfile?.studentId ? { studentId: studentProfile.studentId } : {}) } }"
+                  @click.stop
+                  class="flex-1 px-4 py-2 bg-amber-500/10 border border-amber-500/20 text-amber-600 font-bold rounded-lg text-body-sm text-center flex items-center justify-center gap-1 hover:bg-amber-500/20 transition-all cursor-pointer"
+                >
                   <span class="material-symbols-outlined text-[16px] animate-pulse">credit_card</span>
                   Chờ học phí
-                </div>
+                </router-link>
               </template>
               <template v-else-if="isInQueue(course.courseId)">
                 <div class="flex-1 px-4 py-2 bg-purple-500/10 border border-purple-500/20 text-purple-600 font-bold rounded-lg text-body-sm text-center flex items-center justify-center gap-1 cursor-default">
@@ -337,10 +341,14 @@
                 </div>
               </template>
               <template v-else-if="isPendingPayment(selectedCourseForDetail.courseId, selectedCourseForDetail.courseName)">
-                <div class="px-5 py-2.5 bg-amber-500/10 border border-amber-500/20 text-amber-600 font-bold rounded-lg text-body-sm text-center flex items-center justify-center gap-1 cursor-default">
+                <router-link
+                  :to="{ path: '/student-portal', query: { tab: 'payments', courseId: selectedCourseForDetail.courseId, courseName: selectedCourseForDetail.courseName, ...(studentProfile?.studentId ? { studentId: studentProfile.studentId } : {}) } }"
+                  @click="detailModal = false"
+                  class="px-5 py-2.5 bg-amber-500/10 border border-amber-500/20 text-amber-600 font-bold rounded-lg text-body-sm text-center flex items-center justify-center gap-1 hover:bg-amber-500/20 transition-all cursor-pointer"
+                >
                   <span class="material-symbols-outlined text-[18px] animate-pulse">credit_card</span>
                   Chờ thanh toán học phí
-                </div>
+                </router-link>
               </template>
               <template v-else-if="isInQueue(selectedCourseForDetail.courseId)">
                 <div class="px-5 py-2.5 bg-purple-500/10 border border-purple-500/20 text-purple-600 font-bold rounded-lg text-body-sm text-center flex items-center justify-center gap-1 cursor-default">

@@ -240,7 +240,7 @@
                   class="w-full py-2 rounded-lg bg-blue-500/10 text-blue-700 border border-blue-500/20 font-semibold text-body-sm flex items-center justify-center gap-1.5 cursor-default"
                 >
                   <span class="material-symbols-outlined text-[16px]">hourglass_empty</span>
-                  Đang chờ ghép lớp
+                  Đang chờ chuyển lớp
                 </button>
 
                 <!-- Regular Register -->
@@ -281,7 +281,7 @@
                 <div class="text-body-sm text-on-surface-variant">Thời gian: {{ selectedCourseToEnroll?.totalSessions }} buổi</div>
               </div>
               <p class="text-body-sm text-on-surface-variant italic">
-                * Sau khi đăng ký hàng chờ thành công, hệ thống sẽ tạo hóa đơn học phí. Bạn cần hoàn thành thanh toán trong mục "Học phí & Thanh toán" ở Cổng học tập để chính thức được đưa vào danh sách chờ ghép lớp.
+                * Sau khi đăng ký hàng chờ thành công, hệ thống sẽ tạo hóa đơn học phí. Bạn cần hoàn thành thanh toán trong mục "Học phí & Thanh toán" ở Cổng học tập để chính thức được đưa vào danh sách chờ chuyển lớp.
               </p>
             </div>
 
@@ -410,7 +410,7 @@
             <div class="px-6 py-4 border-t border-white/40 flex justify-between items-center bg-white/20">
               <!-- Waitlist Count if any -->
               <div class="text-body-xs text-on-surface-variant font-medium">
-                Số học viên đang chờ ghép lớp: <strong class="text-on-tertiary-container">{{ getCourseQueueCount(selectedCourseForDetail?.courseId) }}</strong>
+                Số học viên đang chờ chuyển lớp: <strong class="text-on-tertiary-container">{{ getCourseQueueCount(selectedCourseForDetail?.courseId) }}</strong>
               </div>
               <button
                 @click="detailModal = false"
