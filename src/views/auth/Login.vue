@@ -1,32 +1,58 @@
 <template>
-  <div class="bg-background text-on-background font-body-lg text-body-lg antialiased min-h-screen flex selection:bg-tertiary-fixed selection:text-on-tertiary-fixed w-full">
+  <div class="bg-background text-on-background font-body-lg text-body-lg antialiased min-h-screen flex selection:bg-tertiary-fixed selection:text-on-tertiary-fixed w-full relative overflow-hidden">
     <!-- Split Layout Container -->
     <main class="flex w-full min-h-screen">
       <!-- Left Pane: Brand & Graphic (Hidden on small screens) -->
-      <section class="hidden xl:flex xl:w-3/4 bg-primary-container relative overflow-hidden flex-col justify-between p-stack-lg animate-fade-in-left">
-        <!-- Graphic Background -->
-        <div class="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
+      <section 
+        ref="parallaxContainer"
+        @mousemove="onParallaxMousemove"
+        class="hidden xl:flex xl:w-3/4 bg-[#1c083c] relative overflow-hidden flex-col justify-between p-stack-lg animate-fade-in-left"
+      >
+        <!-- Light Particles Canvas -->
+        <canvas ref="particleCanvas" class="absolute inset-0 z-10 pointer-events-none opacity-60"></canvas>
+
+        <!-- Graphic Background with Mousemove Parallax -->
+        <div class="absolute inset-0 z-0 flex items-center justify-center pointer-events-none scale-110">
           <img 
+            ref="parallaxBg"
             alt="Abstract flowing glowing shapes representing education and connectivity" 
-            class="w-full h-full object-cover animate-ken-burns" 
+            class="w-full h-full object-cover opacity-85 transition-transform duration-200" 
             src="../../assets/education_login_bg.png"
           />
         </div>
-        <!-- Content Overlay -->
-        <router-link to="/" class="relative z-10 flex items-center gap-base cursor-pointer hover:opacity-90 transition-all no-underline hover:scale-[1.02] active:scale-[0.98] animate-fade-in-up">
-          <span class="material-symbols-outlined text-headline-lg text-on-primary">school</span>
-          <span class="font-title-md text-title-md text-on-primary tracking-tight">EduManager Pro</span>
+
+        <!-- Brand Logo Overlay -->
+        <router-link to="/" class="relative z-20 flex items-center gap-base cursor-pointer hover:opacity-90 transition-all no-underline hover:scale-[1.02] active:scale-[0.98] animate-fade-in-up">
+          <span class="material-symbols-outlined text-headline-lg text-white">school</span>
+          <span class="font-title-md text-title-md text-white tracking-tight">EduManager Pro</span>
         </router-link>
-        <div class="relative z-10 max-w-3xl mb-20 animate-fade-in-up delay-200">
-          <h1 class="font-display-lg text-display-lg text-on-primary mb-stack-md leading-tight drop-shadow-md whitespace-nowrap">
-            Kiến tạo Tương lai Giáo dục
+
+        <!-- Slogan Text with Masked Character Reveal -->
+        <div class="relative z-20 max-w-3xl mb-20">
+          <h1 class="font-display-lg text-display-lg text-white mb-stack-md leading-tight drop-shadow-md whitespace-nowrap overflow-hidden flex flex-wrap gap-x-2 py-2">
+            <span 
+              v-for="(word, wIdx) in sloganWords" 
+              :key="wIdx" 
+              class="inline-block overflow-hidden"
+            >
+              <span 
+                v-for="(char, cIdx) in word" 
+                :key="cIdx" 
+                class="slogan-char inline-block translate-y-[110%] opacity-0"
+              >
+                {{ char }}
+              </span>
+              <!-- Add space between words -->
+              <span class="inline-block">&nbsp;</span>
+            </span>
           </h1>
-          <p class="font-body-lg text-body-lg text-on-primary-container opacity-90 whitespace-nowrap">
+          <p class="font-body-lg text-body-lg text-purple-200/90 whitespace-nowrap slogan-sub opacity-0 translate-y-[15px]">
             Nền tảng quản lý học vụ tập trung và bảo mật cho giáo dục hiện đại.
           </p>
         </div>
+
         <!-- Decorative gradient to ensure text readability at bottom -->
-        <div class="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-primary-container to-transparent z-0 pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-[#1c083c]/90 to-transparent z-10 pointer-events-none"></div>
       </section>
 
       <!-- Right Pane: Form Interface -->
@@ -52,7 +78,8 @@
             <div class="relative group animate-fade-in-up delay-100">
               <input 
                 v-model="username"
-                class="floating-input peer w-full h-14 bg-slate-50/50 border border-slate-300 rounded-lg px-4 pt-6 pb-2 text-body-lg font-body-lg text-on-surface focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 hover:bg-slate-50/85 focus:bg-white transition-all shadow-inner" 
+                class="floating-input peer w-full h-14 bg-slate-50/50 border rounded-lg px-4 pt-6 pb-2 text-body-lg font-body-lg text-on-surface focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 hover:bg-slate-50/85 focus:bg-white transition-all shadow-inner" 
+                :class="[errors.username ? 'border-red-500 ring-4 ring-red-500/10 focus:border-red-500' : 'border-slate-300']"
                 id="username" 
                 name="username" 
                 placeholder=" " 
@@ -79,7 +106,11 @@
               <input 
                 v-model="password"
                 :type="passwordVisible ? 'text' : 'password'"
-                class="floating-input peer w-full h-14 bg-slate-50/50 border border-slate-300 rounded-lg pl-4 pr-12 pt-6 pb-2 text-body-lg font-body-lg text-on-surface focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 hover:bg-slate-50/85 focus:bg-white transition-all shadow-inner" 
+                class="floating-input peer w-full h-14 bg-slate-50/50 border rounded-lg pl-4 pr-12 pt-6 pb-2 text-body-lg font-body-lg text-on-surface focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 hover:bg-slate-50/85 focus:bg-white transition-all shadow-inner" 
+                :class="[
+                  errors.password ? 'border-red-500 ring-4 ring-red-500/10 focus:border-red-500' : 'border-slate-300',
+                  { 'reveal-active': isRevealing }
+                ]"
                 id="password" 
                 name="password" 
                 placeholder=" " 
@@ -99,7 +130,7 @@
                 @click="togglePasswordVisibility" 
                 type="button"
               >
-                <span class="material-symbols-outlined text-[22px]" style="font-family: 'Material Symbols Outlined' !important; font-variation-settings: 'FILL' 0;">
+                <span class="eye-icon material-symbols-outlined text-[22px]" style="font-family: 'Material Symbols Outlined' !important; font-variation-settings: 'FILL' 0;">
                   {{ passwordVisible ? 'visibility' : 'visibility_off' }}
                 </span>
               </button>
@@ -120,9 +151,12 @@
               </div>
             </transition>
 
-            <!-- Submit Action -->
+            <!-- Submit Action with Magnetic Effect -->
             <button 
-              class="w-full bg-tertiary text-on-tertiary font-title-md text-title-md py-3 rounded-lg mt-2 hover:bg-primary-container transition-all active:scale-[0.98] shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-container cursor-pointer flex items-center justify-center gap-2 btn-shine-effect animate-fade-in-up delay-300" 
+              ref="magneticBtn"
+              @mousemove="onButtonMousemove"
+              @mouseleave="onButtonMouseleave"
+              class="w-full bg-[#7024c4] text-white font-title-md text-title-md py-3 rounded-lg mt-2 hover:bg-[#5b1ca2] transition-colors duration-200 active:scale-[0.98] shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7024c4] cursor-pointer flex items-center justify-center gap-2 btn-shine-effect animate-fade-in-up delay-300" 
               type="submit"
               :disabled="loading"
             >
@@ -249,25 +283,206 @@
         </div>
       </div>
     </teleport>
+
+    <!-- Cinematic Morphing Circle Screen Wipe Overlay -->
+    <div 
+      ref="transitionOverlay" 
+      class="fixed rounded-full bg-[#1a0b36] pointer-events-none z-[9999] opacity-0"
+      style="width: 120px; height: 120px; left: 0; top: 0; transform: translate(-50%, -50%); scale: 0; transform-origin: center center;"
+    ></div>
   </div>
 </template>
 
 <script setup>
-import { ref, inject, onMounted } from 'vue'
+import { ref, inject, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 import api from '../../services/api'
+import { gsap } from 'gsap'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 const showSnackbar = inject('showSnackbar')
 
+// Cinematic Slogan character split
+const sloganText = 'Kiến tạo Tương lai Giáo dục'
+const sloganWords = computed(() => sloganText.split(' ').map(word => word.split('')))
+
+// Particle system variables
+const particleCanvas = ref(null)
+let animationId = null
+
+// Mousemove Parallax variables
+const parallaxContainer = ref(null)
+const parallaxBg = ref(null)
+
+// Magnetic button variables
+const magneticBtn = ref(null)
+
+// Reveal active animation for password spacing
+const isRevealing = ref(false)
+
+// Success wipe overlay
+const transitionOverlay = ref(null)
+
 onMounted(() => {
   if (route.query.logout === 'success') {
     showSnackbar('Đăng xuất thành công', 'success')
   }
+
+  // 1. Particle System Setup
+  setupParticles()
+
+  // 2. Text Reveal GSAP Animations
+  gsap.to('.slogan-char', {
+    opacity: 1,
+    y: 0,
+    duration: 0.8,
+    stagger: 0.035,
+    ease: 'power3.out',
+    delay: 0.2
+  })
+
+  gsap.to('.slogan-sub', {
+    opacity: 0.9,
+    y: 0,
+    duration: 1,
+    ease: 'power3.out',
+    delay: 1.2
+  })
 })
+
+onUnmounted(() => {
+  if (animationId) {
+    cancelAnimationFrame(animationId)
+  }
+})
+
+// Particle System logic
+const setupParticles = () => {
+  const canvas = particleCanvas.value
+  if (!canvas) return
+  const ctx = canvas.getContext('2d')
+  
+  let width = canvas.width = canvas.parentElement.offsetWidth
+  let height = canvas.height = canvas.parentElement.offsetHeight
+
+  const handleResize = () => {
+    if (!canvas) return
+    width = canvas.width = canvas.parentElement.offsetWidth
+    height = canvas.height = canvas.parentElement.offsetHeight
+  }
+  window.addEventListener('resize', handleResize)
+
+  const particles = []
+  const count = 40
+
+  class Particle {
+    constructor() {
+      this.reset()
+      this.y = Math.random() * height
+    }
+
+    reset() {
+      this.x = Math.random() * width
+      this.y = height + Math.random() * 20
+      this.r = Math.random() * 2 + 0.4
+      this.speedY = Math.random() * 0.35 + 0.1
+      this.speedX = (Math.random() - 0.5) * 0.12
+      this.opacity = Math.random() * 0.3 + 0.05
+    }
+
+    update() {
+      this.y -= this.speedY
+      this.x += this.speedX
+      if (this.y < 0 || this.x < 0 || this.x > width) {
+        this.reset()
+      }
+    }
+
+    draw() {
+      ctx.beginPath()
+      const gradient = ctx.createRadialGradient(
+        this.x, this.y, 0,
+        this.x, this.y, this.r * 2.5
+      )
+      gradient.addColorStop(0, `rgba(255, 254, 240, ${this.opacity})`)
+      gradient.addColorStop(0.5, `rgba(255, 254, 240, ${this.opacity * 0.4})`)
+      gradient.addColorStop(1, 'rgba(255, 254, 240, 0)')
+      
+      ctx.fillStyle = gradient
+      ctx.arc(this.x, this.y, this.r * 2.5, 0, Math.PI * 2)
+      ctx.fill()
+    }
+  }
+
+  for (let i = 0; i < count; i++) {
+    particles.push(new Particle())
+  }
+
+  const loop = () => {
+    ctx.clearRect(0, 0, width, height)
+    particles.forEach(p => {
+      p.update()
+      p.draw()
+    })
+    animationId = requestAnimationFrame(loop)
+  }
+  loop()
+
+  onUnmounted(() => {
+    window.removeEventListener('resize', handleResize)
+  })
+}
+
+// Parallax movement logic
+const onParallaxMousemove = (e) => {
+  const container = parallaxContainer.value
+  const bg = parallaxBg.value
+  if (!container || !bg) return
+
+  const rect = container.getBoundingClientRect()
+  const mouseX = e.clientX - rect.left
+  const mouseY = e.clientY - rect.top
+
+  const pctX = (mouseX / rect.width) - 0.5
+  const pctY = (mouseY / rect.height) - 0.5
+
+  gsap.to(bg, {
+    x: pctX * -35,
+    y: pctY * -35,
+    duration: 0.8,
+    ease: 'power2.out'
+  })
+}
+
+// Magnetic Button logic
+const onButtonMousemove = (e) => {
+  const btn = magneticBtn.value
+  if (!btn) return
+  const rect = btn.getBoundingClientRect()
+  const x = e.clientX - rect.left - rect.width / 2
+  const y = e.clientY - rect.top - rect.height / 2
+
+  gsap.to(btn, {
+    x: x * 0.32,
+    y: y * 0.32,
+    duration: 0.3,
+    ease: 'power2.out'
+  })
+}
+
+const onButtonMouseleave = () => {
+  const btn = magneticBtn.value
+  if (!btn) return
+  gsap.to(btn, {
+    x: 0,
+    y: 0,
+    duration: 0.6,
+    ease: 'elastic.out(1.1, 0.35)'
+  })
+}
 
 const username = ref('')
 const password = ref('')
@@ -290,6 +505,17 @@ function triggerShake() {
 
 function togglePasswordVisibility() {
   passwordVisible.value = !passwordVisible.value
+  isRevealing.value = true
+  
+  // Animate eye icon pop/morph
+  gsap.fromTo('.eye-icon', 
+    { scale: 0.7, rotate: -20 },
+    { scale: 1, rotate: 0, duration: 0.4, ease: 'back.out(1.8)' }
+  )
+
+  setTimeout(() => {
+    isRevealing.value = false
+  }, 400)
 }
 
 function validateLoginForm() {
@@ -319,6 +545,25 @@ async function handleLogin() {
   error.value = null
   try {
     await authStore.login(username.value, password.value)
+    
+    // Successful login transitions: morphing screen wipe
+    const btn = magneticBtn.value
+    const rect = btn.getBoundingClientRect()
+    const overlay = transitionOverlay.value
+
+    gsap.set(overlay, {
+      left: rect.left + rect.width / 2,
+      top: rect.top + rect.height / 2,
+      scale: 0,
+      opacity: 1
+    })
+
+    await gsap.to(overlay, {
+      scale: 50,
+      duration: 0.95,
+      ease: 'power3.inOut'
+    })
+
     router.push('/')
   } catch (err) {
     console.error(err)
@@ -328,16 +573,6 @@ async function handleLogin() {
     triggerShake()
   } finally {
     loading.value = false
-  }
-}
-
-function fillDemo(role) {
-  if (role === 'admin') {
-    username.value = 'admin'
-    password.value = 'admin123'
-  } else if (role === 'student') {
-    username.value = 'lethip'
-    password.value = 'student123'
   }
 }
 
@@ -419,6 +654,12 @@ const resetPassword = async () => {
 <style scoped>
 .floating-input {
   color: #191c1d !important;
+  transition: letter-spacing 0.3s cubic-bezier(0.25, 1, 0.5, 1), filter 0.3s ease, border-color 0.2s, box-shadow 0.2s;
+}
+
+.reveal-active {
+  letter-spacing: 0.08em;
+  filter: saturate(1.1);
 }
 
 #username {
@@ -431,20 +672,11 @@ const resetPassword = async () => {
 }
 
 .glass-panel {
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-shadow: 0px 12px 24px rgba(0,0,0,0.05);
   border: 1px solid rgba(255, 255, 255, 0.4);
-}
-
-.glass-input-error {
-  border-color: #ba1a1a !important;
-  background-color: rgba(186, 26, 26, 0.05) !important;
-}
-.glass-input-error:focus {
-  border-color: #ba1a1a !important;
-  box-shadow: 0 0 0 3px rgba(186, 26, 26, 0.15) !important;
 }
 
 .error-text {
@@ -458,13 +690,14 @@ const resetPassword = async () => {
 }
 
 .shake {
-  animation: shake 0.5s ease-in-out;
+  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-  20%, 40%, 60%, 80% { transform: translateX(4px); }
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 
 .glass-backdrop {
@@ -556,12 +789,6 @@ input:-internal-autofill-selected {
   }
 }
 
-@keyframes kenburns {
-  0% { transform: scale(1) translate(0, 0); }
-  50% { transform: scale(1.04) translate(-0.5%, -0.5%); }
-  100% { transform: scale(1) translate(0, 0); }
-}
-
 .animate-fade-in-up {
   animation: fadeInUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -572,10 +799,6 @@ input:-internal-autofill-selected {
 
 .animate-fade-in-right {
   animation: fadeInRight 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.animate-ken-burns {
-  animation: kenburns 35s ease-in-out infinite;
 }
 
 .delay-100 { animation-delay: 100ms; }
