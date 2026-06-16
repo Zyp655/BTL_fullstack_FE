@@ -3,6 +3,9 @@
 @config "../tailwind.config.js";
 
 @layer base {
+  html, body {
+    overscroll-behavior-y: contain;
+  }
   body {
     background-color: #f8f9fa;
     background-image: 
