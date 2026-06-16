@@ -96,7 +96,10 @@
             </template>
 
             <template v-else-if="column.key === 'teacherName'">
-              <span class="text-body-sm font-semibold text-primary-container">{{ record.teacherName || 'Chưa phân công' }}</span>
+              <div class="flex flex-col gap-0.5">
+                <span class="text-body-sm font-semibold text-primary-container">{{ record.teacherName || 'Chưa phân công' }}</span>
+                <span v-if="record.teacherName2" class="text-[11px] text-on-surface-variant/80 font-medium font-vietnamese">Trợ giảng: {{ record.teacherName2 }}</span>
+              </div>
             </template>
 
             <template v-else-if="column.key === 'room'">
@@ -284,9 +287,12 @@
 
             <!-- Class Meta Details -->
             <div class="flex flex-col gap-2.5 mb-4 text-body-sm text-on-surface-variant">
-              <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-[18px]">account_circle</span>
-                <span>Giáo viên: <strong class="text-primary-container font-semibold">{{ cls.teacherName || 'Chưa phân công' }}</strong></span>
+              <div class="flex items-start gap-2">
+                <span class="material-symbols-outlined text-[18px] mt-0.5">account_circle</span>
+                <div class="flex flex-col">
+                  <span>GV chính: <strong class="text-primary-container font-semibold">{{ cls.teacherName || 'Chưa phân công' }}</strong></span>
+                  <span v-if="cls.teacherName2" class="text-body-xs text-on-surface-variant/80">GV phụ: <strong class="font-semibold text-primary-container/85">{{ cls.teacherName2 }}</strong></span>
+                </div>
               </div>
               <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-[18px]">meeting_room</span>
@@ -616,12 +622,29 @@
                 </div>
                 <div class="space-y-1">
                   <label class="text-body-sm font-semibold text-primary">Phòng học</label>
-                  <input
-                    v-model="vipFormData.room"
-                    type="text"
-                    class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary placeholder:text-outline-variant focus:border-primary-container/40 focus:ring-2 focus:ring-primary-container/20 focus:outline-none transition-all"
-                    placeholder="Ví dụ: Phòng VIP 1"
-                  />
+                  <div class="relative">
+                    <select
+                      v-model="vipFormData.room"
+                      class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-primary cursor-pointer focus:border-primary-container/40 focus:ring-2 focus:ring-primary-container/20 focus:outline-none transition-all"
+                    >
+                      <option value="">Chưa xếp phòng</option>
+                      <option
+                        v-for="room in availableRooms"
+                        :key="room.roomNumber"
+                        :value="room.roomNumber"
+                        :disabled="room.isMaintenance"
+                      >
+                        Phòng {{ room.roomNumber }} {{ room.isMaintenance ? '(Bảo trì)' : (room.status === 'Occupied' ? '(Đang học)' : '') }}
+                      </option>
+                      <option
+                        v-if="vipFormData.room && !availableRooms.some(r => r.roomNumber === vipFormData.room)"
+                        :value="vipFormData.room"
+                      >
+                        {{ vipFormData.room.startsWith('Phòng') || vipFormData.room.startsWith('P.') ? vipFormData.room : 'Phòng ' + vipFormData.room }} (Đang chọn)
+                      </option>
+                    </select>
+                    <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+                  </div>
                 </div>
               </div>
 
@@ -713,7 +736,7 @@
 
             <div class="grid grid-cols-2 gap-4">
               <div class="space-y-1">
-                <label class="text-body-sm font-semibold text-primary-container">Giáo viên phụ trách</label>
+                <label class="text-body-sm font-semibold text-primary-container">Giáo viên chính</label>
                 <div class="relative">
                   <select
                     v-model="formData.teacherId"
@@ -729,28 +752,140 @@
                 </div>
               </div>
               <div class="space-y-1">
-                <label class="text-body-sm font-semibold text-primary-container">Phòng học</label>
-                <input
-                  v-model="formData.room"
-                  type="text"
-                  class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary-container placeholder:text-outline-variant focus:border-primary-container/40 focus:ring-2 focus:ring-primary-container/20 focus:outline-none transition-all"
-                  placeholder="Ví dụ: Phòng 101, Lab A"
-                />
+                <label class="text-body-sm font-semibold text-primary-container">Giáo viên phụ / Trợ giảng</label>
+                <div class="relative">
+                  <select
+                    v-model="formData.teacherId2"
+                    @change="onTeacher2Select"
+                    class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-primary-container cursor-pointer focus:border-primary-container/40 focus:ring-2 focus:ring-primary-container/20 focus:outline-none transition-all"
+                  >
+                    <option :value="null">Chưa phân công</option>
+                    <option v-for="t in teachers" :key="t.userId" :value="t.userId">
+                      {{ t.fullName }} (@{{ t.username }})
+                    </option>
+                  </select>
+                  <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+                </div>
               </div>
             </div>
 
-            <div class="space-y-1">
-              <label class="text-body-sm font-semibold text-primary-container">Sĩ số tối đa học viên *</label>
-              <input
-                v-model.number="formData.maxStudents"
-                type="number"
-                class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary-container placeholder:text-outline-variant focus:border-primary-container/40 focus:ring-2 focus:ring-primary-container/20 focus:outline-none transition-all"
-                placeholder="Sĩ số giới hạn"
-              />
-              <p v-if="validationErrors.maxStudents" class="text-error text-[11px] font-semibold">{{ validationErrors.maxStudents }}</p>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label class="text-body-sm font-semibold text-primary-container">Phòng học</label>
+                <div class="relative">
+                  <select
+                    v-model="formData.room"
+                    class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-primary-container cursor-pointer focus:border-primary-container/40 focus:ring-2 focus:ring-primary-container/20 focus:outline-none transition-all"
+                  >
+                    <option value="">Chưa xếp phòng</option>
+                    <option
+                      v-for="room in availableRooms"
+                      :key="room.roomNumber"
+                      :value="room.roomNumber"
+                      :disabled="room.isMaintenance"
+                    >
+                      Phòng {{ room.roomNumber }} {{ room.isMaintenance ? '(Bảo trì)' : (room.status === 'Occupied' ? '(Đang học)' : '') }}
+                    </option>
+                    <option
+                      v-if="formData.room && !availableRooms.some(r => r.roomNumber === formData.room)"
+                      :value="formData.room"
+                    >
+                      {{ formData.room.startsWith('Phòng') || formData.room.startsWith('P.') ? formData.room : 'Phòng ' + formData.room }} (Đang chọn)
+                    </option>
+                  </select>
+                  <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+                </div>
+              </div>
+              <div class="space-y-1">
+                <label class="text-body-sm font-semibold text-primary-container">Sĩ số tối đa học viên *</label>
+                <input
+                  v-model.number="formData.maxStudents"
+                  type="number"
+                  class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary-container placeholder:text-outline-variant focus:border-primary-container/40 focus:ring-2 focus:ring-primary-container/20 focus:outline-none transition-all"
+                  placeholder="Sĩ số giới hạn"
+                />
+                <p v-if="validationErrors.maxStudents" class="text-error text-[11px] font-semibold">{{ validationErrors.maxStudents }}</p>
+              </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <!-- Auto Scheduling Panel (Only on Create mode) -->
+            <div v-if="!isEdit" class="bg-primary-container/5 border border-primary-container/10 rounded-xl p-4 space-y-4">
+              <div class="flex items-center justify-between">
+                <label class="text-body-sm font-bold text-primary-container select-none cursor-pointer flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    v-model="useAutoSchedule"
+                    class="w-4 h-4 text-on-tertiary-container bg-white/40 border-white/60 rounded focus:ring-0 cursor-pointer"
+                  />
+                  Tự động tạo lịch học & ngày học
+                </label>
+              </div>
+
+              <div v-if="useAutoSchedule" class="space-y-4 pt-2 border-t border-primary-container/10">
+                <div v-if="selectedCourse" class="text-[11px] text-primary-container/80 bg-white/20 p-2.5 rounded-lg border border-primary-container/5">
+                  💡 Môn học này có <strong class="text-primary-container">{{ selectedCourse.totalSessions || 0 }} buổi học</strong> trong vòng <strong class="text-primary-container">{{ selectedCourse.durationWeeks || Math.ceil((selectedCourse.totalSessions || 10) / 2) }} tuần</strong>.
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div class="space-y-1">
+                    <label class="text-body-xs font-semibold text-primary-container">Tuần bắt đầu *</label>
+                    <div class="relative">
+                      <select
+                        v-model="selectedStartWeekMonday"
+                        class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none px-3 py-2 text-body-xs text-primary-container cursor-pointer focus:border-primary-container/40 focus:outline-none transition-all"
+                      >
+                        <option value="" disabled>Chọn tuần học...</option>
+                        <option v-for="w in weeksList" :key="w.mondayStr" :value="w.mondayStr">
+                          {{ w.label }}
+                        </option>
+                      </select>
+                      <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
+                    </div>
+                  </div>
+                  <div class="space-y-1">
+                    <label class="text-body-xs font-semibold text-primary-container">Tuần kết thúc (Tự động)</label>
+                    <div class="px-3 py-2 rounded-lg bg-black/5 border border-primary-container/5 text-body-xs text-primary-container font-semibold">
+                      {{ calculatedEndWeekLabel }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Schedule slots editor -->
+                <div class="space-y-2">
+                  <label class="text-body-xs font-semibold text-primary-container block mb-1">Cấu hình buổi học hàng tuần</label>
+                  <div v-for="(slot, index) in scheduleSlots" :key="index" class="grid grid-cols-12 gap-2 items-center bg-white/10 p-2 rounded-lg border border-white/20">
+                    <div class="col-span-3">
+                      <select v-model="slot.dayOfWeek" class="w-full text-xs bg-black/10 text-primary-container border border-primary-container/10 rounded px-1.5 py-1.5 focus:outline-none">
+                        <option v-for="d in weekDays" :key="d.value" :value="d.value">{{ d.label }}</option>
+                      </select>
+                    </div>
+                    <div class="col-span-3">
+                      <select v-model="slot.session" class="w-full text-xs bg-black/10 text-primary-container border border-primary-container/10 rounded px-1.5 py-1.5 focus:outline-none">
+                        <option v-for="s in sessionOptions" :key="s.value" :value="s.value">{{ s.title }}</option>
+                      </select>
+                    </div>
+                    <div class="col-span-4 flex gap-1 items-center">
+                      <input type="text" v-model="slot.startTime" class="w-full text-xs bg-black/10 text-primary-container border border-primary-container/10 rounded px-1 py-1 text-center font-mono placeholder:text-primary-container/40" placeholder="08:00" />
+                      <span class="text-xs text-primary-container/60">-</span>
+                      <input type="text" v-model="slot.endTime" class="w-full text-xs bg-black/10 text-primary-container border border-primary-container/10 rounded px-1 py-1 text-center font-mono placeholder:text-primary-container/40" placeholder="10:00" />
+                    </div>
+                    <div class="col-span-2 text-right">
+                      <button type="button" @click="removeScheduleSlot(index)" class="text-error hover:text-red-600 transition-colors flex items-center justify-center w-8 h-8 rounded-full hover:bg-red-500/10 cursor-pointer">
+                        <span class="material-symbols-outlined text-[18px]">delete</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <button type="button" @click="addScheduleSlot" class="w-full py-2 border border-dashed border-primary-container/20 rounded-lg text-xs font-semibold text-primary hover:bg-primary-container/5 transition-colors cursor-pointer flex items-center justify-center gap-1 mt-1">
+                    <span class="material-symbols-outlined text-[16px]">add</span>
+                    Thêm buổi học hàng tuần
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Manual Scheduling dates panel (shown if manual scheduling is checked OR in Edit mode) -->
+            <div v-if="isEdit || !useAutoSchedule" class="grid grid-cols-2 gap-4">
               <div class="space-y-1">
                 <label class="text-body-sm font-semibold text-primary-container">Ngày bắt đầu</label>
                 <input
@@ -845,19 +980,37 @@
           <p class="text-body-sm text-on-surface-variant leading-relaxed">
             Chọn giáo viên phụ trách cho lớp <strong class="text-primary-container">{{ assignTeacherTargetClass?.className }}</strong>:
           </p>
-          <div class="space-y-1">
-            <label class="text-body-sm font-semibold text-primary-container">Giáo viên phụ trách *</label>
-            <div class="relative">
-              <select
-                v-model="selectedTeacherId"
-                class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-primary-container cursor-pointer focus:border-primary-container/40 focus:ring-2 focus:ring-primary-container/20 focus:outline-none transition-all"
-              >
-                <option :value="null">Chưa phân công</option>
-                <option v-for="t in teachers" :key="t.userId" :value="t.userId">
-                  {{ t.fullName }} (@{{ t.username }})
-                </option>
-              </select>
-              <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+          <div class="space-y-3">
+            <div class="space-y-1">
+              <label class="text-body-sm font-semibold text-primary-container">Giáo viên chính *</label>
+              <div class="relative">
+                <select
+                  v-model="selectedTeacherId"
+                  class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-primary-container cursor-pointer focus:border-primary-container/40 focus:ring-2 focus:ring-primary-container/20 focus:outline-none transition-all"
+                >
+                  <option :value="null">Chưa phân công</option>
+                  <option v-for="t in teachers" :key="t.userId" :value="t.userId">
+                    {{ t.fullName }} (@{{ t.username }})
+                  </option>
+                </select>
+                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+              </div>
+            </div>
+
+            <div class="space-y-1">
+              <label class="text-body-sm font-semibold text-primary-container">Giáo viên phụ / Trợ giảng</label>
+              <div class="relative">
+                <select
+                  v-model="selectedTeacherId2"
+                  class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-primary-container cursor-pointer focus:border-primary-container/40 focus:ring-2 focus:ring-primary-container/20 focus:outline-none transition-all"
+                >
+                  <option :value="null">Chưa phân công</option>
+                  <option v-for="t in teachers" :key="t.userId" :value="t.userId">
+                    {{ t.fullName }} (@{{ t.username }})
+                  </option>
+                </select>
+                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+              </div>
             </div>
           </div>
           <div class="flex justify-end gap-3 pt-2">
@@ -953,12 +1106,14 @@ const activeDropdownId = ref(null)
 const assignTeacherDialog = ref(false)
 const assignTeacherTargetClass = ref(null)
 const selectedTeacherId = ref(null)
+const selectedTeacherId2 = ref(null)
 const savingAssignment = ref(false)
 
 function openAssignTeacherDialog(cls) {
   activeDropdownId.value = null
   assignTeacherTargetClass.value = cls
   selectedTeacherId.value = cls.teacherId || null
+  selectedTeacherId2.value = cls.teacherId2 || null
   assignTeacherDialog.value = true
 }
 
@@ -971,10 +1126,16 @@ async function saveTeacherAssignment() {
     const selected = teachers.value.find(t => t.userId === teacherId)
     const teacherName = selected ? selected.fullName : ''
     
+    const teacherId2 = selectedTeacherId2.value
+    const selected2 = teachers.value.find(t => t.userId === teacherId2)
+    const teacherName2 = selected2 ? selected2.fullName : ''
+    
     await classStore.updateClass(classId, {
       ...assignTeacherTargetClass.value,
       teacherId,
-      teacherName
+      teacherName,
+      teacherId2,
+      teacherName2
     })
     
     showSnackbar('Phân công giáo viên thành công', 'success')
@@ -1012,12 +1173,102 @@ const vipFormData = ref({
 })
 
 const teachers = ref([])
+const availableRooms = ref([])
+const useAutoSchedule = ref(true)
+const selectedStartWeekMonday = ref('')
+const scheduleSlots = ref([])
+
+const weekDays = [
+  { label: 'Thứ 2', value: 2 },
+  { label: 'Thứ 3', value: 3 },
+  { label: 'Thứ 4', value: 4 },
+  { label: 'Thứ 5', value: 5 },
+  { label: 'Thứ 6', value: 6 },
+  { label: 'Thứ 7', value: 7 },
+  { label: 'Chủ nhật', value: 0 },
+]
+
+const sessionOptions = [
+  { title: '🌅 Sáng', value: 'Sang' },
+  { title: '☀️ Chiều', value: 'Chieu' },
+  { title: '🌙 Tối', value: 'Toi' },
+]
+
+function addScheduleSlot() {
+  scheduleSlots.value.push({
+    dayOfWeek: 2,
+    session: 'Sang',
+    startTime: '08:00',
+    endTime: '10:00'
+  })
+}
+
+function removeScheduleSlot(index) {
+  scheduleSlots.value.splice(index, 1)
+}
+
+const weeksList = computed(() => {
+  const list = []
+  const today = new Date()
+  const day = today.getDay()
+  const diff = today.getDate() - day + (day === 0 ? -6 : 1)
+  const currentMonday = new Date(today.setDate(diff))
+  
+  const startMonday = new Date(currentMonday)
+  startMonday.setDate(currentMonday.getDate() - 4 * 7)
+  
+  for (let i = 0; i < 52; i++) {
+    const monday = new Date(startMonday)
+    monday.setDate(startMonday.getDate() + i * 7)
+    
+    const sunday = new Date(monday)
+    sunday.setDate(monday.getDate() + 6)
+    
+    const monStr = monday.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })
+    const sunStr = sunday.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    
+    list.push({
+      label: `Tuần từ ${monStr} đến ${sunStr}`,
+      mondayStr: monday.toISOString().split('T')[0],
+      sundayStr: sunday.toISOString().split('T')[0],
+      mondayDate: new Date(monday),
+      sundayDate: new Date(sunday)
+    })
+  }
+  return list
+})
+
+const selectedCourse = computed(() => {
+  return courseStore.courses.find(c => c.courseId === formData.value.courseId)
+})
+
+const calculatedEndWeekLabel = computed(() => {
+  if (!formData.value.courseId || !selectedStartWeekMonday.value) return 'Chưa xác định'
+  const course = selectedCourse.value
+  if (!course) return 'Chưa xác định'
+  
+  const duration = course.durationWeeks || Math.ceil((course.totalSessions || 10) / 2)
+  const startIndex = weeksList.value.findIndex(w => w.mondayStr === selectedStartWeekMonday.value)
+  if (startIndex === -1) return 'Chưa xác định'
+  
+  const endWeekIndex = startIndex + duration - 1
+  if (endWeekIndex >= weeksList.value.length) return 'Vượt quá danh sách tuần'
+  
+  const endWeek = weeksList.value[endWeekIndex]
+  
+  formData.value.startDate = selectedStartWeekMonday.value
+  formData.value.endDate = endWeek.sundayStr
+  
+  return endWeek.label
+})
 
 const formData = ref({
   courseId: null,
   className: '',
   teacherId: null,
   teacherName: '',
+  teacherId2: null,
+  teacherName2: '',
   room: '',
   maxStudents: 30,
   startDate: null,
@@ -1059,9 +1310,25 @@ const validationErrors = ref({
 })
 
 const isFormValid = computed(() => {
-  return formData.value.courseId !== null &&
+  const basic = formData.value.courseId !== null &&
          formData.value.className.trim().length > 0 &&
          formData.value.maxStudents > 0
+  if (!basic) return false
+  
+  if (!isEdit.value && useAutoSchedule.value) {
+    if (!selectedStartWeekMonday.value) return false
+    if (scheduleSlots.value.length === 0) return false
+    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/
+    for (const slot of scheduleSlots.value) {
+      if (!slot.startTime || !slot.endTime) return false
+      if (!timeRegex.test(slot.startTime) || !timeRegex.test(slot.endTime)) return false
+      if (slot.startTime >= slot.endTime) return false
+    }
+  } else {
+    if (!formData.value.startDate || !formData.value.endDate) return false
+    if (formData.value.startDate > formData.value.endDate) return false
+  }
+  return true
 })
 
 watch(() => formData.value.courseId, (val) => {
@@ -1284,12 +1551,30 @@ async function fetchTeachers() {
   }
 }
 
+async function fetchClassrooms() {
+  try {
+    const response = await api.get('/api/v1/classrooms')
+    availableRooms.value = response.data || []
+  } catch (error) {
+    console.error('Failed to fetch classrooms:', error)
+  }
+}
+
 function onTeacherSelect() {
   const selected = teachers.value.find(t => t.userId === formData.value.teacherId)
   if (selected) {
     formData.value.teacherName = selected.fullName
   } else {
     formData.value.teacherName = ''
+  }
+}
+
+function onTeacher2Select() {
+  const selected = teachers.value.find(t => t.userId === formData.value.teacherId2)
+  if (selected) {
+    formData.value.teacherName2 = selected.fullName
+  } else {
+    formData.value.teacherName2 = ''
   }
 }
 
@@ -1315,7 +1600,12 @@ onMounted(() => {
 function openCreateDialog() {
   isEdit.value = false
   validationErrors.value = { courseId: '', className: '', maxStudents: '' }
-  formData.value = { courseId: null, className: '', teacherId: null, teacherName: '', room: '', maxStudents: 30, startDate: null, endDate: null }
+  formData.value = { courseId: null, className: '', teacherId: null, teacherName: '', teacherId2: null, teacherName2: '', room: '', maxStudents: 30, startDate: null, endDate: null }
+  useAutoSchedule.value = true
+  selectedStartWeekMonday.value = weeksList.value[4]?.mondayStr || ''
+  scheduleSlots.value = [
+    { dayOfWeek: 2, session: 'Sang', startTime: '08:00', endTime: '10:00' }
+  ]
   dialog.value = true
 }
 
@@ -1328,11 +1618,14 @@ function openEditDialog(cls) {
     className: cls.className,
     teacherId: cls.teacherId || null,
     teacherName: cls.teacherName || '',
+    teacherId2: cls.teacherId2 || null,
+    teacherName2: cls.teacherName2 || '',
     room: cls.room || '',
     maxStudents: cls.maxStudents,
     startDate: cls.startDate?.split('T')[0] || null,
     endDate: cls.endDate?.split('T')[0] || null,
   }
+  useAutoSchedule.value = false
   dialog.value = true
 }
 
@@ -1344,8 +1637,26 @@ async function saveForm() {
       await classStore.updateClass(formData.value.classId, formData.value)
       showSnackbar('Cập nhật lớp thành công', 'success')
     } else {
-      await classStore.createClass(formData.value)
-      showSnackbar('Mở lớp mới thành công', 'success')
+      if (useAutoSchedule.value) {
+        // Trigger computed evaluation to set startDate and endDate in formData
+        const _ = calculatedEndWeekLabel.value
+      }
+      
+      const createdClass = await classStore.createClass(formData.value)
+      const classId = createdClass.classId
+      
+      if (useAutoSchedule.value && scheduleSlots.value.length > 0) {
+        for (const slot of scheduleSlots.value) {
+          await api.post(`/api/v1/classes/${classId}/schedules`, {
+            classId,
+            dayOfWeek: slot.dayOfWeek,
+            session: slot.session,
+            startTime: slot.startTime,
+            endTime: slot.endTime
+          })
+        }
+      }
+      showSnackbar('Mở lớp mới và tự động tạo lịch học thành công', 'success')
     }
     dialog.value = false
     fetchData()
@@ -1407,6 +1718,7 @@ onMounted(async () => {
   window.addEventListener('click', closeAllDropdowns)
   await courseStore.fetchCourses({ pageSize: 1000 })
   await fetchTeachers()
+  await fetchClassrooms()
   fetchData()
 })
 

@@ -68,8 +68,8 @@
               <td class="py-4 px-6 font-mono text-on-surface-variant text-[13px]">@{{ teacher.username }}</td>
               <td class="py-4 px-6 font-semibold text-primary">{{ teacher.fullName }}</td>
               <td class="py-4 px-6">
-                <span v-if="teacher.specialization" class="px-2.5 py-0.5 rounded-lg bg-amber-500/10 text-amber-700 text-[11px] font-semibold border border-amber-500/20">
-                  {{ teacher.specialization }}
+                <span v-if="teacher.specialization" :class="[getSpecializationClass(teacher.specialization), 'px-2.5 py-0.5 rounded-lg text-[11px] font-semibold border']">
+                  {{ getSpecializationLabel(teacher.specialization) }}
                 </span>
                 <span v-else class="text-on-surface-variant/50">—</span>
               </td>
@@ -162,4 +162,22 @@ defineEmits([
   'prev-page',
   'next-page'
 ])
+
+function getSpecializationLabel(spec) {
+  const map = {
+    TinHoc: 'Tin học',
+    NgoaiNgu: 'Ngoại ngữ',
+    KyNang: 'Kỹ năng'
+  }
+  return map[spec] || spec
+}
+
+function getSpecializationClass(spec) {
+  const map = {
+    TinHoc: 'bg-sky-500/10 text-sky-700 border-sky-500/20',
+    NgoaiNgu: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20',
+    KyNang: 'bg-amber-500/10 text-amber-700 border-amber-500/20'
+  }
+  return map[spec] || 'bg-slate-500/10 text-slate-700 border-slate-500/20'
+}
 </script>
