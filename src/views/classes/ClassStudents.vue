@@ -393,6 +393,7 @@
                 <tr class="bg-surface-container-high text-on-surface-variant font-title-md text-body-sm">
                   <th class="py-4 px-6 font-semibold whitespace-nowrap">Mã HV</th>
                   <th class="py-4 px-6 font-semibold whitespace-nowrap">Họ và tên</th>
+                  <th class="py-4 px-6 font-semibold whitespace-nowrap text-center">Chuyên cần</th>
                   <th class="py-4 px-6 font-semibold whitespace-nowrap text-center">Kiểm tra</th>
                   <th class="py-4 px-6 font-semibold whitespace-nowrap text-center">Giữa kỳ</th>
                   <th class="py-4 px-6 font-semibold whitespace-nowrap text-center">Cuối kỳ</th>
@@ -408,6 +409,11 @@
                 >
                   <td class="py-4 px-6 font-semibold text-primary-container">HV-{{ String(st.studentId).padStart(4, '0') }}</td>
                   <td class="py-4 px-6 font-semibold text-on-surface">{{ st.studentName }}</td>
+                  <td class="py-2 px-4 text-center">
+                    <span class="font-bold text-primary px-2 py-0.5 rounded bg-white/40 border border-white/60 text-[12px]">
+                      {{ st.attendanceScore }}
+                    </span>
+                  </td>
                   <td class="py-2 px-4 text-center">
                     <input
                       v-model.number="st.editKiemTra.score"

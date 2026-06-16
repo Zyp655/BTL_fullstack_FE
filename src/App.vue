@@ -336,8 +336,14 @@ const navItems = computed(() => {
     items.push({ title: 'Thanh toán & Báo cáo', icon: 'payments', path: '/payments' })
     items.push({ title: 'Quản lý danh mục', icon: 'category', path: '/categories' })
     items.push({ title: 'Quản lý giảng viên', icon: 'co_present', path: '/teachers' })
+    items.push({ title: 'Quản lý lương GV', icon: 'account_balance', path: '/teachers/salary' })
+    items.push({ title: 'Quản lý phòng học', icon: 'meeting_room', path: '/classrooms' })
     items.push({ title: 'Quản lý tài khoản', icon: 'manage_accounts', path: '/users' })
     items.push({ title: 'Yêu cầu hỗ trợ', icon: 'chat', path: '/support-messages' })
+  }
+
+  if (authStore.isTeacher) {
+    items.push({ title: 'Phiếu lương của tôi', icon: 'receipt_long', path: '/teachers/salary' })
   }
 
   return items

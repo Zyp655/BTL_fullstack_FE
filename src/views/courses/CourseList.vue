@@ -145,6 +145,10 @@
               <span class="font-bold text-primary-container text-body-sm">{{ record.totalSessions }} buổi</span>
             </template>
 
+            <template v-else-if="column.key === 'durationWeeks'">
+              <span class="font-bold text-primary-container text-body-sm">{{ record.durationWeeks || Math.ceil(record.totalSessions / 2) }} tuần</span>
+            </template>
+
             <template v-else-if="column.key === 'fee'">
               <span class="font-bold text-on-tertiary-container text-body-sm">{{ formatCurrency(record.fee) }}</span>
             </template>
@@ -329,6 +333,10 @@
                   <div class="flex justify-between items-center text-body-sm">
                     <span class="text-on-surface-variant font-medium">Số buổi học:</span>
                     <span class="font-bold text-primary-container">{{ course.totalSessions }} buổi</span>
+                  </div>
+                  <div class="flex justify-between items-center text-body-sm">
+                    <span class="text-on-surface-variant font-medium">Thời lượng:</span>
+                    <span class="font-bold text-primary-container">{{ course.durationWeeks || Math.ceil(course.totalSessions / 2) }} tuần</span>
                   </div>
                   <div class="flex justify-between items-center text-body-sm">
                     <span class="text-on-surface-variant font-medium">Học phí:</span>
@@ -660,14 +668,14 @@
               </div>
             </div>
 
-            <!-- Fee and Sessions -->
-            <div class="grid grid-cols-2 gap-4">
+            <!-- Fee, Sessions and Duration Weeks -->
+            <div class="grid grid-cols-3 gap-4">
               <div class="space-y-1">
                 <label class="text-body-sm font-semibold text-primary">Học phí (VNĐ) *</label>
                 <input
                   v-model.number="formData.fee"
                   type="number"
-                  class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all"
+                  class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-xs text-primary focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all"
                   placeholder="Ví dụ: 3000000"
                 />
               </div>
@@ -676,8 +684,18 @@
                 <input
                   v-model.number="formData.totalSessions"
                   type="number"
-                  class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all"
+                  @input="onTotalSessionsInput"
+                  class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-xs text-primary focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all"
                   placeholder="Ví dụ: 24"
+                />
+              </div>
+              <div class="space-y-1">
+                <label class="text-body-sm font-semibold text-primary">Thời lượng (tuần) *</label>
+                <input
+                  v-model.number="formData.durationWeeks"
+                  type="number"
+                  class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-xs text-primary focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/10 transition-all"
+                  placeholder="Ví dụ: 12"
                 />
               </div>
             </div>
@@ -943,12 +961,29 @@
                 </div>
                 <div class="space-y-1">
                   <label class="text-body-sm font-semibold text-primary">Phòng học</label>
-                  <input
-                    v-model="vipLaunchForm.room"
-                    type="text"
-                    class="w-full bg-white border border-outline-variant/60 rounded-lg px-4 py-2.5 text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/15 transition-all"
-                    placeholder="Ví dụ: Phòng 101, Phòng VIP 1"
-                  />
+                  <div class="relative">
+                    <select
+                      v-model="vipLaunchForm.room"
+                      class="w-full bg-white border border-outline-variant/60 rounded-lg appearance-none pl-4 pr-10 py-2.5 text-body-sm text-primary cursor-pointer focus:outline-none focus:border-on-tertiary-container focus:ring-2 focus:ring-on-tertiary-container/15 transition-all"
+                    >
+                      <option value="">Chưa xếp phòng</option>
+                      <option
+                        v-for="room in availableRooms"
+                        :key="room.roomNumber"
+                        :value="room.roomNumber"
+                        :disabled="room.isMaintenance"
+                      >
+                        Phòng {{ room.roomNumber }} {{ room.isMaintenance ? '(Bảo trì)' : (room.status === 'Occupied' ? '(Đang học)' : '') }}
+                      </option>
+                      <option
+                        v-if="vipLaunchForm.room && !availableRooms.some(r => r.roomNumber === vipLaunchForm.room)"
+                        :value="vipLaunchForm.room"
+                      >
+                        {{ vipLaunchForm.room.startsWith('Phòng') || vipLaunchForm.room.startsWith('P.') ? vipLaunchForm.room : 'Phòng ' + vipLaunchForm.room }} (Đang chọn)
+                      </option>
+                    </select>
+                    <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+                  </div>
                 </div>
               </div>
 
@@ -1045,6 +1080,12 @@ const courseColumns = [
     dataIndex: 'totalSessions',
     key: 'totalSessions',
     sorter: (a, b) => a.totalSessions - b.totalSessions,
+  },
+  {
+    title: 'Thời lượng',
+    dataIndex: 'durationWeeks',
+    key: 'durationWeeks',
+    sorter: (a, b) => a.durationWeeks - b.durationWeeks,
   },
   {
     title: 'Học phí',
@@ -1225,12 +1266,13 @@ const vipLaunchStudents = ref([])
 const loadingVipLaunchStudents = ref(false)
 const submittingVipLaunch = ref(false)
 const teachersList = ref([])
+const availableRooms = ref([])
 
 const vipLaunchForm = ref({
   className: '',
   teacherId: null,
   teacherName: '',
-  room: 'Phòng VIP 1',
+  room: '',
   totalSessions: 15,
   maxStudents: 5,
   startDate: new Date().toISOString().split('T')[0],
@@ -1365,6 +1407,7 @@ const formData = ref({
   level: 'Beginner',
   fee: 0,
   totalSessions: 0,
+  durationWeeks: 0,
   isActive: true,
 })
 
@@ -1395,8 +1438,15 @@ const levelOptions = [
 const isCourseFormValid = computed(() => {
   return formData.value.courseName.trim().length >= 2 &&
          formData.value.fee > 0 &&
-         formData.value.totalSessions > 0
+         formData.value.totalSessions > 0 &&
+         formData.value.durationWeeks > 0
 })
+
+function onTotalSessionsInput() {
+  if (formData.value.totalSessions > 0 && (!formData.value.durationWeeks || formData.value.durationWeeks === 0)) {
+    formData.value.durationWeeks = Math.ceil(formData.value.totalSessions / 2)
+  }
+}
 
 const isVipLaunchFormValid = computed(() => {
   return vipLaunchForm.value.className.trim().length > 0 &&
@@ -1466,6 +1516,7 @@ function openCreateDialog() {
     level: 'Beginner',
     fee: 0,
     totalSessions: 0,
+    durationWeeks: 0,
     isActive: true,
   }
   imageUrlsList.value = ['preset_default']
@@ -1697,7 +1748,7 @@ const openStandardLaunchModal = async (course) => {
     className: `Lớp ${course.courseName} - Khóa mới`,
     teacherId: null,
     teacherName: '',
-    room: 'Phòng 101',
+    room: '',
     totalSessions: course.totalSessions,
     maxStudents: 20,
     startDate: new Date().toISOString().split('T')[0],
@@ -1729,7 +1780,7 @@ const openVipLaunchModal = async (course) => {
     className: `Lớp ${course.courseName} - VIP nhóm nhỏ`,
     teacherId: null,
     teacherName: '',
-    room: 'Phòng VIP 1',
+    room: '',
     totalSessions: 15,
     maxStudents: 5,
     startDate: new Date().toISOString().split('T')[0],
@@ -1812,7 +1863,17 @@ onMounted(async () => {
   await fetchData()
   await fetchQueueStatuses()
   await fetchCurrentStudentProfile()
+  await fetchClassrooms()
 })
+
+async function fetchClassrooms() {
+  try {
+    const response = await api.get('/api/v1/classrooms')
+    availableRooms.value = response.data || []
+  } catch (error) {
+    console.error('Failed to fetch classrooms:', error)
+  }
+}
 
 watch(enrollQueueDialog, (newVal) => {
   if (!newVal) {

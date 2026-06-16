@@ -57,6 +57,12 @@ const routes = [
     meta: { title: 'Quản lý giảng viên', icon: 'co_present', roles: ['Admin'] }
   },
   {
+    path: '/teachers/salary',
+    name: 'TeacherSalary',
+    component: () => import('../views/teachers/TeacherSalaryList.vue'),
+    meta: { title: 'Quản lý lương giảng viên', icon: 'account_balance', roles: ['Admin', 'GiaoVien'] }
+  },
+  {
     path: '/payments',
     name: 'Payments',
     component: () => import('../views/payments/PaymentList.vue'),
@@ -73,6 +79,12 @@ const routes = [
     name: 'Users',
     component: () => import('../views/users/UserList.vue'),
     meta: { title: 'Quản lý tài khoản', icon: 'manage_accounts', adminOnly: true, roles: ['Admin'] }
+  },
+  {
+    path: '/classrooms',
+    name: 'Classrooms',
+    component: () => import('../views/classrooms/ClassroomList.vue'),
+    meta: { title: 'Quản lý phòng học', icon: 'meeting_room', roles: ['Admin'] }
   },
   {
     path: '/support-messages',

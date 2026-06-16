@@ -81,13 +81,20 @@
           <!-- Professional profile: Specialization & Degree -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="space-y-1">
-              <label class="text-body-sm font-semibold text-primary">Chuyên môn giảng dạy</label>
-              <input
-                v-model="formData.specialization"
-                type="text"
-                class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary placeholder:text-on-surface-variant/60 focus:outline-none"
-                placeholder="Ví dụ: Tiếng Anh, Python, React..."
-              />
+              <label class="text-body-sm font-semibold text-primary">Chuyên môn giảng dạy *</label>
+              <div class="relative">
+                <select
+                  v-model="formData.specialization"
+                  class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-primary cursor-pointer focus:outline-none focus:border-on-tertiary-container/30 transition-colors"
+                >
+                  <option value="" disabled>Chọn chuyên môn...</option>
+                  <option value="TinHoc">Tin học</option>
+                  <option value="NgoaiNgu">Ngoại ngữ</option>
+                  <option value="KyNang">Kỹ năng</option>
+                </select>
+                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+              </div>
+              <p v-if="validationErrors.specialization" class="text-error text-[11px] font-semibold">{{ validationErrors.specialization }}</p>
             </div>
             <div class="space-y-1">
               <label class="text-body-sm font-semibold text-primary">Bằng cấp / Học vị</label>
@@ -153,7 +160,8 @@ const validationErrors = ref({
   username: '',
   password: '',
   fullName: '',
-  email: ''
+  email: '',
+  specialization: ''
 })
 
 const isFormValid = computed(() => {
@@ -161,13 +169,14 @@ const isFormValid = computed(() => {
   const isPasswordOk = isEdit.value || (formData.value.password && formData.value.password.length >= 6)
   const isNameOk = formData.value.fullName.trim().length > 0
   const isEmailOk = formData.value.email === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.value.email)
+  const isSpecOk = formData.value.specialization && formData.value.specialization.length > 0
   
-  return isUsernameOk && isPasswordOk && isNameOk && isEmailOk
+  return isUsernameOk && isPasswordOk && isNameOk && isEmailOk && isSpecOk
 })
 
 watch(() => props.show, (newVal) => {
   if (newVal) {
-    validationErrors.value = { username: '', password: '', fullName: '', email: '' }
+    validationErrors.value = { username: '', password: '', fullName: '', email: '', specialization: '' }
     if (props.teacher) {
       formData.value = {
         userId: props.teacher.userId,
@@ -215,6 +224,10 @@ watch(() => formData.value.email, (val) => {
   } else {
     validationErrors.value.email = ''
   }
+})
+
+watch(() => formData.value.specialization, (val) => {
+  validationErrors.value.specialization = !val ? 'Vui lòng chọn chuyên môn giảng dạy' : ''
 })
 
 async function saveForm() {

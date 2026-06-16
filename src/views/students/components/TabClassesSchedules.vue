@@ -39,12 +39,34 @@
           </button>
         </div>
         
+        <!-- Search Bar -->
+        <div class="relative w-full" v-if="enrolledClasses.length > 0">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] pointer-events-none">search</span>
+          <input
+            type="text"
+            v-model="searchText"
+            class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg pl-9 pr-10 py-2 text-body-sm text-primary placeholder-on-surface-variant/50 focus:outline-none focus:border-primary-container/40 transition-colors"
+            placeholder="Tìm kiếm lớp học, môn học..."
+          />
+          <button
+            v-if="searchText"
+            @click="searchText = ''"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer w-5 h-5 flex items-center justify-center rounded-full hover:bg-slate-200"
+          >
+            <span class="material-symbols-outlined text-[16px]">close</span>
+          </button>
+        </div>
+
         <div v-if="enrolledClasses.length === 0" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-8 text-center rounded-xl text-on-surface-variant">
           Bạn chưa đăng ký tham gia lớp học nào.
         </div>
 
+        <div v-if="enrolledClasses.length > 0 && filteredClasses.length === 0" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-8 text-center rounded-xl text-on-surface-variant">
+          Không tìm thấy lớp học phù hợp với từ khóa tìm kiếm.
+        </div>
+
         <div
-          v-for="cls in enrolledClasses"
+          v-for="cls in paginatedClasses"
           :key="cls.enrollmentId"
           @click="$emit('select-class', cls)"
           :class="[
@@ -82,6 +104,31 @@
               Xem lịch học
               <span class="material-symbols-outlined text-[16px]">chevron_right</span>
             </span>
+          </div>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div v-if="totalPages > 1" class="flex justify-between items-center text-body-sm text-secondary bg-white/50 backdrop-blur-md p-3.5 rounded-xl border border-white/40 shadow-[0_4px_12px_rgba(0,0,0,0.02)] mt-3">
+          <span class="text-on-surface-variant/80 font-medium">
+            Trang {{ currentPage }} / {{ totalPages }}
+          </span>
+          <div class="flex items-center gap-1.5">
+            <button
+              @click="currentPage--"
+              :disabled="currentPage === 1"
+              class="w-8 h-8 rounded-lg flex items-center justify-center text-secondary hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              title="Trang trước"
+            >
+              <span class="material-symbols-outlined text-[20px]">chevron_left</span>
+            </button>
+            <button
+              @click="currentPage++"
+              :disabled="currentPage === totalPages"
+              class="w-8 h-8 rounded-lg flex items-center justify-center text-secondary hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              title="Trang sau"
+            >
+              <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+            </button>
           </div>
         </div>
       </div>
@@ -155,18 +202,23 @@
             Kết quả học tập &amp; Điểm số
           </h3>
 
-          <div v-if="selectedClassExamResults.length === 0" class="bg-white/70 backdrop-blur-[20px] border border-white/40 p-4 text-center rounded-xl text-body-sm text-on-surface-variant">
-            Chưa có điểm thi/kiểm tra cho lớp học này.
-          </div>
-
-          <div v-else class="bg-white/70 backdrop-blur-[20px] border border-white/40 p-4 rounded-xl space-y-3 shadow-[0_8px_16px_rgba(0,0,0,0.03)]">
+          <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 p-4 rounded-xl space-y-3 shadow-[0_8px_16px_rgba(0,0,0,0.03)]">
             <div class="flex justify-start items-center gap-2 text-body-sm font-semibold text-primary-container">
               <span>Điểm trung bình môn:</span>
               <span :class="[selectedClassAverageScore >= 5 ? 'text-emerald-600' : 'text-red-500', 'font-extrabold text-body-lg']">
                 {{ selectedClassAverageScore > 0 ? selectedClassAverageScore.toFixed(1) : 'Chưa tổng kết' }}
               </span>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <!-- Chuyên cần -->
+              <div class="bg-white/40 p-2.5 rounded-lg border border-white/20 flex justify-start items-center gap-2 text-body-sm">
+                <span class="font-medium text-primary-container">Chuyên cần:</span>
+                <span :class="[selectedClassAttendanceScore >= 5 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20', 'font-extrabold text-[13px] px-2 py-0.5 rounded border']">
+                  {{ selectedClassAttendanceScore }}
+                </span>
+              </div>
+
+              <!-- Exam Results -->
               <div
                 v-for="res in selectedClassExamResults"
                 :key="res.resultId"
@@ -285,10 +337,37 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useAuthStore } from '../../../stores'
 
 const authStore = useAuthStore()
+
+const searchText = ref('')
+const currentPage = ref(1)
+const itemsPerPage = 5
+
+const filteredClasses = computed(() => {
+  const query = searchText.value.toLowerCase().trim()
+  if (!query) return props.enrolledClasses
+  return props.enrolledClasses.filter(c => 
+    (c.className && c.className.toLowerCase().includes(query)) ||
+    (c.courseName && c.courseName.toLowerCase().includes(query))
+  )
+})
+
+const totalPages = computed(() => {
+  return Math.ceil(filteredClasses.value.length / itemsPerPage) || 1
+})
+
+const paginatedClasses = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return filteredClasses.value.slice(start, end)
+})
+
+watch(searchText, () => {
+  currentPage.value = 1
+})
 
 const props = defineProps({
   enrolledClasses: { type: Array, required: true },
@@ -322,14 +401,28 @@ const selectedClassExamResults = computed(() => {
   return props.examResults[props.selectedClass.enrollmentId] || []
 })
 
+const selectedClassAttendanceScore = computed(() => {
+  const summary = selectedClassAttendanceSummary.value
+  if (!summary || !summary.totalSessions) return 10.0
+  const total = summary.totalSessions
+  const present = summary.present || 0
+  const late = summary.late || 0
+  const excused = summary.excused || 0
+  
+  const score = ((present + excused + late) / total) * 10
+  return Math.min(10, Math.max(0, Math.round(score * 10) / 10))
+})
+
 const selectedClassAverageScore = computed(() => {
-  const scores = selectedClassExamResults.value
-  if (scores.length === 0) return 0
-  let total = 0
-  scores.forEach(s => {
-    total += s.score
-  })
-  return total / scores.length
+  const cc = selectedClassAttendanceScore.value
+  const gk = selectedClassExamResults.value.find(r => r.examType === 'GiuaKy')?.score
+  const ck = selectedClassExamResults.value.find(r => r.examType === 'CuoiKy')?.score
+  
+  if (gk === undefined || ck === undefined) {
+    return 0
+  }
+  
+  return Math.round((cc * 0.1 + gk * 0.3 + ck * 0.6) * 10) / 10
 })
 
 const selectedClassAttendanceSummary = computed(() => {

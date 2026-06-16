@@ -136,7 +136,7 @@
             <div class="flex items-center justify-between border-y border-outline-variant/30 py-3 text-body-xs font-semibold text-on-surface-variant">
               <div class="flex items-center gap-1">
                 <span class="material-symbols-outlined text-[16px] text-primary">schedule</span>
-                {{ course.durationWeeks }} tuần
+                {{ course.durationWeeks || Math.ceil(course.totalSessions / 2) }} tuần
               </div>
               <div class="flex items-center gap-1">
                 <span class="material-symbols-outlined text-[16px] text-primary">group</span>
@@ -308,7 +308,7 @@
             <div class="grid grid-cols-3 gap-4 border-y border-outline-variant/30 py-4 text-center">
               <div>
                 <p class="text-[11px] font-medium text-on-surface-variant">Thời lượng</p>
-                <p class="font-bold text-primary-container text-body-sm mt-0.5">{{ selectedCourseForDetail.durationWeeks }} tuần</p>
+                <p class="font-bold text-primary-container text-body-sm mt-0.5">{{ selectedCourseForDetail.durationWeeks || Math.ceil((selectedCourseForDetail.totalSessions || 10) / 2) }} tuần</p>
               </div>
               <div>
                 <p class="text-[11px] font-medium text-on-surface-variant">Đang ghi danh</p>
