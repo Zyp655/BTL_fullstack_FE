@@ -816,13 +816,21 @@ const totalDebt = computed(() => {
 // Helpers
 function formatDate(dateStr) {
   if (!dateStr) return '—'
-  const d = new Date(dateStr)
+  let normalizedStr = dateStr
+  if (typeof dateStr === 'string' && !dateStr.endsWith('Z') && !dateStr.includes('+') && !dateStr.match(/-\d{2}:\d{2}$/)) {
+    normalizedStr = dateStr + 'Z'
+  }
+  const d = new Date(normalizedStr)
   return d.toLocaleDateString('vi-VN')
 }
 
 function formatDateTime(dateStr) {
   if (!dateStr) return '—'
-  const d = new Date(dateStr)
+  let normalizedStr = dateStr
+  if (typeof dateStr === 'string' && !dateStr.endsWith('Z') && !dateStr.includes('+') && !dateStr.match(/-\d{2}:\d{2}$/)) {
+    normalizedStr = dateStr + 'Z'
+  }
+  const d = new Date(normalizedStr)
   return d.toLocaleString('vi-VN', {
     hour: '2-digit',
     minute: '2-digit',

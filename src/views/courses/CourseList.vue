@@ -188,10 +188,10 @@
                   v-if="record.isActive"
                   @click="handleEnrollQueue(record)"
                   class="px-2.5 py-1 rounded bg-on-tertiary-container/15 hover:bg-on-tertiary-container/25 text-on-tertiary-container font-semibold text-body-xs transition-all flex items-center gap-1 cursor-pointer"
-                  title="Ghép lớp học viên"
+                  title="Chuyển lớp học viên"
                 >
                   <span class="material-symbols-outlined text-[14px]">group_add</span>
-                  Ghép lớp
+                  Chuyển lớp
                 </button>
 
                 <button
@@ -342,7 +342,7 @@
                   
                   <!-- For students and admins, show waitlist queue status -->
                   <div v-if="!authStore.isTeacher" class="flex justify-between items-center text-body-sm">
-                    <span class="text-on-surface-variant font-medium">Chờ ghép lớp:</span>
+                    <span class="text-on-surface-variant font-medium">Chờ chuyển lớp:</span>
                     <span class="text-on-tertiary-container font-bold">{{ getQueueCount(course.courseId) }}/5 học viên</span>
                   </div>
 
@@ -365,7 +365,7 @@
                       class="w-full bg-on-tertiary-container/10 hover:bg-on-tertiary-container/20 text-on-tertiary-container border border-on-tertiary-container/20 hover:border-on-tertiary-container/30 py-2 rounded-lg font-semibold text-body-sm transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
                     >
                       <span class="material-symbols-outlined text-[18px]">group_add</span>
-                      {{ authStore.isStudent ? 'Đăng ký ghép lớp' : 'Ghép lớp học viên' }}
+                      {{ authStore.isStudent ? 'Đăng ký chuyển lớp' : 'Chuyển lớp học viên' }}
                     </button>
 
                     <button
@@ -791,16 +791,47 @@
                 Chưa có học viên nào trong hệ thống
               </div>
               <div v-else class="relative">
-                <select
-                  v-model="selectedStudentId"
-                  class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-primary bg-transparent cursor-pointer focus:border-primary-container/40 focus:ring-2 focus:ring-primary-container/20 focus:outline-none transition-all"
-                >
-                  <option :value="null">-- Chọn học viên --</option>
-                  <option v-for="std in allStudents" :key="std.studentId" :value="std.studentId">
-                    {{ std.fullName }} (SĐT: {{ std.phone || 'N/A' }})
-                  </option>
-                </select>
-                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+                <div class="relative">
+                  <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] pointer-events-none">search</span>
+                  <input
+                    type="text"
+                    v-model="studentSearchText"
+                    class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg pl-9 pr-16 py-2.5 text-body-sm text-primary placeholder-on-surface-variant/50 focus:outline-none focus:border-primary-container/40 transition-colors"
+                    placeholder="Tìm theo tên, email, SĐT hoặc mã..."
+                    @focus="onSearchFocus"
+                    @blur="onSearchBlur"
+                  />
+                  <button
+                    v-if="selectedStudentId"
+                    @click="clearStudentSelection"
+                    type="button"
+                    class="absolute right-9 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer flex items-center justify-center w-6 h-6 rounded-full hover:bg-primary-container/10"
+                  >
+                    <span class="material-symbols-outlined text-[16px]">close</span>
+                  </button>
+                  <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+                </div>
+                
+                <!-- Dropdown List -->
+                <div v-show="isDropdownOpen" class="absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white border border-outline-variant/30 rounded-lg shadow-lg py-1">
+                  <div
+                    v-for="student in filteredStudentsForSearch"
+                    :key="student.studentId"
+                    @mousedown="selectStudent(student)"
+                    class="px-4 py-2 hover:bg-primary-container/10 cursor-pointer text-body-sm text-primary flex flex-col transition-colors"
+                    :class="{ 'bg-primary-container/5 font-semibold': student.studentId === selectedStudentId }"
+                  >
+                    <span class="font-semibold text-primary-container">{{ student.fullName }}</span>
+                    <span class="text-[11px] text-on-surface-variant">
+                      Mã HV: HV-{{ String(student.studentId).padStart(4, '0') }} 
+                      <span v-if="student.phone"> | SĐT: {{ student.phone }}</span>
+                      <span v-if="student.email"> | {{ student.email }}</span>
+                    </span>
+                  </div>
+                  <div v-if="filteredStudentsForSearch.length === 0" class="px-4 py-3 text-body-sm text-on-surface-variant text-center">
+                    Không tìm thấy học viên
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -816,7 +847,7 @@
             <button
               @click="submitEnrollQueue"
               :disabled="submittingQueue || !selectedStudentId"
-              class="px-5 py-2.5 rounded-lg bg-primary-container text-on-primary font-semibold text-[13px] hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
+              class="px-5 py-2.5 rounded-lg bg-primary-container text-white font-semibold text-[13px] hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
             >
               <span v-if="submittingQueue" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
               Xác nhận
@@ -1099,6 +1130,64 @@ const submittingQueue = ref(false)
 const loadingStudents = ref(false)
 const allStudents = ref([])
 const currentStudentId = ref(null)
+
+const isDropdownOpen = ref(false)
+const studentSearchText = ref('')
+
+const selectedStudent = computed(() => {
+  return allStudents.value.find(s => s.studentId === selectedStudentId.value)
+})
+
+watch(selectedStudent, (newVal) => {
+  if (newVal) {
+    studentSearchText.value = `${newVal.fullName} (HV-${String(newVal.studentId).padStart(4, '0')})`
+  } else {
+    studentSearchText.value = ''
+  }
+}, { immediate: true })
+
+const filteredStudentsForSearch = computed(() => {
+  const query = studentSearchText.value.toLowerCase().trim()
+  const currentLabel = selectedStudent.value 
+    ? `${selectedStudent.value.fullName} (HV-${String(selectedStudent.value.studentId).padStart(4, '0')})`.toLowerCase() 
+    : ''
+  if (!query || query === currentLabel) {
+    return allStudents.value
+  }
+  return allStudents.value.filter(s => {
+    const nameMatch = s.fullName?.toLowerCase().includes(query)
+    const idMatch = `hv-${String(s.studentId).padStart(4, '0')}`.includes(query) || String(s.studentId).includes(query)
+    const emailMatch = s.email?.toLowerCase().includes(query)
+    const phoneMatch = s.phone?.includes(query)
+    return nameMatch || idMatch || emailMatch || phoneMatch
+  })
+})
+
+function onSearchFocus(e) {
+  isDropdownOpen.value = true
+  e.target.select()
+}
+
+function onSearchBlur() {
+  setTimeout(() => {
+    isDropdownOpen.value = false
+    if (selectedStudent.value) {
+      studentSearchText.value = `${selectedStudent.value.fullName} (HV-${String(selectedStudent.value.studentId).padStart(4, '0')})`
+    } else {
+      studentSearchText.value = ''
+    }
+  }, 200)
+}
+
+function selectStudent(student) {
+  selectedStudentId.value = student.studentId
+  isDropdownOpen.value = false
+}
+
+function clearStudentSelection() {
+  selectedStudentId.value = null
+  studentSearchText.value = ''
+}
 
 // VIP launch state
 const launchMode = ref('standard')
@@ -1521,7 +1610,7 @@ const handleEnrollQueue = async (course) => {
     submittingQueue.value = true
     try {
       await store.enrollInCourseQueue(currentStudentId.value, course.courseId)
-      showSnackbar('Bạn đã đăng ký vào hàng chờ ghép lớp thành công!', 'success')
+      showSnackbar('Bạn đã đăng ký vào hàng chờ chuyển lớp thành công!', 'success')
       await fetchQueueStatuses()
     } catch (e) {
       showSnackbar(e.response?.data?.message || 'Có lỗi xảy ra khi đăng ký hàng chờ', 'error')
@@ -1541,7 +1630,7 @@ const submitEnrollQueue = async () => {
   submittingQueue.value = true
   try {
     await store.enrollInCourseQueue(selectedStudentId.value, queueTargetCourse.value.courseId)
-    showSnackbar('Đã thêm học viên vào hàng chờ ghép lớp thành công!', 'success')
+    showSnackbar('Đã thêm học viên vào hàng chờ chuyển lớp thành công!', 'success')
     enrollQueueDialog.value = false
     await fetchQueueStatuses()
   } catch (e) {
@@ -1691,6 +1780,12 @@ onMounted(async () => {
   await fetchData()
   await fetchQueueStatuses()
   await fetchCurrentStudentProfile()
+})
+
+watch(enrollQueueDialog, (newVal) => {
+  if (!newVal) {
+    clearStudentSelection()
+  }
 })
 
 // Watch any active dialog to block body scroll

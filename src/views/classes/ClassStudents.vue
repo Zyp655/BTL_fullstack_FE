@@ -1254,7 +1254,11 @@ function getExamTypeLabel(type) {
 // ----------------------------------------------------
 function formatDate(date) {
   if (!date) return ''
-  return new Date(date).toLocaleDateString('vi-VN')
+  let normalizedStr = date
+  if (typeof date === 'string' && !date.endsWith('Z') && !date.includes('+') && !date.match(/-\d{2}:\d{2}$/)) {
+    normalizedStr = date + 'Z'
+  }
+  return new Date(normalizedStr).toLocaleDateString('vi-VN')
 }
 
 function getStatusLabel(status) {
