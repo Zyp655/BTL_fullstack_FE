@@ -883,7 +883,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject, watch } from 'vue'
+import { ref, computed, onMounted, inject, watch, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useClassStore, useCourseStore, useAuthStore } from '../../stores'
 import api from '../../services/api'
@@ -1408,6 +1408,19 @@ onMounted(async () => {
   await courseStore.fetchCourses({ pageSize: 1000 })
   await fetchTeachers()
   fetchData()
+})
+
+watch([dialog, deleteDialog, assignTeacherDialog, resolveDialog], ([d, del, assign, res]) => {
+  if (d === true || del === true || assign === true || res === true) {
+    document.body.style.overflow = 'hidden'
+  } else {
+    document.body.style.overflow = ''
+  }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('click', closeAllDropdowns)
+  document.body.style.overflow = ''
 })
 </script>
 

@@ -263,7 +263,7 @@
 </template>
 
 <script setup>
-import { ref, computed, provide } from 'vue'
+import { ref, computed, provide, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 
@@ -271,6 +271,11 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const mobileMenuOpen = ref(false)
+
+// Global route watcher to reset body overflow styling when navigating between pages
+watch(() => route.fullPath, () => {
+  document.body.style.overflow = ''
+})
 
 const isSubItemActive = (subItem) => {
   if (route.path !== subItem.path) return false
