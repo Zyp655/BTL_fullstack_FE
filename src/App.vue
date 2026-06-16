@@ -302,11 +302,11 @@ const navItems = computed(() => {
         path: '/student-portal',
         children: [
           { title: 'Lớp học & Lịch học', icon: 'school', path: '/student-portal', query: { tab: 'classes' } },
+          { title: 'Đăng ký môn học', icon: 'import_contacts', path: '/student-portal', query: { tab: 'register' } },
           { title: 'Học phí & Thanh toán', icon: 'receipt_long', path: '/student-portal', query: { tab: 'payments' } },
           { title: 'Ví bảo lưu', icon: 'account_balance_wallet', path: '/student-portal', query: { tab: 'credits' } }
         ]
-      },
-      { title: 'Đăng ký môn học', icon: 'import_contacts', path: '/register-course' }
+      }
     ]
   }
 
@@ -323,11 +323,11 @@ const navItems = computed(() => {
       path: '/student-portal',
       children: [
         { title: 'Lớp học & Lịch học', icon: 'school', path: '/student-portal', query: { tab: 'classes' } },
+        { title: 'Đăng ký môn học', icon: 'import_contacts', path: '/student-portal', query: { tab: 'register' } },
         { title: 'Học phí & Thanh toán', icon: 'receipt_long', path: '/student-portal', query: { tab: 'payments' } },
         { title: 'Ví bảo lưu', icon: 'account_balance_wallet', path: '/student-portal', query: { tab: 'credits' } }
       ]
     })
-    items.push({ title: 'Đăng ký môn học (HV)', icon: 'import_contacts', path: '/register-course' })
     items.push({ title: 'Thanh toán & Báo cáo', icon: 'payments', path: '/payments' })
     items.push({ title: 'Quản lý danh mục', icon: 'category', path: '/categories' })
     items.push({ title: 'Quản lý giảng viên', icon: 'co_present', path: '/teachers' })

@@ -10,16 +10,46 @@
         </div>
       </div>
       <div class="relative w-full sm:w-80">
-        <select
-          v-model="selectedStudentId"
-          class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none pl-4 pr-10 py-2.5 text-body-sm text-primary bg-transparent cursor-pointer focus:outline-none focus:border-on-tertiary-container/30 transition-colors"
-        >
-          <option :value="null">-- Chọn học viên --</option>
-          <option v-for="student in students" :key="student.studentId" :value="student.studentId">
-            {{ student.fullName }} (HV-{{ String(student.studentId).padStart(4, '0') }})
-          </option>
-        </select>
-        <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+        <div class="relative">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] pointer-events-none">search</span>
+          <input
+            type="text"
+            v-model="studentSearchText"
+            class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg pl-9 pr-16 py-2.5 text-body-sm text-primary placeholder-on-surface-variant/50 focus:outline-none focus:border-on-tertiary-container/30 transition-colors"
+            placeholder="Tìm theo tên, email, SĐT hoặc mã..."
+            @focus="onSearchFocus"
+            @blur="onSearchBlur"
+          />
+          <button
+            v-if="selectedStudentId"
+            @click="clearStudentSelection"
+            class="absolute right-9 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer flex items-center justify-center w-6 h-6 rounded-full hover:bg-primary-container/10"
+          >
+            <span class="material-symbols-outlined text-[16px]">close</span>
+          </button>
+          <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+        </div>
+        
+        <!-- Dropdown List -->
+        <div v-show="isDropdownOpen" class="absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white border border-outline-variant/30 rounded-lg shadow-lg py-1">
+          <div
+            v-for="student in filteredStudentsForSearch"
+            :key="student.studentId"
+            @mousedown="selectStudent(student)"
+            class="px-4 py-2 hover:bg-primary-container/10 cursor-pointer text-body-sm text-primary flex flex-col transition-colors"
+            :class="{ 'bg-primary-container/5 font-semibold': student.studentId === selectedStudentId }"
+          >
+            <span class="font-semibold text-primary-container">{{ student.fullName }}</span>
+            <span class="text-[11px] text-on-surface-variant">
+              Mã HV: HV-{{ String(student.studentId).padStart(4, '0') }} 
+              <span v-if="student.phone"> | SĐT: {{ student.phone }}</span>
+              <span v-if="student.email"> | {{ student.email }}</span>
+            </span>
+          </div>
+          <div v-if="filteredStudentsForSearch.length === 0" class="px-4 py-3 text-body-sm text-on-surface-variant text-center">
+            Không tìm thấy học viên
+          </div>
+        </div>
       </div>
     </div>
 
@@ -196,6 +226,14 @@
           :credit-summary="creditSummary"
         />
 
+        <TabRegisterCourse
+          v-slot="{ register }"
+          v-if="activeTab === 'register'"
+          :student-profile="studentProfile"
+          :enrolled-classes="enrolledClasses"
+          @refresh-portal="loadPortalData(true)"
+        />
+
         <TabConflicts
           v-slot="{ conflict }"
           v-if="activeTab === 'conflicts'"
@@ -338,6 +376,7 @@ import TabPayments from './components/TabPayments.vue'
 import TabCredits from './components/TabCredits.vue'
 import TabConflicts from './components/TabConflicts.vue'
 import TabCalendar from './components/TabCalendar.vue'
+import TabRegisterCourse from './components/TabRegisterCourse.vue'
 import ModalTransferClass from './components/ModalTransferClass.vue'
 import ModalGrading from './components/ModalGrading.vue'
 import ModalPaymentRecord from './components/ModalPaymentRecord.vue'
@@ -351,6 +390,64 @@ const showSnackbar = inject('showSnackbar')
 
 const students = ref([])
 const selectedStudentId = ref(null)
+
+const isDropdownOpen = ref(false)
+const studentSearchText = ref('')
+
+const selectedStudent = computed(() => {
+  return students.value.find(s => s.studentId === selectedStudentId.value)
+})
+
+watch(selectedStudent, (newVal) => {
+  if (newVal) {
+    studentSearchText.value = `${newVal.fullName} (HV-${String(newVal.studentId).padStart(4, '0')})`
+  } else {
+    studentSearchText.value = ''
+  }
+}, { immediate: true })
+
+const filteredStudentsForSearch = computed(() => {
+  const query = studentSearchText.value.toLowerCase().trim()
+  const currentLabel = selectedStudent.value 
+    ? `${selectedStudent.value.fullName} (HV-${String(selectedStudent.value.studentId).padStart(4, '0')})`.toLowerCase() 
+    : ''
+  if (!query || query === currentLabel) {
+    return students.value
+  }
+  return students.value.filter(s => {
+    const nameMatch = s.fullName?.toLowerCase().includes(query)
+    const idMatch = `hv-${String(s.studentId).padStart(4, '0')}`.includes(query) || String(s.studentId).includes(query)
+    const emailMatch = s.email?.toLowerCase().includes(query)
+    const phoneMatch = s.phone?.includes(query)
+    return nameMatch || idMatch || emailMatch || phoneMatch
+  })
+})
+
+function onSearchFocus(e) {
+  isDropdownOpen.value = true
+  e.target.select()
+}
+
+function onSearchBlur() {
+  setTimeout(() => {
+    isDropdownOpen.value = false
+    if (selectedStudent.value) {
+      studentSearchText.value = `${selectedStudent.value.fullName} (HV-${String(selectedStudent.value.studentId).padStart(4, '0')})`
+    } else {
+      studentSearchText.value = ''
+    }
+  }, 200)
+}
+
+function selectStudent(student) {
+  selectedStudentId.value = student.studentId
+  isDropdownOpen.value = false
+}
+
+function clearStudentSelection() {
+  selectedStudentId.value = null
+  studentSearchText.value = ''
+}
 
 const loading = ref(true)
 const studentProfile = ref(null)
@@ -388,6 +485,7 @@ const loadingSupportAlternativeClasses = ref(false)
 const activeTab = ref(route.query.tab || 'classes')
 const tabs = [
   { label: 'Lớp học & Lịch học', value: 'classes', icon: 'school' },
+  { label: 'Đăng ký môn học', value: 'register', icon: 'import_contacts' },
   { label: 'Lịch học tuần', value: 'calendar', icon: 'calendar_month' },
   { label: 'Học phí & Thanh toán', value: 'payments', icon: 'receipt_long' },
   { label: 'Ví bảo lưu', value: 'credits', icon: 'account_balance_wallet' },

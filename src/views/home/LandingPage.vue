@@ -112,11 +112,11 @@
         
         <div class="flex-1 w-full max-w-2xl relative z-10 reveal reveal-fade-left">
           <!-- 3D Interactive Hero Showcase -->
-          <div class="relative w-full h-[380px] md:h-[420px] rounded-xl overflow-hidden border border-white/40 bg-gradient-to-br from-[#0f131b] via-[#1c2028] to-[#0a0e16] shadow-2xl flex items-center justify-center">
+          <div class="relative w-full h-[380px] md:h-[420px] rounded-xl overflow-hidden border border-slate-200 bg-white shadow-2xl flex items-center justify-center">
             <canvas ref="heroCanvas" class="w-full h-full block cursor-grab active:cursor-grabbing"></canvas>
             
             <!-- Floating interactive tip -->
-            <div class="absolute bottom-4 left-4 bg-white/10 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-lg text-[10px] font-bold text-white/90 uppercase tracking-widest flex items-center gap-1.5 pointer-events-none select-none">
+            <div class="absolute bottom-4 left-4 bg-slate-900/80 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-lg text-[10px] font-bold text-white/90 uppercase tracking-widest flex items-center gap-1.5 pointer-events-none select-none">
               <span class="material-symbols-outlined text-[13px] text-[#2b83ff]">3d_rotation</span>
               Di chuột để xoay thiết bị 3D
             </div>
@@ -1800,6 +1800,43 @@ const createPortalScreenCanvas = () => {
   return canvas
 }
 
+const createKeyboardTexture = () => {
+  const canvas = document.createElement('canvas')
+  canvas.width = 512
+  canvas.height = 256
+  const ctx = canvas.getContext('2d')
+  
+  ctx.fillStyle = '#1e293b' // Dark slate tray
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+  
+  ctx.fillStyle = '#0f172a' // Keys
+  const rowCount = 5
+  const rowHeight = 36
+  const rowGap = 8
+  const margin = 10
+  
+  for (let r = 0; r < rowCount; r++) {
+    const y = margin + r * (rowHeight + rowGap)
+    let currentX = margin
+    const cols = r === 4 ? 8 : 14
+    
+    for (let c = 0; c < cols; c++) {
+      let keyWidth = (canvas.width - margin * 2 - (cols - 1) * rowGap) / cols
+      if (r === 4) {
+        if (c === 3) keyWidth = keyWidth * 3.5
+        else if (c > 3) currentX += (keyWidth * 2.5) / (cols - 1)
+      }
+      ctx.fillRect(currentX, y, keyWidth, rowHeight)
+      currentX += keyWidth + rowGap
+    }
+  }
+  
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.wrapS = THREE.RepeatWrapping
+  texture.wrapT = THREE.RepeatWrapping
+  return texture
+}
+
 // Procedural Dashboard Canvas for the 3D device screen
 const createDashboardCanvas = (time = 0, canvas) => {
   const c = canvas || document.createElement('canvas')
@@ -2044,6 +2081,47 @@ const initHeroThree = () => {
   base.position.y = -0.5
   heroGroup.add(base)
 
+  // Trackpad mesh
+  const trackpadGeo = new THREE.BoxGeometry(0.8, 0.002, 0.5)
+  const trackpadMat = new THREE.MeshStandardMaterial({
+    color: 0xe2e8f0,
+    metalness: 0.8,
+    roughness: 0.3
+  })
+  const trackpad = new THREE.Mesh(trackpadGeo, trackpadMat)
+  trackpad.position.set(0, -0.448, 0.5)
+  heroGroup.add(trackpad)
+
+  // Keyboard mesh with procedural key texture
+  const keyboardTex = createKeyboardTexture()
+  const keyboardGeo = new THREE.BoxGeometry(3.2, 0.01, 1.2)
+  const keyboardMat = new THREE.MeshStandardMaterial({
+    map: keyboardTex,
+    roughness: 0.4
+  })
+  const keyboard = new THREE.Mesh(keyboardGeo, keyboardMat)
+  keyboard.position.set(0, -0.445, -0.4)
+  heroGroup.add(keyboard)
+
+  // Side ports
+  const portMat = new THREE.MeshBasicMaterial({ color: 0x1e293b })
+  
+  const leftPort1 = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.03, 0.15), portMat)
+  leftPort1.position.set(-1.801, -0.5, -0.4)
+  heroGroup.add(leftPort1)
+  
+  const leftPort2 = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.03, 0.15), portMat)
+  leftPort2.position.set(-1.801, -0.5, 0.2)
+  heroGroup.add(leftPort2)
+
+  const rightPort1 = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.03, 0.2), portMat)
+  rightPort1.position.set(1.801, -0.5, -0.6)
+  heroGroup.add(rightPort1)
+  
+  const rightPort2 = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.03, 0.08), portMat)
+  rightPort2.position.set(1.801, -0.5, 0.3)
+  heroGroup.add(rightPort2)
+
   // Screen hinge / connection - Light grey
   const hingeGeo = new THREE.CylinderGeometry(0.06, 0.06, 3.2, 16)
   const hingeMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.2 })
@@ -2063,6 +2141,31 @@ const initHeroThree = () => {
   lid.rotation.x = -0.15
   lid.position.set(0, 0.6, -1.0)
   heroGroup.add(lid)
+
+  // Black Bezel (Screen frame)
+  const bezelGeo = new THREE.BoxGeometry(3.36, 2.26, 0.02)
+  const bezelMat = new THREE.MeshStandardMaterial({
+    color: 0x0f172a, // Dark slate bezel
+    roughness: 0.5
+  })
+  const bezel = new THREE.Mesh(bezelGeo, bezelMat)
+  bezel.rotation.x = -0.15
+  bezel.position.set(0, 0.6, -0.97)
+  heroGroup.add(bezel)
+
+  // Webcam sphere
+  const webcamGeo = new THREE.SphereGeometry(0.02, 8, 8)
+  const webcamMat = new THREE.MeshBasicMaterial({ color: 0x000000 })
+  const webcam = new THREE.Mesh(webcamGeo, webcamMat)
+  webcam.position.set(0, 1.68, -1.12)
+  heroGroup.add(webcam)
+
+  // Green Webcam Indicator LED
+  const camLightGeo = new THREE.SphereGeometry(0.007, 8, 8)
+  const camLightMat = new THREE.MeshBasicMaterial({ color: 0x10b981 })
+  const camLight = new THREE.Mesh(camLightGeo, camLightMat)
+  camLight.position.set(0.05, 1.68, -1.12)
+  heroGroup.add(camLight)
 
   // Screen Panel showing Dashboard
   const screenGeo = new THREE.PlaneGeometry(3.2, 2.1)

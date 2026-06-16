@@ -85,10 +85,10 @@
               <td class="py-3.5 px-4 text-center text-secondary">{{ index + 1 }}</td>
               <td class="py-3.5 px-4">
                 <div class="flex items-center gap-3">
-                  <div :class="[getCategoryBgClass(cat.categoryCode, index), 'w-9 h-9 rounded-lg flex items-center justify-center shrink-0']">
-                    <span class="material-symbols-outlined text-[20px]">{{ getCategoryIcon(cat.categoryCode, index) }}</span>
+                  <div :class="[getCategoryBgClass(cat, index), 'w-9 h-9 rounded-lg flex items-center justify-center shrink-0']">
+                    <span class="material-symbols-outlined text-[20px]">{{ getCategoryIcon(cat, index) }}</span>
                   </div>
-                  <span class="font-bold text-primary">{{ cat.categoryName }}</span>
+                  <span class="font-bold text-primary">{{ cat.categoryName.split('|')[0] }}</span>
                 </div>
               </td>
               <td class="py-3.5 px-4 font-mono font-semibold text-secondary">
@@ -173,6 +173,29 @@
                 </span>
                 <p v-if="!isEdit" class="text-[11px] text-on-surface-variant ml-1">Mã danh mục dùng làm mã code hệ thống, không sửa được sau khi tạo.</p>
               </div>
+              <!-- Icon Selector -->
+              <div class="space-y-2 pt-2">
+                <label class="block font-label-caps text-label-caps text-on-surface-variant ml-1 mb-1">Biểu tượng danh mục *</label>
+                <div class="grid grid-cols-3 gap-2">
+                  <button
+                    v-for="icon in iconPresets"
+                    :key="icon.name"
+                    type="button"
+                    @click="selectedIcon = icon.name"
+                    :class="[
+                      selectedIcon === icon.name 
+                        ? 'border-2 border-primary ring-2 ring-primary/20 bg-primary/5 font-bold' 
+                        : 'border border-outline-variant/30 hover:bg-surface/50 bg-white/20',
+                      'p-2 rounded-lg flex flex-col items-center gap-1 transition-all cursor-pointer'
+                    ]"
+                  >
+                    <div :class="[icon.bg, 'w-8 h-8 rounded-full flex items-center justify-center']">
+                      <span class="material-symbols-outlined text-[18px]">{{ icon.name }}</span>
+                    </div>
+                    <span class="text-[10px] font-semibold text-secondary text-center leading-tight">{{ icon.label }}</span>
+                  </button>
+                </div>
+              </div>
             </form>
           </div>
 
@@ -207,7 +230,7 @@
             </div>
             <h3 class="font-title-md text-title-md font-bold text-primary mb-2">Xác nhận xóa danh mục</h3>
             <p class="text-body-sm text-on-surface-variant leading-relaxed">
-              Bạn có chắc chắn muốn xóa danh mục <strong class="text-primary">"{{ deleteTarget?.categoryName }}"</strong>? Hành động này không thể hoàn tác.
+              Bạn có chắc chắn muốn xóa danh mục <strong class="text-primary">"{{ deleteTarget?.categoryName.split('|')[0] }}"</strong>? Hành động này không thể hoàn tác.
             </p>
           </div>
           <div class="px-6 py-4 border-t border-outline-variant/20 flex justify-end gap-3 bg-surface/30">
@@ -251,6 +274,20 @@ const formData = ref({
   categoryName: '',
   categoryCode: '',
 })
+
+const selectedIcon = ref('translate')
+
+const iconPresets = [
+  { name: 'translate', label: 'Ngoại ngữ', bg: 'bg-sky-500/10 text-sky-600 border-sky-500/20' },
+  { name: 'laptop_mac', label: 'Tin học', bg: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
+  { name: 'psychology', label: 'Kỹ năng', bg: 'bg-purple-500/10 text-purple-600 border-purple-500/20' },
+  { name: 'calculate', label: 'Toán học', bg: 'bg-red-500/10 text-red-600 border-red-500/20' },
+  { name: 'palette', label: 'Mỹ thuật', bg: 'bg-pink-500/10 text-pink-600 border-pink-500/20' },
+  { name: 'music_note', label: 'Âm nhạc', bg: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
+  { name: 'sports_esports', label: 'Giải trí', bg: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20' },
+  { name: 'science', label: 'Khoa học', bg: 'bg-teal-500/10 text-teal-600 border-teal-500/20' },
+  { name: 'menu_book', label: 'Văn học / Sách', bg: 'bg-rose-500/10 text-rose-600 border-rose-500/20' },
+]
 
 const filters = ref({
   search: '',
@@ -329,14 +366,24 @@ function getCourseCount(catCode) {
   return courseStore.courses.filter(c => c.category === catCode).length
 }
 
-function getCategoryIcon(code, index) {
+function getCategoryIcon(cat, index) {
+  if (cat.categoryName && cat.categoryName.includes('|')) {
+    return cat.categoryName.split('|')[1]
+  }
+  const code = cat.categoryCode
   const map = { NgoaiNgu: 'translate', TinHoc: 'laptop_mac', KyNang: 'psychology' }
   if (map[code]) return map[code]
   const icons = ['translate', 'laptop_mac', 'psychology', 'sports_esports', 'menu_book', 'science']
   return icons[index % icons.length]
 }
 
-function getCategoryBgClass(code, index) {
+function getCategoryBgClass(cat, index) {
+  if (cat.categoryName && cat.categoryName.includes('|')) {
+    const icon = cat.categoryName.split('|')[1]
+    const preset = iconPresets.find(p => p.name === icon)
+    if (preset) return preset.bg
+  }
+  const code = cat.categoryCode
   const map = { NgoaiNgu: 'bg-sky-500/10 text-sky-600', TinHoc: 'bg-amber-500/10 text-amber-600', KyNang: 'bg-purple-500/10 text-purple-600' }
   if (map[code]) return map[code]
   const classes = [
@@ -366,13 +413,19 @@ function openCreateDialog() {
     categoryName: '',
     categoryCode: '',
   }
+  selectedIcon.value = 'translate'
   dialog.value = true
 }
 
 function openEditDialog(cat) {
   isEdit.value = true
   validationErrors.value = { categoryName: '', categoryCode: '' }
-  formData.value = { ...cat }
+  const parts = cat.categoryName.split('|')
+  formData.value = {
+    ...cat,
+    categoryName: parts[0]
+  }
+  selectedIcon.value = parts[1] || getCategoryIcon(cat, 0)
   dialog.value = true
 }
 
@@ -380,11 +433,15 @@ async function saveForm() {
   if (!isFormValid.value) return
   saving.value = true
   try {
+    const payload = {
+      ...formData.value,
+      categoryName: formData.value.categoryName.trim() + '|' + selectedIcon.value
+    }
     if (isEdit.value) {
-      await categoryStore.updateCategory(formData.value.categoryId, formData.value)
+      await categoryStore.updateCategory(formData.value.categoryId, payload)
       showSnackbar('Cập nhật danh mục thành công', 'success')
     } else {
-      await categoryStore.createCategory(formData.value)
+      await categoryStore.createCategory(payload)
       showSnackbar('Thêm danh mục thành công', 'success')
     }
     dialog.value = false
