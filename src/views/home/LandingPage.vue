@@ -618,9 +618,6 @@
             <p class="text-[#abcae8] max-w-2xl mx-auto mb-8 relative z-10 text-base leading-relaxed">
               Tham gia cùng hàng ngàn trung tâm giáo dục đang sử dụng EduManager Pro để tối ưu hóa quản lý và tăng trưởng doanh thu vượt trội.
             </p>
-            <router-link to="/login" class="inline-block px-8 py-4 bg-white text-[#000613] hover:bg-slate-50 rounded-xl font-bold shadow-lg hover:scale-105 active:scale-95 transition-all text-sm relative z-10">
-              Đăng ký dùng thử miễn phí
-            </router-link>
           </div>
         </section>
       </section>
