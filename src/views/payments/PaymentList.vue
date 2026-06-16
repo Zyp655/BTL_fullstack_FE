@@ -1142,7 +1142,7 @@ onMounted(() => {
   background: rgba(255, 255, 255, 0.8);
   box-shadow: 0 2px 8px rgba(43, 131, 255, 0.05);
 }
-* {
+*:not(.material-symbols-outlined) {
   font-family: 'Plus Jakarta Sans', sans-serif !important;
 }
 </style>

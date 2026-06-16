@@ -208,8 +208,8 @@ function formatDate(date) {
 table,
 th,
 td,
-span,
-div {
+span:not(.material-symbols-outlined),
+div:not(.material-symbols-outlined) {
   font-family: 'Plus Jakarta Sans', sans-serif !important;
 }
 </style>
