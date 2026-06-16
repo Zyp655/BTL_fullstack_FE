@@ -431,7 +431,7 @@
     <!-- Create/Edit Dialog Modal -->
     <teleport to="body">
       <div v-if="dialog" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 glass-backdrop">
-        <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 shadow-[0_20px_40px_rgba(0,31,63,0.12)] w-full max-w-lg rounded-2xl overflow-hidden animate-scale-in">
+        <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 shadow-[0_20px_40px_rgba(0,31,63,0.12)] w-full max-w-xl rounded-2xl overflow-hidden animate-scale-in">
           <!-- Dialog Header -->
           <div class="px-6 py-4 border-b border-white/40 flex justify-between items-center">
             <h3 class="font-title-md text-[18px] font-bold text-primary flex items-center gap-2">
@@ -761,7 +761,7 @@
     <!-- Admin Enroll Waitlist Modal -->
     <teleport to="body">
       <div v-if="enrollQueueDialog" class="fixed inset-0 bg-primary/40 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-        <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-xl shadow-[0_20px_40px_rgba(0,31,63,0.12)] max-w-md w-full overflow-hidden animate-scale-in flex flex-col">
+        <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-xl shadow-[0_20px_40px_rgba(0,31,63,0.12)] max-w-xl w-full overflow-hidden animate-scale-in flex flex-col">
           <!-- Title -->
           <div class="px-6 py-4 border-b border-white/40 flex items-center justify-between">
             <h3 class="font-title-md text-title-md text-primary-container flex items-center gap-2">
@@ -891,7 +891,7 @@
 
     <teleport to="body">
       <div v-if="vipLaunchDialog" class="fixed inset-0 bg-primary/40 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-        <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-xl shadow-[0_20px_40px_rgba(0,31,63,0.12)] max-w-lg w-full overflow-hidden animate-scale-in flex flex-col">
+        <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-xl shadow-[0_20px_40px_rgba(0,31,63,0.12)] max-w-xl w-full overflow-hidden animate-scale-in flex flex-col">
           <!-- Title -->
           <div class="px-6 py-4 border-b border-white/40 flex items-center justify-between">
             <h3 class="font-title-md text-title-md text-primary-container flex items-center gap-2">
@@ -1806,6 +1806,7 @@ const submitVipLaunch = async () => {
 }
 
 onMounted(async () => {
+  document.body.style.overflow = '' // Force enable body scroll on mount
   await categoryStore.fetchCategories()
   await fetchClassesData()
   await fetchData()
@@ -1821,12 +1822,12 @@ watch(enrollQueueDialog, (newVal) => {
 
 // Watch any active dialog to block body scroll
 watch([dialog, deleteDialog, enrollQueueDialog, vipLaunchDialog], ([d, del, eq, vip]) => {
-  if (d || del || eq || vip) {
+  if (d === true || del === true || eq === true || vip === true) {
     document.body.style.overflow = 'hidden'
   } else {
     document.body.style.overflow = ''
   }
-})
+}, { immediate: true })
 
 onUnmounted(() => {
   document.body.style.overflow = ''
