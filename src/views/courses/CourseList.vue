@@ -782,15 +782,39 @@
               </div>
             </div>
 
+            <!-- Choose Student Section -->
             <div class="space-y-1">
               <label class="text-body-sm font-semibold text-primary">Chọn học viên *</label>
-              <div v-if="loadingStudents" class="text-body-sm text-on-surface-variant py-2 animate-pulse">
+              
+              <div v-if="loadingStudents" class="text-body-sm text-on-surface-variant py-2 animate-pulse flex items-center gap-2">
+                <span class="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full"></span>
                 Đang tải danh sách học viên...
               </div>
-              <div v-else-if="allStudents.length === 0" class="text-body-sm text-error font-semibold">
+              
+              <div v-else-if="allStudents.length === 0" class="text-body-sm text-error font-semibold py-2">
                 Chưa có học viên nào trong hệ thống
               </div>
-              <div v-else class="relative">
+              
+              <div v-else class="relative space-y-2">
+                <!-- Selected Students Chips -->
+                <div v-if="selectedStudents.length > 0" class="flex flex-wrap gap-1.5 p-2 border border-primary-container/10 bg-primary-container/[0.02] rounded-lg max-h-36 overflow-y-auto">
+                  <span
+                    v-for="st in selectedStudents"
+                    :key="st.studentId"
+                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-container/10 text-primary-container font-semibold text-[11px] shadow-sm border border-primary-container/15 animate-fade-in"
+                  >
+                    {{ st.fullName }} (HV-{{ String(st.studentId).padStart(4, '0') }})
+                    <button
+                      type="button"
+                      @click="removeStudentFromSelection(st.studentId)"
+                      class="w-4 h-4 rounded-full flex items-center justify-center bg-primary-container/20 hover:bg-primary-container/30 transition-colors cursor-pointer"
+                    >
+                      <span class="material-symbols-outlined text-[10px] font-bold">close</span>
+                    </button>
+                  </span>
+                </div>
+
+                <!-- Search Input Box -->
                 <div class="relative">
                   <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] pointer-events-none">search</span>
                   <input
@@ -802,8 +826,8 @@
                     @blur="onSearchBlur"
                   />
                   <button
-                    v-if="selectedStudentId"
-                    @click="clearStudentSelection"
+                    v-if="studentSearchText"
+                    @click="studentSearchText = ''"
                     type="button"
                     class="absolute right-9 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer flex items-center justify-center w-6 h-6 rounded-full hover:bg-primary-container/10"
                   >
@@ -817,15 +841,23 @@
                   <div
                     v-for="student in filteredStudentsForSearch"
                     :key="student.studentId"
-                    @mousedown="selectStudent(student)"
-                    class="px-4 py-2 hover:bg-primary-container/10 cursor-pointer text-body-sm text-primary flex flex-col transition-colors"
-                    :class="{ 'bg-primary-container/5 font-semibold': student.studentId === selectedStudentId }"
+                    @mousedown.prevent="selectStudent(student)"
+                    class="px-4 py-2 hover:bg-primary-container/10 cursor-pointer text-body-sm text-primary flex justify-between items-center transition-colors"
+                    :class="{ 'bg-primary-container/5 font-semibold': selectedStudentIds.includes(student.studentId) }"
                   >
-                    <span class="font-semibold text-primary-container">{{ student.fullName }}</span>
-                    <span class="text-[11px] text-on-surface-variant">
-                      Mã HV: HV-{{ String(student.studentId).padStart(4, '0') }} 
-                      <span v-if="student.phone"> | SĐT: {{ student.phone }}</span>
-                      <span v-if="student.email"> | {{ student.email }}</span>
+                    <div class="flex flex-col">
+                      <span class="font-semibold text-primary-container">{{ student.fullName }}</span>
+                      <span class="text-[11px] text-on-surface-variant">
+                        Mã HV: HV-{{ String(student.studentId).padStart(4, '0') }} 
+                        <span v-if="student.phone"> | SĐT: {{ student.phone }}</span>
+                        <span v-if="student.email"> | {{ student.email }}</span>
+                      </span>
+                    </div>
+                    <span 
+                      v-if="selectedStudentIds.includes(student.studentId)" 
+                      class="material-symbols-outlined text-[18px] text-on-tertiary-container font-bold"
+                    >
+                      check
                     </span>
                   </div>
                   <div v-if="filteredStudentsForSearch.length === 0" class="px-4 py-3 text-body-sm text-on-surface-variant text-center">
@@ -846,7 +878,7 @@
             </button>
             <button
               @click="submitEnrollQueue"
-              :disabled="submittingQueue || !selectedStudentId"
+              :disabled="submittingQueue || selectedStudentIds.length === 0"
               class="px-5 py-2.5 rounded-lg bg-primary-container text-white font-semibold text-[13px] hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
             >
               <span v-if="submittingQueue" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
@@ -1125,7 +1157,7 @@ const deleteTarget = ref(null)
 // Queue-related state
 const enrollQueueDialog = ref(false)
 const queueTargetCourse = ref(null)
-const selectedStudentId = ref(null)
+const selectedStudentIds = ref([])
 const submittingQueue = ref(false)
 const loadingStudents = ref(false)
 const allStudents = ref([])
@@ -1134,24 +1166,13 @@ const currentStudentId = ref(null)
 const isDropdownOpen = ref(false)
 const studentSearchText = ref('')
 
-const selectedStudent = computed(() => {
-  return allStudents.value.find(s => s.studentId === selectedStudentId.value)
+const selectedStudents = computed(() => {
+  return allStudents.value.filter(s => selectedStudentIds.value.includes(s.studentId))
 })
-
-watch(selectedStudent, (newVal) => {
-  if (newVal) {
-    studentSearchText.value = `${newVal.fullName} (HV-${String(newVal.studentId).padStart(4, '0')})`
-  } else {
-    studentSearchText.value = ''
-  }
-}, { immediate: true })
 
 const filteredStudentsForSearch = computed(() => {
   const query = studentSearchText.value.toLowerCase().trim()
-  const currentLabel = selectedStudent.value 
-    ? `${selectedStudent.value.fullName} (HV-${String(selectedStudent.value.studentId).padStart(4, '0')})`.toLowerCase() 
-    : ''
-  if (!query || query === currentLabel) {
+  if (!query) {
     return allStudents.value
   }
   return allStudents.value.filter(s => {
@@ -1171,21 +1192,28 @@ function onSearchFocus(e) {
 function onSearchBlur() {
   setTimeout(() => {
     isDropdownOpen.value = false
-    if (selectedStudent.value) {
-      studentSearchText.value = `${selectedStudent.value.fullName} (HV-${String(selectedStudent.value.studentId).padStart(4, '0')})`
-    } else {
-      studentSearchText.value = ''
-    }
   }, 200)
 }
 
 function selectStudent(student) {
-  selectedStudentId.value = student.studentId
-  isDropdownOpen.value = false
+  const idx = selectedStudentIds.value.indexOf(student.studentId)
+  if (idx !== -1) {
+    selectedStudentIds.value.splice(idx, 1)
+  } else {
+    selectedStudentIds.value.push(student.studentId)
+  }
+  studentSearchText.value = ''
+}
+
+function removeStudentFromSelection(studentId) {
+  const idx = selectedStudentIds.value.indexOf(studentId)
+  if (idx !== -1) {
+    selectedStudentIds.value.splice(idx, 1)
+  }
 }
 
 function clearStudentSelection() {
-  selectedStudentId.value = null
+  selectedStudentIds.value = []
   studentSearchText.value = ''
 }
 
@@ -1619,18 +1647,21 @@ const handleEnrollQueue = async (course) => {
     }
   } else if (authStore.isAdmin) {
     queueTargetCourse.value = course
-    selectedStudentId.value = null
+    selectedStudentIds.value = []
     enrollQueueDialog.value = true
     await fetchAllStudents()
   }
 }
 
 const submitEnrollQueue = async () => {
-  if (!selectedStudentId.value || !queueTargetCourse.value) return
+  if (selectedStudentIds.value.length === 0 || !queueTargetCourse.value) return
   submittingQueue.value = true
   try {
-    await store.enrollInCourseQueue(selectedStudentId.value, queueTargetCourse.value.courseId)
-    showSnackbar('Đã thêm học viên vào hàng chờ chuyển lớp thành công!', 'success')
+    const promises = selectedStudentIds.value.map(id =>
+      store.enrollInCourseQueue(id, queueTargetCourse.value.courseId)
+    )
+    await Promise.all(promises)
+    showSnackbar(`Đã thêm ${selectedStudentIds.value.length} học viên vào hàng chờ thành công!`, 'success')
     enrollQueueDialog.value = false
     await fetchQueueStatuses()
   } catch (e) {
