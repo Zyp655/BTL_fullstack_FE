@@ -82,7 +82,7 @@
           <button
             @click="calculatePayroll"
             :disabled="calculating"
-            class="flex items-center gap-2 bg-primary-container text-on-primary-container hover:bg-primary-container/90 px-5 py-2.5 rounded-lg font-bold text-body-sm shadow transition-all duration-200"
+            class="flex items-center gap-2 bg-primary-container text-white hover:bg-primary-container/90 px-5 py-2.5 rounded-lg font-bold text-body-sm shadow transition-all duration-200"
           >
             <span class="material-symbols-outlined text-[18px]">calculate</span>
             {{ calculating ? 'Đang tính toán...' : 'Tính lương tháng này' }}
@@ -287,11 +287,11 @@
     <div v-if="configModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm transition-opacity duration-300">
       <div class="bg-surface w-full max-w-md rounded-2xl shadow-xl border border-primary-container/15 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         <div class="bg-primary-container px-6 py-4 flex items-center justify-between border-b border-primary-container/10">
-          <h3 class="text-body-lg font-bold text-on-primary-container flex items-center gap-2">
+          <h3 class="text-body-lg font-bold text-white flex items-center gap-2">
             <span class="material-symbols-outlined text-[20px]">co_present</span>
             Hợp đồng lương: {{ configModal.teacher?.fullName }}
           </h3>
-          <button @click="closeConfigModal" class="text-on-primary-container/85 hover:text-on-primary-container">
+          <button @click="closeConfigModal" class="text-white/80 hover:text-white">
             <span class="material-symbols-outlined">close</span>
           </button>
         </div>
@@ -343,7 +343,7 @@
           <button
             @click="saveConfig"
             :disabled="savingConfig"
-            class="bg-primary-container hover:bg-primary-container/90 text-on-primary-container px-5 py-2 rounded-lg font-semibold text-body-sm shadow transition-all duration-200 disabled:opacity-50"
+            class="bg-primary-container hover:bg-primary-container/90 text-white px-5 py-2 rounded-lg font-semibold text-body-sm shadow transition-all duration-200 disabled:opacity-50"
           >
             {{ savingConfig ? 'Đang lưu...' : 'Lưu hợp đồng' }}
           </button>
@@ -355,11 +355,11 @@
     <div v-if="slipModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm transition-opacity duration-300">
       <div class="bg-surface w-full max-w-md rounded-2xl shadow-xl border border-primary-container/15 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         <div class="bg-primary-container px-6 py-4 flex items-center justify-between border-b border-primary-container/10">
-          <h3 class="text-body-lg font-bold text-on-primary-container flex items-center gap-2">
+          <h3 class="text-body-lg font-bold text-white flex items-center gap-2">
             <span class="material-symbols-outlined text-[20px]">payments</span>
             Phê duyệt lương: {{ slipModal.slip?.teacherName }}
           </h3>
-          <button @click="closeSlipModal" class="text-on-primary-container/85 hover:text-on-primary-container">
+          <button @click="closeSlipModal" class="text-white/80 hover:text-white">
             <span class="material-symbols-outlined">close</span>
           </button>
         </div>
@@ -431,7 +431,7 @@
           <button
             @click="saveSlipStatus"
             :disabled="savingSlip"
-            class="bg-primary-container hover:bg-primary-container/90 text-on-primary-container px-5 py-2 rounded-lg font-semibold text-body-sm shadow transition-all duration-200 disabled:opacity-50"
+            class="bg-primary-container hover:bg-primary-container/90 text-white px-5 py-2 rounded-lg font-semibold text-body-sm shadow transition-all duration-200 disabled:opacity-50"
           >
             {{ savingSlip ? 'Đang lưu...' : 'Xác nhận phê duyệt' }}
           </button>

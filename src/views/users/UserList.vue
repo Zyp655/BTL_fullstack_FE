@@ -1018,7 +1018,7 @@ function getRoleLabel(role) {
 
 function getRoleBadgeClass(role) {
   const map = {
-    Admin: 'bg-primary-container text-on-primary-container border-primary-container/20',
+    Admin: 'bg-primary-container text-white border-primary-container/20',
     GiaoVien: 'bg-purple-100 text-purple-800 border-purple-200',
     HocVien: 'bg-primary-fixed text-on-primary-fixed border-primary-fixed-dim/20'
   }
