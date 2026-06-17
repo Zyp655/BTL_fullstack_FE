@@ -326,6 +326,35 @@
               <p class="text-body-sm text-on-surface-variant leading-relaxed">{{ selectedCourseForDetail.description }}</p>
             </div>
 
+            <!-- Instructors in Charge -->
+            <div class="pt-2">
+              <h4 class="font-title-md text-body-sm font-bold text-primary-container mb-1.5 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px] text-indigo-500">person</span>
+                Giảng viên phụ trách
+              </h4>
+              <div v-if="loadingClasses" class="text-xs text-slate-400 italic flex items-center gap-1.5 py-1">
+                <div class="w-3.5 h-3.5 border-2 border-primary-container/30 border-t-primary-container rounded-full animate-spin"></div>
+                Đang tải danh sách giảng viên...
+              </div>
+              <div v-else-if="courseInstructors.length === 0" class="text-body-sm text-on-surface-variant italic">
+                Chưa phân công giảng viên (chưa mở lớp)
+              </div>
+              <div v-else class="flex flex-wrap gap-2 mt-1">
+                <span 
+                  v-for="teacher in courseInstructors" 
+                  :key="teacher.id"
+                  class="px-3 py-1.5 bg-slate-100/80 text-slate-800 font-bold rounded-lg border border-slate-200/50 text-[12px] flex items-center gap-1.5"
+                >
+                  <span class="material-symbols-outlined text-[16px] text-indigo-500 font-semibold">school</span>
+                  <span>{{ teacher.name }}</span>
+                  <span class="flex items-center gap-0.5 text-amber-500 font-extrabold ml-1 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 text-[11px]" title="Điểm đánh giá trung bình của giảng viên">
+                    <span class="material-symbols-outlined text-[12px] font-variation-settings-fill text-amber-500" style="font-variation-settings: 'FILL' 1;">star</span>
+                    {{ teacherRatings[teacher.id] !== undefined && teacherRatings[teacher.id] > 0 ? teacherRatings[teacher.id].toFixed(1) : 'Chưa có' }}
+                  </span>
+                </span>
+              </div>
+            </div>
+
             <!-- Actions -->
             <div class="flex justify-end gap-3 pt-4 border-t border-white/40">
               <button
@@ -486,6 +515,51 @@ const selectedCategory = ref('all')
 const selectedStatus = ref('all')
 const detailModal = ref(false)
 const selectedCourseForDetail = ref(null)
+const courseClasses = ref([])
+const loadingClasses = ref(false)
+const teacherRatings = ref({})
+
+const courseInstructors = computed(() => {
+  const teachers = new Map() // teacherId -> teacherName
+  courseClasses.value.forEach(cls => {
+    if (cls.teacherId && cls.teacherName && cls.teacherName.trim()) {
+      teachers.set(cls.teacherId, cls.teacherName.trim())
+    }
+    if (cls.teacherId2 && cls.teacherName2 && cls.teacherName2.trim()) {
+      teachers.set(cls.teacherId2, cls.teacherName2.trim())
+    }
+  })
+  return Array.from(teachers.entries()).map(([id, name]) => ({ id, name }))
+})
+
+async function fetchCourseClasses(courseId) {
+  loadingClasses.value = true
+  try {
+    const res = await api.get('/api/v1/classes', {
+      params: { courseId, pageSize: 100 }
+    })
+    courseClasses.value = res.data?.items || []
+    
+    // Fetch ratings for each unique instructor using Promise.all
+    const instructors = courseInstructors.value
+    const ratingResults = {}
+    await Promise.all(instructors.map(async (teacher) => {
+      try {
+        const ratingRes = await api.get(`/api/v1/teacher-evaluations/teacher/${teacher.id}/average`)
+        ratingResults[teacher.id] = ratingRes.data
+      } catch (err) {
+        console.error(`Error fetching rating for teacher ${teacher.id}:`, err)
+        ratingResults[teacher.id] = 0
+      }
+    }))
+    teacherRatings.value = { ...teacherRatings.value, ...ratingResults }
+  } catch (err) {
+    console.error('Error fetching classes for course details:', err)
+    courseClasses.value = []
+  } finally {
+    loadingClasses.value = false
+  }
+}
 
 const filteredCourses = computed(() => {
   let list = courses.value
@@ -524,6 +598,7 @@ function openCourseDetail(course) {
   selectedCourseForDetail.value = course
   activeDetailImageIndex.value = 0
   detailModal.value = true
+  fetchCourseClasses(course.courseId)
 }
 
 function getLevelLabel(level) {
