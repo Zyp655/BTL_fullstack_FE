@@ -585,6 +585,79 @@
         </div>
       </div>
     </div>
+    <!-- DIALOG MODAL 4: TEACHER ADD BANK ACCOUNT QUICKLY -->
+    <div v-if="addBankModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm transition-opacity duration-300">
+      <div class="bg-surface w-full max-w-md rounded-2xl shadow-xl border border-primary-container/15 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div class="bg-primary-container px-6 py-4 flex items-center justify-between border-b border-primary-container/10">
+          <h3 class="text-body-lg font-bold text-white flex items-center gap-2">
+            <span class="material-symbols-outlined text-[20px]">payments</span>
+            Thêm tài khoản ngân hàng nhận lương
+          </h3>
+          <button @click="closeAddBankModal" class="text-white/80 hover:text-white flex items-center justify-center">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="p-6 space-y-4">
+          <div class="bg-primary-container/[0.03] border border-primary-container/10 p-3.5 rounded-xl text-body-xs text-on-surface-variant/90">
+            <p class="font-semibold">Hệ thống chưa tìm thấy tài khoản ngân hàng nhận lương của bạn.</p>
+            <p class="mt-1 text-on-surface-variant/70">Vui lòng nhập thông tin dưới đây để tự động lưu vào hồ sơ và tiến hành chấp nhận phiếu lương.</p>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-body-sm font-semibold text-primary-container block">Tên ngân hàng *</label>
+            <input
+              v-model="addBankModal.form.bankName"
+              type="text"
+              required
+              class="w-full bg-primary-container/[0.03] border border-primary-container/15 rounded-lg px-4 py-2 text-body-sm text-primary-container focus:outline-none"
+              placeholder="Ví dụ: Techcombank, Vietcombank..."
+            />
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-body-sm font-semibold text-primary-container block">Số tài khoản *</label>
+            <input
+              v-model="addBankModal.form.accountNumber"
+              type="text"
+              required
+              class="w-full bg-primary-container/[0.03] border border-primary-container/15 rounded-lg px-4 py-2 text-body-sm text-primary-container focus:outline-none"
+              placeholder="Nhập số tài khoản ngân hàng..."
+            />
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-body-sm font-semibold text-primary-container block">Tên chủ tài khoản *</label>
+            <input
+              v-model="addBankModal.form.accountHolder"
+              type="text"
+              required
+              class="w-full bg-primary-container/[0.03] border border-primary-container/15 rounded-lg px-4 py-2 text-body-sm text-primary-container focus:outline-none uppercase"
+              placeholder="Nhập tên không dấu..."
+            />
+          </div>
+
+          <p v-if="addBankModal.error" class="text-error text-[11px] font-semibold">{{ addBankModal.error }}</p>
+        </div>
+
+        <div class="bg-primary-container/[0.03] border-t border-primary-container/10 px-6 py-4 flex justify-end gap-3">
+          <button
+            @click="closeAddBankModal"
+            class="px-4 py-2 border border-primary-container/10 hover:bg-primary-container/[0.05] text-primary-container rounded-lg font-semibold text-body-sm transition-all duration-200"
+          >
+            Hủy
+          </button>
+          <button
+            @click="submitQuickBank"
+            :disabled="submittingBank"
+            class="bg-primary-container hover:bg-primary-container/90 text-white px-5 py-2 rounded-lg font-semibold text-body-sm shadow transition-all duration-200 disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+          >
+            <span v-if="submittingBank" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+            Thêm & Xác nhận
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -873,10 +946,94 @@ const confirmSlip = async (slipId, accepted, feedbackText = '', bankAccountVal =
   }
 }
 
+// DIALOG MODAL 4: QUICK ADD BANK ACCOUNT
+const addBankModal = ref({
+  show: false,
+  slipId: null,
+  form: {
+    bankName: '',
+    accountNumber: '',
+    accountHolder: ''
+  },
+  error: ''
+})
+const submittingBank = ref(false)
+
+const openAddBankModal = (slip) => {
+  addBankModal.value = {
+    show: true,
+    slipId: slip.salarySlipId,
+    form: {
+      bankName: '',
+      accountNumber: '',
+      accountHolder: (authStore.currentUser?.fullName || '').toUpperCase()
+    },
+    error: ''
+  }
+}
+
+const closeAddBankModal = () => {
+  addBankModal.value.show = false
+  addBankModal.value.slipId = null
+  addBankModal.value.error = ''
+}
+
+const submitQuickBank = async () => {
+  const { bankName, accountNumber, accountHolder } = addBankModal.value.form
+  if (!bankName.trim() || !accountNumber.trim() || !accountHolder.trim()) {
+    addBankModal.value.error = 'Vui lòng điền đầy đủ các thông tin bắt buộc.'
+    return
+  }
+
+  submittingBank.value = true
+  addBankModal.value.error = ''
+
+  try {
+    const userAccounts = getUserBankAccounts()
+    const newAccount = {
+      id: Date.now().toString(),
+      bankName: bankName.trim(),
+      accountNumber: accountNumber.trim(),
+      accountHolder: accountHolder.trim().toUpperCase(),
+      isDefault: true
+    }
+    
+    // Set all other accounts to not default
+    userAccounts.forEach(a => a.isDefault = false)
+    userAccounts.push(newAccount)
+
+    const bankAccountJson = JSON.stringify(userAccounts)
+
+    // Update profile
+    await api.put('/api/v1/auth/profile', {
+      fullName: authStore.currentUser?.fullName || '',
+      email: authStore.currentUser?.email || '',
+      phone: authStore.currentUser?.phone || '',
+      bankAccount: bankAccountJson
+    })
+
+    // Fetch fresh profile details
+    await authStore.fetchProfile()
+    showSnackbar('Đã lưu tài khoản ngân hàng mới vào Hồ sơ Cá nhân.', 'success')
+
+    // Automatically confirm the slip using the new bank account
+    const newAccountStr = `${newAccount.bankName} - ${newAccount.accountNumber} (${newAccount.accountHolder})`
+    selectedBankAccounts.value[addBankModal.value.slipId] = newAccountStr
+
+    await confirmSlip(addBankModal.value.slipId, true, '', newAccountStr)
+    closeAddBankModal()
+  } catch (error) {
+    console.error('Error saving bank account:', error)
+    addBankModal.value.error = error.response?.data?.message || 'Có lỗi xảy ra khi lưu tài khoản ngân hàng.'
+  } finally {
+    submittingBank.value = false
+  }
+}
+
 const handleAcceptSlip = (slip) => {
   const chosenAccount = selectedBankAccounts.value[slip.salarySlipId]
   if (!chosenAccount) {
-    showSnackbar('Vui lòng thêm tài khoản ngân hàng trong trang Cá nhân trước khi chấp nhận phiếu lương!', 'warning')
+    openAddBankModal(slip)
     return
   }
   confirmSlip(slip.salarySlipId, true, '', chosenAccount)
