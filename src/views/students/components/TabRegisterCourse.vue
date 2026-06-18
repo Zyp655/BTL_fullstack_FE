@@ -139,8 +139,8 @@
                 {{ course.durationWeeks || Math.ceil(course.totalSessions / 2) }} tuần
               </div>
               <div class="flex items-center gap-1">
-                <span class="material-symbols-outlined text-[16px] text-primary">group</span>
-                Ghi danh: {{ getCourseQueueCount(course.courseId) }} HV
+                <span class="material-symbols-outlined text-[16px] text-primary">menu_book</span>
+                Số buổi: {{ course.totalSessions }} buổi
               </div>
               <div class="text-[14px] font-black text-indigo-700 bg-indigo-50/70 px-2.5 py-0.5 rounded-md border border-indigo-100/80 shadow-sm">
                 {{ formatCurrency(course.fee) }}
@@ -311,8 +311,8 @@
                 <p class="font-bold text-primary-container text-body-sm mt-0.5">{{ selectedCourseForDetail.durationWeeks || Math.ceil((selectedCourseForDetail.totalSessions || 10) / 2) }} tuần</p>
               </div>
               <div>
-                <p class="text-[11px] font-medium text-on-surface-variant">Đang ghi danh</p>
-                <p class="font-bold text-primary-container text-body-sm mt-0.5">{{ getCourseQueueCount(selectedCourseForDetail.courseId) }} học viên</p>
+                <p class="text-[11px] font-medium text-on-surface-variant">Số buổi học</p>
+                <p class="font-bold text-primary-container text-body-sm mt-0.5">{{ selectedCourseForDetail.totalSessions }} buổi</p>
               </div>
               <div>
                  <p class="text-[11px] font-medium text-on-surface-variant">Học phí trọn gói</p>
@@ -352,6 +352,62 @@
                     {{ teacherRatings[teacher.id] !== undefined && teacherRatings[teacher.id] > 0 ? teacherRatings[teacher.id].toFixed(1) : 'Chưa có' }}
                   </span>
                 </span>
+              </div>
+            </div>
+
+            <!-- Classes List Section -->
+            <div class="pt-2 border-t border-outline-variant/30">
+              <h4 class="font-title-md text-body-sm font-bold text-primary-container mb-2.5 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px] text-primary">groups</span>
+                Lớp học đang mở tuyển sinh
+              </h4>
+              <div v-if="loadingClasses" class="text-xs text-slate-400 italic flex items-center gap-1.5 py-1">
+                <div class="w-3.5 h-3.5 border-2 border-primary-container/30 border-t-primary-container rounded-full animate-spin flex-shrink-0"></div>
+                <span>Đang tải danh sách lớp học...</span>
+              </div>
+              <div v-else-if="courseClasses.length === 0" class="text-body-sm text-on-surface-variant italic p-3 bg-slate-50/50 rounded-lg border border-slate-100 text-center">
+                Hiện tại môn học này chưa có lớp học trực tiếp nào đang mở tuyển sinh. Học viên đăng ký sẽ được xếp vào hàng chờ.
+              </div>
+              <div v-else class="space-y-2.5">
+                <div 
+                  v-for="cls in courseClasses" 
+                  :key="cls.classId"
+                  class="p-4 bg-slate-50/50 hover:bg-slate-100/30 rounded-xl border border-slate-200/50 transition-all flex flex-col md:flex-row justify-between md:items-center gap-3"
+                >
+                  <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                      <span class="font-bold text-slate-800 text-[14px]">{{ cls.className }}</span>
+                      <span class="px-2 py-0.5 rounded text-[10px] font-bold" :class="cls.status === 'Opened' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-blue-50 text-blue-600 border border-blue-200'">
+                        {{ cls.status === 'Opened' ? 'Đang mở' : cls.status }}
+                      </span>
+                    </div>
+                    
+                    <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-on-surface-variant">
+                      <div class="flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[15px] text-slate-400">person</span>
+                        <span>GV: {{ cls.teacherName || 'Chưa phân công' }}</span>
+                      </div>
+                      <div class="flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[15px] text-slate-400">calendar_month</span>
+                        <span class="font-medium text-slate-600">Lịch: {{ formatSchedulesBrief(cls.schedules) }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="w-full md:w-48 space-y-1.5 shrink-0">
+                    <div class="flex justify-between items-center text-xs font-semibold">
+                      <span class="text-slate-500">Sĩ số:</span>
+                      <span class="text-slate-800">{{ cls.currentStudents }} / {{ cls.maxStudents }} học viên</span>
+                    </div>
+                    <div class="w-full bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
+                      <div 
+                        class="h-full rounded-full transition-all duration-300"
+                        :style="{ width: `${Math.min((cls.currentStudents / cls.maxStudents) * 100, 100)}%` }"
+                        :class="cls.currentStudents >= cls.maxStudents ? 'bg-rose-500' : 'bg-emerald-500'"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -538,10 +594,34 @@ async function fetchCourseClasses(courseId) {
     const res = await api.get('/api/v1/classes', {
       params: { courseId, pageSize: 100 }
     })
-    courseClasses.value = res.data?.items || []
+    const rawClasses = res.data?.items || []
     
-    // Fetch ratings for each unique instructor using Promise.all
-    const instructors = courseInstructors.value
+    // Fetch schedules for each class in parallel
+    const classesWithSchedules = await Promise.all(
+      rawClasses.map(async (c) => {
+        try {
+          const schedRes = await api.get(`/api/v1/classes/${c.classId}/schedules`)
+          return { ...c, schedules: schedRes.data || [] }
+        } catch (e) {
+          console.error(`Error fetching schedules for class ${c.classId}:`, e)
+          return { ...c, schedules: [] }
+        }
+      })
+    )
+    courseClasses.value = classesWithSchedules
+    
+    // Extract unique instructors to fetch ratings
+    const teachersMap = new Map()
+    classesWithSchedules.forEach(cls => {
+      if (cls.teacherId && cls.teacherName && cls.teacherName.trim()) {
+        teachersMap.set(cls.teacherId, cls.teacherName.trim())
+      }
+      if (cls.teacherId2 && cls.teacherName2 && cls.teacherName2.trim()) {
+        teachersMap.set(cls.teacherId2, cls.teacherName2.trim())
+      }
+    })
+    const instructors = Array.from(teachersMap.entries()).map(([id, name]) => ({ id, name }))
+    
     const ratingResults = {}
     await Promise.all(instructors.map(async (teacher) => {
       try {
@@ -604,6 +684,14 @@ function openCourseDetail(course) {
 function getLevelLabel(level) {
   const map = { Beginner: 'Cơ bản', Intermediate: 'Trung cấp', Advanced: 'Nâng cao' }
   return map[level] || level
+}
+
+function formatSchedulesBrief(schedules) {
+  if (!schedules || schedules.length === 0) return 'Chưa xếp lịch'
+  return schedules.map(s => {
+    const day = s.dayOfWeek === 0 ? 'CN' : `T${s.dayOfWeek}`
+    return `${day} (${s.startTime.substring(0, 5)}-${s.endTime.substring(0, 5)})`
+  }).join(', ')
 }
 
 async function loadRegistrationDataForStudent(studentId) {

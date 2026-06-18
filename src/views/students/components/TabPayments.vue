@@ -68,6 +68,14 @@
                 <span class="material-symbols-outlined text-[16px]">add_card</span>
                 Ghi nhận thanh toán
               </button>
+              <button
+                v-if="pay.status !== 'HoanTat'"
+                @click="confirmCancelPayment(pay)"
+                class="px-3 py-2 rounded-lg border border-rose-300 text-rose-600 hover:bg-rose-50 hover:border-rose-400 text-[12px] font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95"
+              >
+                <span class="material-symbols-outlined text-[16px]">cancel</span>
+                Hủy đăng ký học
+              </button>
             </div>
             
             <div class="space-y-1">
@@ -125,13 +133,22 @@
               <p class="text-[14px] text-on-surface-variant mt-0.5">Hỗ trợ chuyển khoản quét mã VietQR tự động khớp và gạch nợ sau 10 giây qua SePay.</p>
             </div>
           </div>
-          <button
-            @click="openPaymentQr(pay)"
-            class="w-full sm:w-auto px-6 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[14px] flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95 cursor-pointer shrink-0"
-          >
-            <span class="material-symbols-outlined text-[20px]">payment</span>
-            Thanh toán ngay
-          </button>
+          <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-2.5 shrink-0">
+            <button
+              @click="confirmCancelPayment(pay)"
+              class="w-full sm:w-auto px-5 py-3 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300 font-bold text-[14px] flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer shrink-0"
+            >
+              <span class="material-symbols-outlined text-[20px]">cancel</span>
+              Hủy đăng ký
+            </button>
+            <button
+              @click="openPaymentQr(pay)"
+              class="w-full sm:w-auto px-6 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[14px] flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95 cursor-pointer shrink-0"
+            >
+              <span class="material-symbols-outlined text-[20px]">payment</span>
+              Thanh toán ngay
+            </button>
+          </div>
         </div>
 
         <!-- SePay Payment Success Notification for Students (Completed) -->
@@ -366,6 +383,58 @@
       </div>
     </div>
   </teleport>
+
+  <!-- Dialog: Xác nhận hủy đăng ký học -->
+  <teleport to="body">
+    <div v-if="showCancelModal && activePaymentToCancel" class="fixed inset-0 glass-backdrop z-[9999] flex items-center justify-center p-4">
+      <div class="bg-white/95 backdrop-blur-[24px] border border-white/50 rounded-xl shadow-[0_20px_40px_rgba(0,31,63,0.12)] max-w-md w-full p-6 space-y-4 animate-scale-in">
+        <div class="flex items-center gap-3 text-error border-b border-white/40 pb-3 justify-between">
+          <h3 class="font-title-md text-[18px] font-bold flex items-center gap-2">
+            <span class="material-symbols-outlined text-[24px] text-error">warning</span>
+            Xác nhận hủy đăng ký học
+          </h3>
+          <button @click="closeCancelModal" class="text-on-surface-variant hover:text-primary cursor-pointer border-0 bg-transparent flex items-center justify-center">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="space-y-3">
+          <p class="text-body-sm text-on-surface-variant leading-relaxed">
+            Bạn có chắc chắn muốn hủy đăng ký học và xóa hóa đơn học phí của lớp/khóa sau?
+          </p>
+          <div class="p-4 bg-rose-500/5 rounded-lg border border-rose-500/10">
+            <h4 class="font-semibold text-rose-900 text-body-sm">{{ activePaymentToCancel.courseName }}</h4>
+            <p class="text-body-xs text-on-surface-variant mt-1">Lớp: {{ activePaymentToCancel.className }}</p>
+            <p class="text-body-xs text-on-surface-variant font-mono">Mã hóa đơn: PAY{{ activePaymentToCancel.paymentId }}</p>
+            <div class="flex justify-between items-center mt-3 pt-3 border-t border-rose-500/10">
+              <span class="text-body-xs font-semibold text-on-surface-variant">Học phí cần đóng:</span>
+              <span class="text-body-sm font-black text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-md border border-rose-100 shadow-sm">{{ formatCurrency(activePaymentToCancel.totalAmount) }}</span>
+            </div>
+          </div>
+          <p class="text-[11px] text-error leading-relaxed font-semibold italic">
+            * Hành động này sẽ xóa vĩnh viễn phiếu học phí và hủy đăng ký của bạn khỏi danh sách chờ lớp/học phần này. Bạn sẽ không thể hoàn tác thao tác này.
+          </p>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-3 border-t border-white/40">
+          <button
+            @click="closeCancelModal"
+            class="px-4 py-2 rounded-lg border border-white/60 text-on-surface-variant font-semibold text-[13px] hover:bg-white/40 transition-colors cursor-pointer"
+          >
+            Quay lại
+          </button>
+          <button
+            @click="submitCancelPayment"
+            :disabled="isCancelling"
+            class="px-4 py-2 rounded-lg bg-rose-600 text-white font-semibold text-[13px] hover:bg-rose-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer active:scale-95"
+          >
+            <span v-if="isCancelling" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
+            Xác nhận hủy
+          </button>
+        </div>
+      </div>
+    </div>
+  </teleport>
 </template>
 
 <script setup>
@@ -375,6 +444,70 @@ import api from '../../../services/api'
 
 const authStore = useAuthStore()
 const showSnackbar = inject('showSnackbar')
+
+const showCancelModal = ref(false)
+const activePaymentToCancel = ref(null)
+const isCancelling = ref(false)
+
+function confirmCancelPayment(payment) {
+  activePaymentToCancel.value = payment
+  showCancelModal.value = true
+}
+
+function closeCancelModal() {
+  showCancelModal.value = false
+  activePaymentToCancel.value = null
+  isCancelling.value = false
+}
+
+async function submitCancelPayment() {
+  if (!activePaymentToCancel.value) return
+  
+  let studentId = props.studentProfile?.studentId
+  
+  if (!studentId) {
+    try {
+      const res = await api.get(`/api/v1/students/by-user/${activePaymentToCancel.value.studentUserId}`)
+      studentId = res.data?.studentId
+    } catch (e) {
+      console.error('Error fetching studentId by user id:', e)
+    }
+  }
+  
+  if (!studentId) {
+    if (showSnackbar) {
+      showSnackbar('Không tìm thấy ID học viên để hủy đăng ký.', 'error')
+    }
+    return
+  }
+
+  isCancelling.value = true
+  try {
+    // 1. Delete payment invoice in PaymentService
+    await api.delete(`/api/v1/payments/${activePaymentToCancel.value.paymentId}`)
+    
+    // 2. Cancel enrollment in StudentService
+    await api.delete('/api/v1/enrollments/cancel', {
+      params: {
+        studentId: studentId,
+        classId: activePaymentToCancel.value.classId
+      }
+    })
+    
+    if (showSnackbar) {
+      showSnackbar('Đã hủy đăng ký học và xóa hóa đơn học phí thành công!', 'success')
+    }
+    closeCancelModal()
+    emit('refresh-payments')
+  } catch (err) {
+    console.error(err)
+    if (showSnackbar) {
+      showSnackbar(err.response?.data?.message || 'Có lỗi xảy ra khi hủy đăng ký.', 'error')
+    }
+  } finally {
+    isCancelling.value = false
+  }
+}
 
 const selectedGateway = ref('SePay')
 const checkoutInfo = ref(null)
@@ -505,6 +638,7 @@ const hasAutoOpened = ref(false)
 
 const props = defineProps({
   payments: { type: Array, required: true },
+  studentProfile: { type: Object, default: null },
   autoPayCourseName: { type: String, default: null },
   autoPayCourseId: { type: [String, Number], default: null }
 })

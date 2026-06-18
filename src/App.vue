@@ -1,30 +1,52 @@
 <template>
   <div class="flex min-h-screen text-on-surface font-body-lg text-body-lg">
     <!-- Sidebar Navigation -->
-    <nav v-if="!route.meta.public" :class="[mobileMenuOpen ? 'left-0' : '-left-60 md:left-0', 'w-60 h-screen fixed top-0 bg-primary-container shadow-[0px_12px_24px_rgba(0,0,0,0.15)] flex flex-col py-base z-50 transition-all duration-300 md:flex']">
+    <nav 
+      v-if="!route.meta.public" 
+      @mouseenter="isSidebarHovered = true"
+      @mouseleave="isSidebarHovered = false"
+      :class="[
+        mobileMenuOpen ? 'left-0' : '-left-60 md:left-0', 
+        isSidebarExpanded ? 'w-60' : 'w-[76px]',
+        'h-screen fixed top-0 bg-primary-container shadow-[0px_12px_24px_rgba(0,0,0,0.15)] flex flex-col py-base z-50 transition-all duration-300 md:flex'
+      ]"
+    >
+
       <!-- Brand/Header -->
-      <div class="px-6 py-6 mb-4 flex items-center gap-4 border-b border-white/10">
+      <div 
+        class="mb-4 flex items-center border-b border-white/10 transition-all duration-300 py-6"
+        :class="isSidebarExpanded ? 'px-6 gap-4' : 'px-4 justify-center'"
+      >
         <div class="w-10 h-10 rounded-lg bg-white/15 flex items-center justify-center shadow-inner overflow-hidden shrink-0">
           <span class="material-symbols-outlined text-white text-[24px]">school</span>
         </div>
-        <div>
-          <h1 class="font-headline-lg text-[18px] leading-tight font-bold text-white">EduManager Pro</h1>
-          <p class="font-body-sm text-[12px] text-white/60">Hệ thống quản lý</p>
+        <div 
+          :class="[
+            isSidebarExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 pointer-events-none overflow-hidden',
+            'transition-all duration-300 origin-left flex flex-col shrink-0'
+          ]"
+        >
+          <h1 class="font-headline-lg text-[18px] leading-tight font-bold text-white whitespace-nowrap">EduManager Pro</h1>
+          <p class="font-body-sm text-[12px] text-white/60 whitespace-nowrap">Hệ thống quản lý</p>
         </div>
       </div>
 
       <!-- Navigation Links -->
-      <div class="flex-1 overflow-y-auto px-4 space-y-1">
+      <div 
+        class="flex-1 overflow-y-auto space-y-1 transition-all duration-300"
+        :class="isSidebarExpanded ? 'px-4' : 'px-2'"
+      >
         <template v-for="item in navItems" :key="item.title">
           <!-- Parent Item -->
           <router-link
             :to="item.query ? { path: item.path, query: item.query } : item.path"
-            @click="mobileMenuOpen = false"
+            @click="mobileMenuOpen = false; if (item.children) toggleMenu(item.title)"
             v-slot="{ isActive }"
           >
             <div
               :class="[
-                'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 cursor-pointer',
+                'flex items-center rounded-lg transition-all duration-200 cursor-pointer py-3',
+                isSidebarExpanded ? 'gap-3 px-4' : 'justify-center px-1',
                 isItemActive(item, isActive) && !item.children
                   ? 'bg-white/15 text-white font-bold border-l-2 border-purple-300 shadow-sm'
                   : (isActive && item.children)
@@ -32,16 +54,30 @@
                     : 'text-white/70 hover:bg-white/10 hover:text-white'
               ]"
             >
-              <span class="material-symbols-outlined" :style="isActive ? 'font-variation-settings: \'FILL\' 1;' : ''">{{ item.icon }}</span>
-              <span class="font-title-md text-[14px] flex-1">{{ item.title }}</span>
-              <span v-if="item.children" class="material-symbols-outlined text-[18px] transition-transform duration-200" :class="{ 'rotate-180': isActive }">
+              <span class="material-symbols-outlined shrink-0" :style="isActive ? 'font-variation-settings: \'FILL\' 1;' : ''">{{ item.icon }}</span>
+              <span 
+                :class="[
+                  isSidebarExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 pointer-events-none overflow-hidden',
+                  'font-title-md text-[14px] flex-1 whitespace-nowrap transition-all duration-300'
+                ]"
+              >
+                {{ item.title }}
+              </span>
+              <span 
+                v-if="item.children" 
+                :class="[
+                  isSidebarExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 pointer-events-none overflow-hidden',
+                  'material-symbols-outlined text-[18px] transition-transform duration-200'
+                ]"
+                :style="openMenus[item.title] ? 'transform: rotate(180deg);' : ''"
+              >
                 expand_more
               </span>
             </div>
           </router-link>
 
           <!-- Sub-items -->
-          <div v-if="item.children && route.path === item.path" class="pl-5 mt-1 mb-2 space-y-1 border-l border-white/10 ml-6">
+          <div v-if="item.children && openMenus[item.title] && isSidebarExpanded" class="pl-5 mt-1 mb-2 space-y-1 border-l border-white/10 ml-6">
             <router-link
               v-for="subItem in item.children"
               :key="subItem.title"
@@ -70,7 +106,10 @@
       </div>
 
       <!-- Profile Section (Bottom of Sidebar) -->
-      <div class="p-4 border-t border-white/10 mt-auto relative">
+      <div 
+        class="border-t border-white/10 mt-auto relative transition-all duration-300"
+        :class="isSidebarExpanded ? 'p-4' : 'p-2'"
+      >
         <!-- Profile Dropdown Menu Backdrop -->
         <div
           v-if="profileDropdownOpen"
@@ -80,7 +119,8 @@
 
         <div
           @click="toggleProfileDropdown"
-          class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/10 active:scale-[0.98] transition-all cursor-pointer select-none group"
+          class="flex items-center rounded-lg hover:bg-white/10 active:scale-[0.98] transition-all cursor-pointer select-none group py-2.5"
+          :class="isSidebarExpanded ? 'gap-3 px-3' : 'justify-center px-1'"
         >
           <!-- Avatar -->
           <div class="w-10 h-10 rounded-full border-2 border-white/20 shadow-sm bg-white/10 flex items-center justify-center font-bold text-white transition-transform overflow-hidden shrink-0">
@@ -90,16 +130,27 @@
             </template>
           </div>
           <!-- Info -->
-          <div class="flex-1 text-left min-w-0">
-            <p class="font-title-md text-[14px] text-white font-semibold truncate group-hover:text-purple-200 transition-colors" :title="authStore.currentUser?.fullName">
+          <div 
+            :class="[
+              isSidebarExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 pointer-events-none overflow-hidden',
+              'flex-1 text-left min-w-0 transition-all duration-300'
+            ]"
+          >
+            <p class="font-title-md text-[14px] text-white font-semibold truncate group-hover:text-purple-200 transition-colors whitespace-nowrap" :title="authStore.currentUser?.fullName">
               {{ authStore.currentUser?.fullName || 'Người dùng' }}
             </p>
-            <p class="font-body-sm text-[11px] text-white/50 truncate">
+            <p class="font-body-sm text-[11px] text-white/50 truncate whitespace-nowrap">
               {{ getRoleLabel(authStore.currentUser?.role) }}
             </p>
           </div>
           <!-- Dropdown Icon -->
-          <span class="material-symbols-outlined text-white/50 group-hover:text-white transition-colors text-[20px] shrink-0" :class="{ 'rotate-180': profileDropdownOpen }">
+          <span 
+            :class="[
+              isSidebarExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 pointer-events-none overflow-hidden',
+              'material-symbols-outlined text-white/50 group-hover:text-white transition-all duration-300 text-[20px] shrink-0'
+            ]"
+            :style="profileDropdownOpen ? 'transform: rotate(180deg);' : ''"
+          >
             unfold_more
           </span>
         </div>
@@ -138,13 +189,28 @@
         </transition>
       </div>
 
+      <!-- Pin / Expand Toggle Button (Desktop Only, Rendered Last for DOM Stacking Order) -->
+      <button 
+        @click="toggleSidebarPin"
+        class="hidden md:flex absolute -right-3 top-6 w-6 h-6 rounded-full bg-white text-primary-container border border-slate-200 shadow-md items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer group"
+        style="z-index: 999;"
+        :title="isSidebarPinned ? 'Thu nhỏ menu' : 'Ghim mở rộng menu'"
+      >
+        <span 
+          class="material-symbols-outlined text-[16px] transition-transform duration-300"
+          :class="isSidebarPinned ? 'animate-nudge-left' : 'animate-nudge-right'"
+        >
+          chevron_left
+        </span>
+      </button>
+
     </nav>
 
     <!-- Mobile Drawer Overlay -->
     <div v-if="mobileMenuOpen && !route.meta.public" @click="mobileMenuOpen = false" class="fixed inset-0 bg-[#000613]/40 backdrop-blur-xs z-40 md:hidden"></div>
 
     <!-- Main Content Wrapper -->
-    <div :class="[route.meta.public ? 'ml-0' : 'main-content-layout', 'flex-1 flex flex-col min-h-screen']">
+    <div :class="[route.meta.public ? 'ml-0' : (isSidebarExpanded ? 'main-content-layout-pinned' : 'main-content-layout-collapsed'), 'flex-1 flex flex-col min-h-screen transition-all duration-300']">
       <!-- TopNavBar -->
       <header v-if="!route.meta.public" class="flex md:hidden justify-between items-center px-container-padding h-16 bg-white/70 backdrop-blur-[20px] border-b border-white/40 shadow-sm sticky top-0 z-40 w-full">
         <!-- Title / Page Name -->
@@ -396,6 +462,29 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const mobileMenuOpen = ref(false)
+
+const isSidebarPinned = ref(localStorage.getItem('sidebar_pinned') === 'true')
+const isSidebarHovered = ref(false)
+
+const isSidebarExpanded = computed(() => {
+  if (mobileMenuOpen.value) return true
+  return isSidebarPinned.value || isSidebarHovered.value
+})
+
+const toggleSidebarPin = () => {
+  isSidebarPinned.value = !isSidebarPinned.value
+  localStorage.setItem('sidebar_pinned', isSidebarPinned.value ? 'true' : 'false')
+}
+
+const openMenus = ref({
+  'Cổng học tập': true,
+  'Hỗ trợ & Khác': true,
+  'Khảo sát & Đánh giá': true
+})
+
+const toggleMenu = (title) => {
+  openMenus.value[title] = !openMenus.value[title]
+}
 
 // Global route watcher to reset body overflow styling when navigating between pages
 watch(() => route.fullPath, () => {
@@ -842,15 +931,17 @@ async function fetchNotifications() {
       console.error('Error fetching evaluations for notifications:', err)
     }
 
-    // Filter based on 24h click expiry
+    // Filter based on 24h click expiry for visibility, but keep read status in memory for 30 days
     const now = Date.now()
     const oneDayMs = 24 * 60 * 60 * 1000
+    const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000
     
-    // Cleanup expired records in localStorage
+    // Cleanup expired records in localStorage after 30 days (instead of 1 day)
+    // to prevent notifications from popping back up as unread.
     let changed = false
     Object.keys(readNotificationsExpiry.value).forEach(id => {
       const clickTime = readNotificationsExpiry.value[id]
-      if (now - clickTime > oneDayMs) {
+      if (now - clickTime > thirtyDaysMs) {
         delete readNotificationsExpiry.value[id]
         changed = true
       }
@@ -935,8 +1026,29 @@ watch(() => authStore.currentUser, () => {
 
 <style scoped>
 @media (min-width: 768px) {
-  .main-content-layout {
+  .main-content-layout-pinned {
     margin-left: 240px !important;
   }
+  .main-content-layout-collapsed {
+    margin-left: 76px !important;
+  }
+}
+
+@keyframes nudge-left {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-3px); }
+}
+
+@keyframes nudge-right {
+  0%, 100% { transform: translateX(0) rotate(180deg); }
+  50% { transform: translateX(3px) rotate(180deg); }
+}
+
+.animate-nudge-left {
+  animation: nudge-left 2s infinite ease-in-out;
+}
+
+.animate-nudge-right {
+  animation: nudge-right 2s infinite ease-in-out;
 }
 </style>

@@ -168,6 +168,7 @@
           v-slot="{ pay }"
           v-if="activeTab === 'payments'"
           :payments="payments"
+          :student-profile="studentProfile"
           :auto-pay-course-name="route.query.courseName"
           :auto-pay-course-id="route.query.courseId"
           @open-payment-modal="openPaymentModal"
