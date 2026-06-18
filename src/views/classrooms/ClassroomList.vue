@@ -142,7 +142,7 @@
 
           <!-- Class info if occupied -->
           <div v-if="room.status === 'Occupied'" class="bg-info/[0.03] border border-info/10 p-3.5 rounded-xl space-y-1.5">
-            <div class="text-[11px] font-semibold text-info/80 uppercase tracking-wider">Lớp học hiện tại</div>
+            <div class="text-[11px] font-semibold text-info-dark uppercase tracking-wider">Lớp học hiện tại</div>
             <div class="text-body-sm font-bold text-primary-container flex items-center gap-2">
               <span class="material-symbols-outlined text-[16px] text-info">school</span>
               {{ room.currentClassName }}
@@ -154,7 +154,7 @@
 
           <!-- Maintenance notes if under maintenance -->
           <div v-else-if="room.status === 'Maintenance'" class="bg-error/[0.03] border border-error/10 p-3.5 rounded-xl space-y-1">
-            <div class="text-[11px] font-semibold text-error/80 uppercase tracking-wider">Lý do bảo trì</div>
+            <div class="text-[11px] font-semibold text-error-dark uppercase tracking-wider">Lý do bảo trì</div>
             <p class="text-body-xs font-semibold text-on-surface-variant/90 italic">
               "{{ room.notes || 'Không có ghi chú cụ thể' }}"
             </p>
@@ -162,7 +162,7 @@
 
           <!-- Vacant info -->
           <div v-else class="bg-success/[0.03] border border-success/10 p-3.5 rounded-xl">
-            <div class="text-body-xs text-success/80 font-semibold flex items-center gap-1.5">
+            <div class="text-body-xs text-success-dark font-semibold flex items-center gap-1.5">
               <span class="material-symbols-outlined text-[16px]">check_circle</span>
               Sẵn sàng sử dụng cho lớp học
             </div>
@@ -416,6 +416,15 @@ onMounted(() => {
 }
 .text-success {
   color: #16a34a;
+}
+.text-success-dark {
+  color: #15803d;
+}
+.text-info-dark {
+  color: #0369a1;
+}
+.text-error-dark {
+  color: #b91c1c;
 }
 .bg-success\/10 {
   background-color: rgba(22, 163, 74, 0.1);

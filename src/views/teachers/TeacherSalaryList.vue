@@ -123,8 +123,14 @@
                   <td class="py-4 px-6 text-center">{{ s.sessionsTaught }}</td>
                   <td class="py-4 px-6 text-center">{{ s.totalStudentSessions }}</td>
                   <td class="py-4 px-6 text-right">{{ formatCurrency(s.baseSalary) }}</td>
-                  <td class="py-4 px-6 text-right">{{ formatCurrency(s.sessionsTaught * s.ratePerSession) }}</td>
-                  <td class="py-4 px-6 text-right">{{ formatCurrency(s.totalStudentSessions * s.studentAllowanceRate) }}</td>
+                  <td class="py-4 px-6 text-right">
+                    <div class="font-medium text-primary-container">{{ formatCurrency(s.sessionsTaught * s.ratePerSession) }}</div>
+                    <div class="text-[10px] text-on-surface-variant/60 font-normal">({{ s.sessionsTaught }} ca × {{ formatCurrency(s.ratePerSession) }})</div>
+                  </td>
+                  <td class="py-4 px-6 text-right">
+                    <div class="font-medium text-success">{{ formatCurrency(s.totalStudentSessions * s.studentAllowanceRate) }}</div>
+                    <div class="text-[10px] text-on-surface-variant/60 font-normal">({{ s.totalStudentSessions }} lượt × {{ formatCurrency(s.studentAllowanceRate) }})</div>
+                  </td>
                   <td class="py-4 px-6 text-right text-success" :class="{ 'text-error': s.deductions > s.bonus }">
                     <span v-if="s.bonus > 0">+{{ formatCurrency(s.bonus) }}</span>
                     <span v-if="s.deductions > 0" class="block text-error">-{{ formatCurrency(s.deductions) }}</span>
@@ -244,12 +250,18 @@
                 <span class="font-semibold">{{ formatCurrency(s.baseSalary) }}</span>
               </div>
               <div class="flex justify-between">
-                <span>Lương theo buổi dạy:</span>
-                <span class="font-semibold">{{ formatCurrency(s.sessionsTaught * s.ratePerSession) }}</span>
+                <div>
+                  <span>Lương theo buổi dạy:</span>
+                  <div class="text-[10px] text-on-surface-variant/60">({{ s.sessionsTaught }} ca × {{ formatCurrency(s.ratePerSession) }}/buổi)</div>
+                </div>
+                <span class="font-semibold self-center">{{ formatCurrency(s.sessionsTaught * s.ratePerSession) }}</span>
               </div>
               <div class="flex justify-between">
-                <span>Phụ cấp sĩ số:</span>
-                <span class="font-semibold text-success">{{ formatCurrency(s.totalStudentSessions * s.studentAllowanceRate) }}</span>
+                <div>
+                  <span>Phụ cấp sĩ số:</span>
+                  <div class="text-[10px] text-on-surface-variant/60">({{ s.totalStudentSessions }} lượt × {{ formatCurrency(s.studentAllowanceRate) }}/lượt)</div>
+                </div>
+                <span class="font-semibold text-success self-center">{{ formatCurrency(s.totalStudentSessions * s.studentAllowanceRate) }}</span>
               </div>
               <div v-if="s.bonus > 0" class="flex justify-between">
                 <span>Thưởng thêm:</span>

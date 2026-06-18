@@ -587,7 +587,10 @@ const navItems = computed(() => {
   }
 
   if (authStore.isTeacher) {
-    items.push({ title: 'Phiếu lương của tôi', icon: 'receipt_long', path: '/teachers/salary' })
+    const hasSalarySlip = items.some(item => item.path === '/teachers/salary' && item.title === 'Phiếu lương của tôi');
+    if (!hasSalarySlip) {
+      items.push({ title: 'Phiếu lương của tôi', icon: 'receipt_long', path: '/teachers/salary' });
+    }
   }
 
   return items
