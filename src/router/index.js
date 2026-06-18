@@ -99,10 +99,22 @@ const routes = [
     meta: { title: 'Yêu cầu hỗ trợ', icon: 'chat', roles: ['Admin'] }
   },
   {
+    path: '/evaluation-management',
+    name: 'EvaluationManagement',
+    component: () => import('../views/evaluations/EvaluationManagement.vue'),
+    meta: { title: 'Quản lý Khảo sát & Đánh giá', icon: 'rate_review', roles: ['Admin'] }
+  },
+  {
     path: '/student-portal',
     name: 'StudentPortal',
     component: () => import('../views/students/StudentPortal.vue'),
     meta: { title: 'Cổng học tập', icon: 'dashboard', roles: ['HocVien', 'Admin'] }
+  },
+  {
+    path: '/other-services',
+    name: 'OtherServices',
+    component: () => import('../views/students/OtherServices.vue'),
+    meta: { title: 'Hỗ trợ & Khác', icon: 'support_agent', roles: ['HocVien', 'Admin'] }
   },
   {
     path: '/register-course',

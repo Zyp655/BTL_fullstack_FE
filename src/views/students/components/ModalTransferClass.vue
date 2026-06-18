@@ -21,7 +21,7 @@
             >
               <option :value="null" disabled>-- Chọn lớp học hiện tại --</option>
               <option v-for="cls in enrolledClasses.filter(c => c.status === 'DangHoc')" :key="cls.classId" :value="cls.classId">
-                {{ cls.className }} ({{ cls.courseName }})
+                {{ cls.courseName }} ({{ cls.className }})
               </option>
             </select>
           </div>

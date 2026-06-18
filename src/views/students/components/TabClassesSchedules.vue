@@ -70,14 +70,19 @@
           :key="cls.enrollmentId"
           @click="$emit('select-class', cls)"
           :class="[
-            selectedClass?.classId === cls.classId ? 'border-on-tertiary-container bg-white/60 shadow-sm' : 'border-white/40 hover:bg-white/40',
-            'bg-white/70 backdrop-blur-[20px] p-4 rounded-xl border transition-all cursor-pointer flex justify-between items-center'
+            selectedClass?.classId === cls.classId ? 'border-2 border-indigo-500 bg-white/80 shadow-lg scale-[1.04]' : 'border-white/40 hover:bg-white/40 hover:scale-[1.01]',
+            'bg-white/70 backdrop-blur-[20px] p-4 rounded-xl border transition-all duration-200 cursor-pointer flex justify-between items-center active:scale-[0.99]'
           ]"
         >
           <div class="space-y-1 min-w-0 flex-1 mr-3">
-            <div class="font-semibold text-primary-container text-body-lg truncate" :title="cls.className">{{ cls.className }}</div>
-            <div class="text-body-sm text-on-surface-variant truncate" :title="cls.courseName">Môn học: {{ cls.courseName }}</div>
-            <div class="text-body-sm text-on-surface-variant/80">Ngày đăng ký: {{ formatDate(cls.enrolledAt) }}</div>
+            <div class="flex items-center gap-1.5 min-w-0">
+              <div :class="[selectedClass?.classId === cls.classId ? 'font-extrabold text-indigo-600 text-[17px]' : 'font-bold text-primary-container text-body-lg', 'leading-snug line-clamp-2 transition-all']" :title="cls.courseName">{{ cls.courseName }}</div>
+              <span v-if="isClassConflicting(cls.classId)" class="text-error animate-pulse shrink-0 flex items-center" title="Lớp bị trùng lịch/môn học">
+                <span class="material-symbols-outlined text-[18px] font-bold" style="font-variation-settings: 'FILL' 1;">warning</span>
+              </span>
+            </div>
+            <div :class="[selectedClass?.classId === cls.classId ? 'font-bold text-indigo-400' : 'text-on-surface-variant/70', 'text-body-xs font-semibold transition-all']" :title="cls.className">{{ cls.className }}</div>
+            <div :class="[selectedClass?.classId === cls.classId ? 'font-medium text-slate-500' : 'text-on-surface-variant/80', 'text-body-sm transition-all']">Ngày đăng ký: {{ formatDate(cls.enrolledAt) }}</div>
           </div>
           <div class="flex flex-col items-end gap-1.5 shrink-0">
             <select
@@ -135,10 +140,87 @@
 
       <!-- Details View: Schedule & Attendance for selected class -->
       <div class="space-y-4">
+        <!-- Conflict Warning Banner -->
+        <div
+          v-if="selectedClass && !isClassUnpaid(selectedClass.classId) && hasConflict"
+          class="bg-error/10 border border-error/20 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm text-error animate-fade-in"
+        >
+          <div class="flex items-start gap-2.5 min-w-0">
+            <span class="material-symbols-outlined text-[24px] text-error shrink-0 mt-0.5 animate-pulse" style="font-variation-settings: 'FILL' 1;">warning</span>
+            <div class="text-[14px] leading-relaxed text-error flex-1">
+              <span class="font-bold block text-[15px]">Cảnh báo trùng lặp học vụ!</span>
+              <span class="text-on-surface-variant font-medium block mt-0.5" v-html="conflictMessage"></span>
+            </div>
+          </div>
+          <button
+            @click="$emit('open-support-conflict', { targetClass: selectedClass, conflictClass: conflictTargetForSupport || { className: 'Chưa xác định' } })"
+            class="px-4 py-2 rounded-lg bg-error hover:bg-error/90 text-white font-bold text-[13px] transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shrink-0 self-end sm:self-auto shadow-sm animate-pulse"
+          >
+            <span class="material-symbols-outlined text-[16px]">swap_horiz</span>
+            Gửi yêu cầu hỗ trợ đổi lớp
+          </button>
+        </div>
+
+        <!-- 0. Class & Course Info Section -->
+        <div v-if="selectedClass && !isClassUnpaid(selectedClass.classId)" class="space-y-3 pt-1 animate-fade-in">
+          <h3 class="text-[17px] sm:text-[19px] font-bold text-primary-container flex items-center gap-2">
+            <span class="material-symbols-outlined text-[22px] text-indigo-600">info</span>
+            Thông tin lớp học &amp; môn học
+          </h3>
+          <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 p-5 rounded-xl shadow-[0_12px_24px_rgba(0,0,0,0.04)] grid grid-cols-1 sm:grid-cols-2 gap-4 text-[14px] leading-relaxed animate-fade-in">
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px] text-slate-400">school</span>
+                <span class="font-medium text-slate-500">Lớp học:</span>
+                <span class="font-bold text-slate-800">{{ selectedClass.className }}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px] text-slate-400">book</span>
+                <span class="font-medium text-slate-500">Môn học:</span>
+                <span class="font-bold text-slate-800">{{ selectedClass.courseName }}</span>
+              </div>
+              <div class="flex items-center gap-2" v-if="selectedClass.teacherName || selectedClassDetails?.teacherName">
+                <span class="material-symbols-outlined text-[18px] text-slate-400">person</span>
+                <span class="font-medium text-slate-500">Giảng viên chính:</span>
+                <span class="font-bold text-slate-800">{{ selectedClass.teacherName || selectedClassDetails?.teacherName }}</span>
+              </div>
+              <div class="flex items-center gap-2" v-if="selectedClassDetails?.teacherName2">
+                <span class="material-symbols-outlined text-[18px] text-slate-400">group</span>
+                <span class="font-medium text-slate-500">Trợ giảng:</span>
+                <span class="font-bold text-slate-800">{{ selectedClassDetails.teacherName2 }}</span>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px] text-slate-400">meeting_room</span>
+                <span class="font-medium text-slate-500">Phòng học:</span>
+                <span class="font-bold text-slate-800">{{ selectedClassDetails?.room || selectedClass.room || 'Chưa xếp phòng' }}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px] text-slate-400">date_range</span>
+                <span class="font-medium text-slate-500">Thời gian học:</span>
+                <span class="font-bold text-slate-800">
+                  {{ formatDate(selectedClassDetails?.startDate || selectedClass.startDate) }} - {{ formatDate(selectedClassDetails?.endDate || selectedClass.endDate) }}
+                </span>
+              </div>
+              <div class="flex items-center gap-2" v-if="selectedClassDetails?.totalSessions">
+                <span class="material-symbols-outlined text-[18px] text-slate-400">tag</span>
+                <span class="font-medium text-slate-500">Tổng số buổi:</span>
+                <span class="font-bold text-slate-800">{{ selectedClassDetails.totalSessions }} buổi</span>
+              </div>
+              <div class="flex items-center gap-2" v-if="selectedClassDetails?.maxStudents">
+                <span class="material-symbols-outlined text-[18px] text-slate-400">groups</span>
+                <span class="font-medium text-slate-500">Sĩ số lớp:</span>
+                <span class="font-bold text-slate-800">{{ selectedClassDetails.currentStudents }} / {{ selectedClassDetails.maxStudents }} học viên</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- 1. Schedule section -->
         <div class="space-y-3">
-          <h3 class="font-title-md text-body-lg font-semibold text-primary-container flex items-center gap-2">
-            <span class="material-symbols-outlined text-[20px] text-on-tertiary-container">calendar_today</span>
+          <h3 class="text-[17px] sm:text-[19px] font-bold text-primary-container flex items-center gap-2">
+            <span class="material-symbols-outlined text-[22px] text-on-tertiary-container">calendar_today</span>
             Lịch học chi tiết {{ selectedClass ? `— ${selectedClass.className}` : '' }}
           </h3>
 
@@ -174,19 +256,23 @@
               v-for="schedule in schedules"
               :key="schedule.scheduleId"
               @click="viewScheduleDates(schedule)"
-              class="bg-white/70 backdrop-blur-[20px] border border-white/40 p-3.5 rounded-xl flex justify-between items-center hover:bg-white/50 hover:border-on-tertiary-container/30 hover:shadow-sm transition-all cursor-pointer group"
-              title="Click để xem chi tiết lịch sử học tập hôm này"
+              class="bg-white border border-slate-200 border-l-[6px] border-l-indigo-500/80 p-3.5 rounded-xl flex justify-between items-center hover:bg-indigo-50/10 hover:border-indigo-400 hover:border-l-indigo-600 hover:shadow-md shadow-[0_2px_8px_rgba(0,0,0,0.03)] transition-all cursor-pointer group"
+              title="Click để xem chi tiết lịch sử học tập hôm nay"
             >
-              <div class="space-y-1">
+              <div class="space-y-1 flex-1 min-w-0">
                 <div class="font-semibold text-primary-container text-body-lg flex items-center gap-1.5 group-hover:text-on-tertiary-container transition-colors">
                   Thứ {{ formatDayOfWeek(schedule.dayOfWeek) }}
                   <span class="material-symbols-outlined text-[16px] text-on-tertiary-container/70 opacity-0 group-hover:opacity-100 transition-opacity">info</span>
                 </div>
-                <div class="text-body-sm text-on-surface-variant">
-                  Phòng học: <span class="font-semibold text-primary-container">{{ schedule.classroom }}</span>
+                <div class="text-body-sm text-readable-secondary font-semibold">
+                  Phòng học: <span class="font-bold text-primary-container">{{ schedule.classroom || selectedClassDetails?.room || 'Chưa xếp phòng' }}</span>
                 </div>
               </div>
-              <div class="text-right">
+              
+              <!-- Vertical Divider -->
+              <div class="w-[1px] bg-slate-200/60 self-stretch mx-4 hidden sm:block"></div>
+              
+              <div class="text-right shrink-0">
                 <div class="font-semibold text-on-tertiary-container text-body-sm bg-on-tertiary-container/10 px-2.5 py-1 rounded-lg">
                   {{ schedule.startTime.substring(0, 5) }} - {{ schedule.endTime.substring(0, 5) }}
                 </div>
@@ -195,85 +281,97 @@
           </div>
         </div>
 
-        <!-- 1b. Grades section -->
-        <div v-if="selectedClass && !isClassUnpaid(selectedClass.classId) && !loadingSchedules && schedules.length > 0" class="space-y-3 pt-4 border-t border-dashed border-outline-variant/30 animate-fade-in">
-          <h3 class="font-title-md text-body-lg font-semibold text-primary-container flex items-center gap-2">
-            <span class="material-symbols-outlined text-[20px] text-purple-600">history_edu</span>
+        <!-- 1b. Grades section (Table Columns Layout) -->
+        <div v-if="selectedClass && !isClassUnpaid(selectedClass.classId)" class="space-y-3 pt-4 border-t border-dashed border-outline-variant/30 animate-fade-in">
+          <h3 class="text-[17px] sm:text-[19px] font-bold text-primary-container flex items-center gap-2">
+            <span class="material-symbols-outlined text-[22px] text-purple-600">history_edu</span>
             Kết quả học tập &amp; Điểm số
           </h3>
 
-          <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 p-4 rounded-xl space-y-3 shadow-[0_8px_16px_rgba(0,0,0,0.03)]">
-            <div class="flex justify-start items-center gap-2 text-body-sm font-semibold text-primary-container">
-              <span>Điểm trung bình môn:</span>
-              <span :class="[selectedClassAverageScore >= 5 ? 'text-emerald-600' : 'text-red-500', 'font-extrabold text-body-lg']">
+          <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 p-5 rounded-xl space-y-4 shadow-[0_8px_16px_rgba(0,0,0,0.03)] text-[14px]">
+            <div class="flex justify-between items-center gap-2 pb-2 border-b border-slate-200/50">
+              <span class="font-bold text-primary-container">Điểm trung bình môn:</span>
+              <span :class="[selectedClassAverageScore >= 5 ? 'text-emerald-600' : 'text-red-500', 'font-extrabold text-[18px] bg-slate-100 px-3 py-1 rounded-lg border border-slate-200/40 shadow-sm']">
                 {{ selectedClassAverageScore > 0 ? selectedClassAverageScore.toFixed(1) : 'Chưa tổng kết' }}
               </span>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <!-- Chuyên cần -->
-              <div class="bg-white/40 p-2.5 rounded-lg border border-white/20 flex justify-start items-center gap-2 text-body-sm">
-                <span class="font-medium text-primary-container">Chuyên cần:</span>
-                <span :class="[selectedClassAttendanceScore >= 5 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20', 'font-extrabold text-[13px] px-2 py-0.5 rounded border']">
-                  {{ selectedClassAttendanceScore }}
-                </span>
-              </div>
-
-              <!-- Exam Results -->
-              <div
-                v-for="res in selectedClassExamResults"
-                :key="res.resultId"
-                class="bg-white/40 p-2.5 rounded-lg border border-white/20 flex justify-start items-center gap-2 text-body-sm"
-              >
-                <span class="font-medium text-primary-container">{{ getExamTypeLabel(res.examType) }}:</span>
-                <span :class="[res.score >= 5 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20', 'font-extrabold text-[13px] px-2 py-0.5 rounded border']">
-                  {{ res.score }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Support and Transfer Requests List for Student -->
-    <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-6 rounded-xl space-y-4">
-      <div class="flex justify-between items-center border-b border-white/40 pb-2">
-        <h4 class="font-title-md text-body-lg font-bold text-primary-container flex items-center gap-2">
-          <span class="material-symbols-outlined text-[20px] text-on-tertiary-container">forum</span>
-          Yêu cầu hỗ trợ &amp; đổi lớp đã gửi
-        </h4>
-        <button
-          @click="$emit('open-support-dialog')"
-          class="px-3 py-1.5 rounded-lg bg-primary-container/10 hover:bg-primary-container/20 text-primary-container font-semibold text-[12px] transition-colors flex items-center gap-1 cursor-pointer active:scale-95"
-        >
-          <span class="material-symbols-outlined text-[16px]">add</span>
-          Gửi yêu cầu mới
-        </button>
-      </div>
-      <div v-if="mySupportMessages.length === 0" class="text-center py-4 text-body-sm text-on-surface-variant font-medium">
-        Bạn chưa gửi yêu cầu hỗ trợ nào.
-      </div>
-      <div v-else class="space-y-3 max-h-[250px] overflow-y-auto pr-1">
-        <div v-for="msg in mySupportMessages" :key="msg.id" class="bg-white/50 p-4 rounded-xl border border-white/40 flex flex-col sm:flex-row justify-between gap-3 text-body-sm">
-          <div class="space-y-2 flex-1">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span :class="[getStatusClass(msg.status), 'status-badge text-[10px] font-bold']">
-                {{ getStatusLabel(msg.status) }}
-              </span>
-              <span class="text-body-xs text-on-surface-variant">{{ formatDateTime(msg.createdAt) }}</span>
-            </div>
-            <div class="text-primary font-medium italic">"{{ msg.message }}"</div>
-            <div v-if="msg.fromClassId && msg.toClassId" class="text-body-xs bg-primary-container/5 px-2.5 py-1.5 rounded-lg border border-primary-container/10 inline-flex items-center gap-1.5">
-              <strong>{{ msg.fromClassName }}</strong> 
-              <span class="material-symbols-outlined text-[14px]">arrow_forward</span> 
-              <strong>{{ msg.toClassName }}</strong>
-            </div>
-            <!-- Rejection Reason (Admin Response) -->
-            <div v-if="msg.status === 'Rejected' && msg.adminResponse" class="mt-2 bg-error/5 p-3 rounded-lg border border-error/10 text-body-xs text-error flex items-start gap-2">
-              <span class="material-symbols-outlined text-[16px] mt-0.5 shrink-0">info</span>
-              <div>
-                <span class="font-bold">Lý do từ chối:</span> {{ msg.adminResponse }}
-              </div>
+            
+            <div class="overflow-x-auto">
+              <table class="w-full border-collapse text-left">
+                <thead>
+                  <tr class="text-slate-500 font-semibold border-b border-slate-200/50 text-[13px]">
+                    <th class="pb-2 font-bold text-center">Chuyên cần</th>
+                    <th class="pb-2 font-bold text-center">Điểm giữa kỳ</th>
+                    <th class="pb-2 font-bold text-center">Điểm cuối kỳ</th>
+                    <th class="pb-2 font-bold text-center">Kiểm tra</th>
+                    <th v-for="res in getOtherExams()" :key="res.resultId" class="pb-2 font-bold text-center">
+                      {{ getExamTypeLabel(res.examType) }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="text-[14px]">
+                  <tr class="hover:bg-slate-50/50 transition-colors">
+                    <!-- Chuyên cần -->
+                    <td class="py-3 text-center">
+                      <div class="flex flex-col items-center justify-center gap-1.5">
+                        <span :class="[selectedClassAttendanceScore >= 5 ? 'text-emerald-600 bg-emerald-500/10 border-emerald-500/20' : 'text-red-500 bg-red-500/10 border-red-500/20', 'font-extrabold px-3 py-1 rounded border text-[13px] shadow-sm']">
+                          {{ selectedClassAttendanceScore }}
+                        </span>
+                        <span class="text-[11px] text-slate-400 font-semibold" v-if="selectedClassAttendanceSummary">
+                          Có mặt: {{ selectedClassAttendanceSummary.present }}/{{ selectedClassAttendanceSummary.totalSessions }}
+                        </span>
+                      </div>
+                    </td>
+                    <!-- Giữa kỳ -->
+                    <td class="py-3 text-center">
+                      <div class="flex flex-col items-center justify-center gap-1.5">
+                        <span v-if="getExamScore('GiuaKy') !== null" :class="[getExamScore('GiuaKy') >= 5 ? 'text-emerald-600 bg-emerald-500/10 border-emerald-500/20' : 'text-red-500 bg-red-500/10 border-red-500/20', 'font-extrabold px-3 py-1 rounded border text-[13px] shadow-sm']">
+                          {{ getExamScore('GiuaKy') }}
+                        </span>
+                        <span v-else class="text-slate-400 italic text-xs">Chưa có</span>
+                        <span class="text-[11px] text-slate-400 font-medium italic" v-if="getExamNote('GiuaKy')">
+                          {{ getExamNote('GiuaKy') }}
+                        </span>
+                      </div>
+                    </td>
+                    <!-- Cuối kỳ -->
+                    <td class="py-3 text-center">
+                      <div class="flex flex-col items-center justify-center gap-1.5">
+                        <span v-if="getExamScore('CuoiKy') !== null" :class="[getExamScore('CuoiKy') >= 5 ? 'text-emerald-600 bg-emerald-500/10 border-emerald-500/20' : 'text-red-500 bg-red-500/10 border-red-500/20', 'font-extrabold px-3 py-1 rounded border text-[13px] shadow-sm']">
+                          {{ getExamScore('CuoiKy') }}
+                        </span>
+                        <span v-else class="text-slate-400 italic text-xs">Chưa có</span>
+                        <span class="text-[11px] text-slate-400 font-medium italic" v-if="getExamNote('CuoiKy')">
+                          {{ getExamNote('CuoiKy') }}
+                        </span>
+                      </div>
+                    </td>
+                    <!-- Kiểm tra -->
+                    <td class="py-3 text-center">
+                      <div class="flex flex-col items-center justify-center gap-1.5">
+                        <span v-if="getExamScore('KiemTra') !== null" :class="[getExamScore('KiemTra') >= 5 ? 'text-emerald-600 bg-emerald-500/10 border-emerald-500/20' : 'text-red-500 bg-red-500/10 border-red-500/20', 'font-extrabold px-3 py-1 rounded border text-[13px] shadow-sm']">
+                          {{ getExamScore('KiemTra') }}
+                        </span>
+                        <span v-else class="text-slate-400 italic text-xs">Chưa có</span>
+                        <span class="text-[11px] text-slate-400 font-medium italic" v-if="getExamNote('KiemTra')">
+                          {{ getExamNote('KiemTra') }}
+                        </span>
+                      </div>
+                    </td>
+                    <!-- Other exams -->
+                    <td v-for="res in getOtherExams()" :key="res.resultId" class="py-3 text-center">
+                      <div class="flex flex-col items-center justify-center gap-1.5">
+                        <span :class="[res.score >= 5 ? 'text-emerald-600 bg-emerald-500/10 border-emerald-500/20' : 'text-red-500 bg-red-500/10 border-red-500/20', 'font-extrabold px-3 py-1 rounded border text-[13px] shadow-sm']">
+                          {{ res.score }}
+                        </span>
+                        <span class="text-[11px] text-slate-400 font-medium italic" v-if="res.note">
+                          {{ res.note }}
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -430,6 +528,78 @@ const selectedClassAttendanceSummary = computed(() => {
   return props.attendanceSummaries.find(s => s.classId === props.selectedClass.classId)
 })
 
+// Check if a class is conflicting
+const isClassConflicting = (classId) => {
+  if (!props.currentConflicts) return false
+  const hasTimeConflict = props.currentConflicts.some(c => 
+    c.classA?.classId === classId || 
+    c.classB?.classId === classId
+  )
+  if (hasTimeConflict) return true
+
+  const cls = props.enrolledClasses.find(c => c.classId === classId)
+  if (cls && cls.status === 'DangHoc') {
+    const hasCourseConflict = props.enrolledClasses.some(c => 
+      c.classId !== classId && 
+      c.status === 'DangHoc' && 
+      c.courseId === cls.courseId
+    )
+    if (hasCourseConflict) return true
+  }
+
+  return false
+}
+
+// Time conflict involving selected class
+const selectedClassTimeConflict = computed(() => {
+  if (!props.selectedClass || !props.currentConflicts) return null
+  return props.currentConflicts.find(c => 
+    c.classA?.classId === props.selectedClass.classId || 
+    c.classB?.classId === props.selectedClass.classId
+  )
+})
+
+const conflictingTimeClass = computed(() => {
+  const conf = selectedClassTimeConflict.value
+  if (!conf) return null
+  return conf.classA?.classId === props.selectedClass.classId ? conf.classB : conf.classA
+})
+
+// Course conflict involving selected class (more than 1 active class for the same course)
+const conflictingCourseClass = computed(() => {
+  if (!props.selectedClass || props.selectedClass.status !== 'DangHoc') return null
+  return props.enrolledClasses.find(c => 
+    c.classId !== props.selectedClass.classId && 
+    c.status === 'DangHoc' && 
+    c.courseId === props.selectedClass.courseId
+  )
+})
+
+// Any conflict
+const hasConflict = computed(() => {
+  return !!selectedClassTimeConflict.value || !!conflictingCourseClass.value
+})
+
+const conflictMessage = computed(() => {
+  if (selectedClassTimeConflict.value && conflictingTimeClass.value) {
+    return `Lớp này đang bị trùng lịch học với lớp <strong class="text-slate-900 font-extrabold">${conflictingTimeClass.value.className}</strong> (Môn: ${conflictingTimeClass.value.courseName || 'Khác'}).`
+  }
+  if (conflictingCourseClass.value) {
+    return `Lớp này đang bị trùng môn học với lớp <strong class="text-slate-900 font-extrabold">${conflictingCourseClass.value.className}</strong> (Cùng môn: ${props.selectedClass.courseName}).`
+  }
+  return ''
+})
+
+const conflictTargetForSupport = computed(() => {
+  if (selectedClassTimeConflict.value && conflictingTimeClass.value) {
+    return conflictingTimeClass.value
+  }
+  if (conflictingCourseClass.value) {
+    return conflictingCourseClass.value
+  }
+  return null
+})
+
 const activeScheduleDates = computed(() => {
   if (!activeSchedule.value || !props.selectedClassDetails || !props.schedules) return []
   const classDetails = props.selectedClassDetails
@@ -539,6 +709,23 @@ function getAttendanceStatusLabel(status) {
 function getExamTypeLabel(type) {
   const map = { GiuaKy: 'Giữa kỳ', CuoiKy: 'Cuối kỳ', KiemTra: 'Kiểm tra' }
   return map[type] || type
+}
+
+function getExamScore(examType) {
+  if (!selectedClassExamResults.value) return null
+  const res = selectedClassExamResults.value.find(r => r.examType === examType)
+  return res ? res.score : null
+}
+
+function getExamNote(examType) {
+  if (!selectedClassExamResults.value) return ''
+  const res = selectedClassExamResults.value.find(r => r.examType === examType)
+  return res ? res.note : ''
+}
+
+function getOtherExams() {
+  if (!selectedClassExamResults.value) return []
+  return selectedClassExamResults.value.filter(r => r.examType !== 'GiuaKy' && r.examType !== 'CuoiKy' && r.examType !== 'KiemTra')
 }
 
 function isClassUnpaid(classId) {

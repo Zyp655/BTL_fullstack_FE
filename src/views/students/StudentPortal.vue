@@ -64,8 +64,8 @@
             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">menu_book</span>
           </div>
           <div>
-            <p class="text-on-surface-variant text-body-sm font-body-sm">Lớp đang học</p>
-            <p class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">{{ enrolledClasses.length }} lớp</p>
+            <p class="text-slate-600 text-body-sm font-semibold">Lớp đang học</p>
+            <p class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-bold">{{ enrolledClasses.length }} lớp</p>
           </div>
         </div>
         <!-- Stat 2 -->
@@ -74,8 +74,8 @@
             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
           </div>
           <div>
-            <p class="text-on-surface-variant text-body-sm font-body-sm">Điểm trung bình</p>
-            <p class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">
+            <p class="text-slate-600 text-body-sm font-semibold">Điểm trung bình</p>
+            <p class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-bold">
               {{ averageGrade > 0 ? averageGrade.toFixed(2) : '—' }}
             </p>
           </div>
@@ -86,8 +86,8 @@
             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">payments</span>
           </div>
           <div>
-            <p class="text-on-surface-variant text-body-sm font-body-sm">Học phí cần đóng</p>
-            <p class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">{{ formatCurrency(totalDebt) }}</p>
+            <p class="text-slate-600 text-body-sm font-semibold">Học phí cần đóng</p>
+            <p class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-bold">{{ formatCurrency(totalDebt) }}</p>
           </div>
         </div>
         <!-- Stat 4 (formerly 5) -->
@@ -96,8 +96,8 @@
             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
           </div>
           <div>
-            <p class="text-on-surface-variant text-body-sm font-body-sm">Số dư bảo lưu</p>
-            <p class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">
+            <p class="text-slate-600 text-body-sm font-semibold">Số dư bảo lưu</p>
+            <p class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-bold">
               {{ formatCurrency(creditSummary?.totalAvailable || 0) }}
             </p>
           </div>
@@ -113,8 +113,8 @@
             @click="selectTab(tab.value)"
             :class="[
               activeTab === tab.value
-                ? 'border-primary-container text-primary-container font-semibold'
-                : 'border-transparent text-on-surface-variant hover:text-on-surface',
+                ? 'border-primary-container text-primary-container font-bold'
+                : 'border-transparent text-readable-secondary hover:text-readable-primary hover:border-slate-300 font-semibold',
               'pb-3 border-b-2 font-title-md text-title-md flex items-center gap-2 transition-colors cursor-pointer'
             ]"
           >
@@ -143,16 +143,15 @@
           :schedules="schedules"
           :loading-schedules="loadingSchedules"
           :payments="payments"
-          :my-support-messages="mySupportMessages"
           :current-conflicts="currentConflicts"
           :attendance-summaries="attendanceSummaries"
           :exam-results="examResults"
           :selected-class-details="selectedClassDetails"
+          :my-support-messages="mySupportMessages"
           @select-class="selectClass"
-          @open-support-conflict="({ targetClass, conflictClass }) => openSupportDialogWithConflict(targetClass, conflictClass)"
+          @open-support-conflict="({ targetClass, conflictClass }) => handleOpenSupportConflict(targetClass, conflictClass)"
           @open-transfer-modal="openTransferModal"
           @change-enrollment-status="({ cls, newStatus }) => changeEnrollmentStatus(cls, newStatus)"
-          @open-support-dialog="openSupportDialog"
           @switch-tab="selectTab"
           @change-attendance-status="({ session, newStatus }) => changeAttendanceStatus(session, newStatus)"
         />
@@ -161,12 +160,15 @@
           v-if="activeTab === 'calendar'"
           :enrolled-classes="enrolledClasses"
           :enrolled-schedules-map="enrolledSchedulesMap"
+          :my-support-messages="mySupportMessages"
+          @open-support-conflict="({ targetClass, conflictClass }) => handleOpenSupportConflict(targetClass, conflictClass)"
         />
 
         <TabPayments
           v-slot="{ pay }"
           v-if="activeTab === 'payments'"
           :payments="payments"
+          :student-profile="studentProfile"
           :auto-pay-course-name="route.query.courseName"
           :auto-pay-course-id="route.query.courseId"
           @open-payment-modal="openPaymentModal"
@@ -191,87 +193,11 @@
           v-slot="{ conflict }"
           v-if="activeTab === 'conflicts'"
           :current-conflicts="currentConflicts"
-          @open-support-conflict="({ targetClass, conflictClass }) => openSupportDialogWithConflict(targetClass, conflictClass)"
+          :enrolled-classes="enrolledClasses"
+          @open-support-conflict="({ targetClass, conflictClass }) => handleOpenSupportConflict(targetClass, conflictClass)"
         />
+
       </div>
-
-      <!-- Dialog: Gửi yêu cầu hỗ trợ -->
-      <teleport to="body">
-        <div v-if="supportDialog" class="fixed inset-0 glass-backdrop z-[9999] flex items-center justify-center p-4">
-          <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-xl shadow-[0_20px_40px_rgba(0,31,63,0.12)] max-w-md w-full p-6 space-y-4 animate-scale-in flex flex-col">
-            <div class="flex items-center gap-3 text-primary-container border-b border-white/40 pb-3 justify-between">
-              <h3 class="font-title-md text-[18px] font-bold flex items-center gap-2">
-                <span class="material-symbols-outlined text-[24px] text-on-tertiary-container">chat</span>
-                Gửi yêu cầu hỗ trợ đổi lớp
-              </h3>
-              <button @click="supportDialog = false" class="text-on-surface-variant hover:text-primary-container cursor-pointer">
-                <span class="material-symbols-outlined">close</span>
-              </button>
-            </div>
-            
-            <div class="space-y-4">
-              <div class="space-y-1">
-                <label class="text-body-sm font-semibold text-primary-container block">Chọn lớp hiện tại cần đổi *</label>
-                <select
-                  v-model="supportFromClassId"
-                  class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container transition-all cursor-pointer"
-                >
-                  <option :value="null" disabled>-- Chọn lớp học hiện tại --</option>
-                  <option v-for="cls in enrolledClasses.filter(c => c.status === 'DangHoc')" :key="cls.classId" :value="cls.classId">
-                    {{ cls.className }} ({{ cls.courseName }})
-                  </option>
-                </select>
-              </div>
-
-              <div v-if="supportFromClassId" class="space-y-1">
-                <label class="text-body-sm font-semibold text-primary-container block">Chọn lớp muốn chuyển đến (Không bắt buộc)</label>
-                <div v-if="loadingSupportAlternativeClasses" class="flex items-center justify-center py-2 gap-2">
-                  <span class="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full"></span>
-                  <span class="text-body-xs text-on-surface-variant">Đang tìm lớp học...</span>
-                </div>
-                <div v-else class="relative">
-                  <select
-                    v-model="supportToClassId"
-                    class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container transition-all cursor-pointer"
-                  >
-                    <option :value="null">-- Chọn lớp học mới (Nếu có) --</option>
-                    <option v-for="c in supportAlternativeClasses" :key="c.classId" :value="c.classId">
-                      {{ c.className }} (Sĩ số: {{ c.currentStudents }}/{{ c.maxStudents }})
-                    </option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="space-y-1">
-                <label class="text-body-sm font-semibold text-primary-container block">Nội dung yêu cầu hỗ trợ *</label>
-                <textarea
-                  v-model="supportMessageText"
-                  rows="3"
-                  class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-3 py-2 text-body-sm text-primary placeholder-on-surface-variant/50 focus:outline-none focus:border-on-tertiary-container transition-all resize-none"
-                  placeholder="Nhập lý do hoặc tin nhắn cho Admin (ví dụ: Em bị trùng lịch học, nhờ Admin chuyển lớp giúp em)..."
-                ></textarea>
-              </div>
-            </div>
-
-            <div class="flex justify-end gap-3 pt-3 border-t border-white/40">
-              <button
-                @click="supportDialog = false"
-                class="px-4 py-2 rounded-lg border border-white/60 text-on-surface-variant font-semibold text-[13px] hover:bg-white/40 transition-colors cursor-pointer"
-              >
-                Hủy
-              </button>
-              <button
-                @click="submitSupportMessage"
-                :disabled="submittingSupport || !supportMessageText.trim() || !supportFromClassId"
-                class="px-4 py-2 rounded-lg bg-primary-container text-white font-semibold text-[13px] hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer active:scale-95"
-              >
-                <span v-if="submittingSupport" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
-                Gửi yêu cầu
-              </button>
-            </div>
-          </div>
-        </div>
-      </teleport>
 
       <!-- Modal: Admin Chuyển lớp học viên -->
       <ModalTransferClass
@@ -436,14 +362,17 @@ const supportAlternativeClasses = ref([])
 const loadingSupportAlternativeClasses = ref(false)
 
 const activeTab = ref(route.query.tab || 'classes')
-const tabs = [
-  { label: 'Lớp học & Lịch học', value: 'classes', icon: 'school' },
-  { label: 'Đăng ký môn học', value: 'register', icon: 'import_contacts' },
-  { label: 'Lịch học tuần', value: 'calendar', icon: 'calendar_month' },
-  { label: 'Học phí & Thanh toán', value: 'payments', icon: 'receipt_long' },
-  { label: 'Ví bảo lưu', value: 'credits', icon: 'account_balance_wallet' },
-  { label: 'Trùng lịch học', value: 'conflicts', icon: 'warning' }
-]
+const tabs = computed(() => {
+  const list = [
+    { label: 'Lớp học & Lịch học', value: 'classes', icon: 'school' },
+    { label: 'Đăng ký môn học', value: 'register', icon: 'import_contacts' },
+    { label: 'Lịch học tuần', value: 'calendar', icon: 'calendar_month' },
+    { label: 'Học phí & Thanh toán', value: 'payments', icon: 'receipt_long' },
+    { label: 'Ví bảo lưu', value: 'credits', icon: 'account_balance_wallet' },
+    { label: 'Trùng lịch học', value: 'conflicts', icon: 'warning' }
+  ]
+  return list
+})
 
 const selectTab = (tabValue) => {
   activeTab.value = tabValue
@@ -451,7 +380,7 @@ const selectTab = (tabValue) => {
 }
 
 watch(() => route.query.tab, (newTab) => {
-  if (newTab && tabs.some(t => t.value === newTab)) {
+  if (newTab && tabs.value.some(t => t.value === newTab)) {
     activeTab.value = newTab
   } else if (!newTab) {
     activeTab.value = 'classes'
@@ -569,15 +498,13 @@ async function loadPortalData(isBackground = false) {
           }
         })
 
-        if (!isBg) {
-          enrolledSchedulesMap.value = {}
-        }
+        const tempSchedulesMap = {}
         const conflictSchedulesPromises = enrolledClasses.value
           .filter(cls => !isClassUnpaid(cls.classId) && cls.status === 'DangHoc')
           .map(async (cls) => {
             try {
               const schedRes = await api.get(`/api/v1/classes/${cls.classId}/schedules`)
-              enrolledSchedulesMap.value[cls.classId] = schedRes.data || []
+              tempSchedulesMap[cls.classId] = schedRes.data || []
             } catch (e) {
               console.error(`Error loading schedules for class ${cls.classId}:`, e)
             }
@@ -596,6 +523,8 @@ async function loadPortalData(isBackground = false) {
           ...scorePromises,
           ...conflictSchedulesPromises
         ])
+        
+        enrolledSchedulesMap.value = tempSchedulesMap
       } else {
         selectedClass.value = null
         schedules.value = []
@@ -702,13 +631,13 @@ async function loadPortalDataForStudent(studentId, userId) {
         }
       })
 
-      enrolledSchedulesMap.value = {}
+      const tempSchedulesMap = {}
       const conflictSchedulesPromises = enrolledClasses.value
         .filter(cls => !isClassUnpaid(cls.classId) && cls.status === 'DangHoc')
         .map(async (cls) => {
           try {
             const schedRes = await api.get(`/api/v1/classes/${cls.classId}/schedules`)
-            enrolledSchedulesMap.value[cls.classId] = schedRes.data || []
+            tempSchedulesMap[cls.classId] = schedRes.data || []
           } catch (e) {
             console.error(`Error loading schedules for class ${cls.classId}:`, e)
           }
@@ -719,6 +648,8 @@ async function loadPortalDataForStudent(studentId, userId) {
         ...scorePromises,
         ...conflictSchedulesPromises
       ])
+
+      enrolledSchedulesMap.value = tempSchedulesMap
     } else {
       selectedClass.value = null
       schedules.value = []
@@ -944,77 +875,15 @@ watch(supportFromClassId, async (newClassId) => {
   }
 })
 
-function openSupportDialog() {
-  supportFromClassId.value = null
-  supportToClassId.value = null
-  supportMessageText.value = ''
-  supportDialog.value = true
-}
-
-function openSupportDialogWithConflict(targetClass, conflictClass) {
-  if (targetClass && conflictClass) {
-    supportFromClassId.value = targetClass.classId
-    supportMessageText.value = `Em bị trùng lịch học ở lớp ${targetClass.className} (trùng với lớp ${conflictClass.className}). Nhờ Admin chuyển lớp giúp em.`
-  } else {
-    supportFromClassId.value = null
-    supportMessageText.value = ''
-  }
-  supportToClassId.value = null
-  supportDialog.value = true
-}
-
-async function submitSupportMessage() {
-  if (!supportMessageText.value.trim() || !studentProfile.value || !supportFromClassId.value) return
-  submittingSupport.value = true
-  try {
-    const fromClass = enrolledClasses.value.find(c => c.classId === supportFromClassId.value)
-    const toClassId = supportToClassId.value
-    let toClassName = null
-    if (toClassId) {
-      const found = supportAlternativeClasses.value.find(c => c.classId === toClassId)
-      if (found) toClassName = found.className
+function handleOpenSupportConflict(targetClass, conflictClass) {
+  router.push({
+    path: '/other-services',
+    query: {
+      tab: 'support',
+      fromClassId: targetClass.classId,
+      conflictClassName: conflictClass.className
     }
-
-    await api.post('/api/v1/support-messages', {
-      studentId: studentProfile.value.studentId,
-      message: supportMessageText.value.trim(),
-      fromClassId: fromClass?.classId,
-      fromClassName: fromClass?.className,
-      toClassId: toClassId,
-      toClassName: toClassName
-    })
-
-    showSnackbar('Đã gửi tin nhắn yêu cầu hỗ trợ tới Admin!', 'success')
-    supportMessageText.value = ''
-    supportDialog.value = false
-    
-    // Reload support messages
-    const msgRes = await api.get('/api/v1/support-messages/my-messages')
-    mySupportMessages.value = msgRes.data || []
-  } catch (e) {
-    console.error('Error submitting support message:', e)
-    showSnackbar(e.response?.data?.message || 'Lỗi khi gửi tin nhắn cho Admin', 'error')
-  } finally {
-    submittingSupport.value = false
-  }
-}
-
-function getStatusClass(status) {
-  const map = {
-    Pending: 'status-inprogress',
-    Resolved: 'status-completed',
-    Rejected: 'status-cancelled'
-  }
-  return map[status] || 'status-inprogress'
-}
-
-function getStatusLabel(status) {
-  const map = {
-    Pending: 'Chờ duyệt',
-    Resolved: 'Đã duyệt',
-    Rejected: 'Đã từ chối'
-  }
-  return map[status] || status
+  })
 }
 
 let signalrConnection = null
@@ -1038,15 +907,6 @@ function setupSignalR() {
     
   signalrConnection.on('SupportMessageStatusChanged', async (msg) => {
     try {
-      // Reload support messages
-      if (authStore.isAdmin) {
-        const msgRes = await api.get('/api/v1/support-messages')
-        mySupportMessages.value = (msgRes.data || []).filter(m => m.studentId === studentProfile.value?.studentId)
-      } else {
-        const msgRes = await api.get('/api/v1/support-messages/my-messages')
-        mySupportMessages.value = msgRes.data || []
-      }
-      
       if (msg.status === 'Resolved') {
         showSnackbar(`Yêu cầu đổi lớp của bạn đã được phê duyệt! Lịch học đã được cập nhật.`, 'success')
         await loadPortalData()

@@ -18,8 +18,8 @@
         <!-- Header class -->
         <div class="bg-primary-container/5 px-5 py-3 border-b border-white/40 flex justify-between items-center">
           <div>
-            <span class="font-semibold text-primary-container text-body-lg">{{ cls.className }}</span>
-            <span class="text-body-sm text-on-surface-variant ml-2">({{ cls.courseName }})</span>
+            <span class="font-semibold text-primary-container text-body-lg">{{ cls.courseName }}</span>
+            <span class="text-body-sm text-on-surface-variant ml-2">({{ cls.className }})</span>
           </div>
           <div class="flex items-center gap-4">
             <button

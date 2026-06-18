@@ -1,93 +1,168 @@
 <template>
   <div class="space-y-4">
-    <h3 class="font-title-md text-body-lg font-semibold text-primary-container flex items-center gap-2">
-      <span class="material-symbols-outlined text-[20px] text-amber-500">receipt_long</span>
+    <h3 class="text-lg sm:text-[20px] font-bold text-primary-container flex items-center gap-2.5 mb-1">
+      <span class="material-symbols-outlined text-[24px] text-amber-500">receipt_long</span>
       Danh sách phiếu học phí & Lịch sử đóng học phí
     </h3>
 
-    <div v-if="payments.length === 0" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-8 text-center rounded-xl text-on-surface-variant">
-      Bạn chưa có phiếu thu học phí nào trên hệ thống.
+    <!-- Filters -->
+    <div class="flex flex-wrap gap-2.5 mb-5 bg-slate-100 p-2 rounded-xl border border-slate-200/40 w-fit">
+      <button
+        @click="paymentFilter = 'all'"
+        :class="[
+          'px-5 py-2.5 rounded-lg text-[14px] font-bold transition-all cursor-pointer border',
+          paymentFilter === 'all'
+            ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm'
+            : 'bg-white border-transparent text-slate-600 hover:bg-slate-50'
+        ]"
+      >
+        Tất cả ({{ payments.length }})
+      </button>
+      <button
+        @click="paymentFilter = 'paid'"
+        :class="[
+          'px-5 py-2.5 rounded-lg text-[14px] font-bold transition-all cursor-pointer border',
+          paymentFilter === 'paid'
+            ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm'
+            : 'bg-white border-transparent text-slate-600 hover:bg-slate-50'
+        ]"
+      >
+        Đã đóng ({{ payments.filter(p => p.status === 'HoanTat').length }})
+      </button>
+      <button
+        @click="paymentFilter = 'pending'"
+        :class="[
+          'px-5 py-2.5 rounded-lg text-[14px] font-bold transition-all cursor-pointer border',
+          paymentFilter === 'pending'
+            ? 'bg-amber-500 border-amber-500 text-white shadow-sm'
+            : 'bg-white border-transparent text-slate-600 hover:bg-slate-50'
+        ]"
+      >
+        Đang chờ đóng ({{ payments.filter(p => p.status !== 'HoanTat').length }})
+      </button>
+    </div>
+
+    <div v-if="filteredPayments.length === 0" class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-[0_12px_24px_rgba(0,0,0,0.05)] p-8 text-center rounded-xl text-on-surface-variant font-semibold text-[15px]">
+      Không có phiếu thu học phí nào thuộc bộ lọc này.
     </div>
 
     <div v-else class="space-y-4">
       <div
-        v-for="pay in payments"
+        v-for="pay in filteredPayments"
         :key="pay.paymentId"
         class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl overflow-hidden shadow-[0_12px_24px_rgba(0,0,0,0.05)]"
       >
         <!-- Header payment info -->
-        <div class="bg-primary-container/5 px-5 py-4 border-b border-white/40 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-          <div class="space-y-1">
-            <div class="flex items-center gap-2">
-              <span class="font-semibold text-primary-container text-body-lg">{{ pay.className }}</span>
-              <span :class="[getPaymentStatusClass(pay.status), 'status-badge text-[10px] font-bold']">
+        <div class="bg-primary-container/5 px-6 py-5 border-b border-white/40 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+          <div class="space-y-2.5 flex-grow">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="font-bold text-primary-container text-[19px] sm:text-[21px]">{{ pay.courseName }}</span>
+              <span :class="[getPaymentStatusClass(pay.status), 'status-badge text-[12px] font-bold px-2.5 py-0.5 rounded-full']">
                 {{ getPaymentStatusLabel(pay.status) }}
               </span>
               <button
                 v-if="authStore.isAdmin && pay.status !== 'HoanTat'"
                 @click="$emit('open-payment-modal', pay)"
-                class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-semibold transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-sm"
+                class="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-sm"
               >
-                <span class="material-symbols-outlined text-[15px]">add_card</span>
+                <span class="material-symbols-outlined text-[16px]">add_card</span>
                 Ghi nhận thanh toán
               </button>
-            </div>
-            <div class="text-body-sm text-on-surface-variant">Môn học: {{ pay.courseName }}</div>
-            <div class="text-body-sm text-on-surface-variant/70">Mã hóa đơn: <span class="font-mono font-bold">PAY{{ pay.paymentId }}</span></div>
-          </div>
-          <div class="text-left sm:text-right space-y-0.5">
-            <div v-if="pay.status !== 'HoanTat'" class="text-body-sm text-on-surface-variant">Hạn chót đóng: <span class="font-semibold text-primary-container">{{ formatDate(pay.dueDate) }}</span></div>
-            <div v-if="pay.status === 'HoanTat'">
               <button
-                @click="openDetailModal(pay)"
-                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 text-[11px] font-bold border border-emerald-500/20 shadow-sm transition-all active:scale-95 cursor-pointer"
+                v-if="pay.status !== 'HoanTat'"
+                @click="confirmCancelPayment(pay)"
+                class="px-3 py-2 rounded-lg border border-rose-300 text-rose-600 hover:bg-rose-50 hover:border-rose-400 text-[12px] font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95"
               >
-                <span class="material-symbols-outlined text-[15px]">receipt_long</span>
-                Xem chi tiết
+                <span class="material-symbols-outlined text-[16px]">cancel</span>
+                Hủy đăng ký học
               </button>
             </div>
-            <div v-else class="text-body-sm text-on-surface-variant">
-              Cần thanh toán: <span class="font-bold text-primary-container">{{ formatCurrency(pay.totalAmount) }}</span>
+            
+            <div class="space-y-1">
+              <div class="text-[16px] sm:text-[17px] text-on-surface-variant font-medium">
+                Lớp học: <span class="font-semibold text-slate-800">{{ pay.className }}</span>
+              </div>
+              <div class="text-[14px] text-on-surface-variant/70">
+                Mã hóa đơn: <span class="font-mono font-bold">PAY{{ pay.paymentId }}</span>
+              </div>
             </div>
-            <div v-if="pay.status !== 'HoanTat' && pay.remainingAmount > 0" class="text-body-sm font-bold text-error">
-              Còn nợ: {{ formatCurrency(pay.remainingAmount) }}
-            </div>
+          </div>
+          
+          <!-- Right section with Action / Due Date / Paid summary -->
+          <div class="text-left sm:text-right space-y-2.5 shrink-0 flex flex-col items-start sm:items-end">
+            <template v-if="pay.status === 'HoanTat'">
+              <div class="text-[16px] text-on-surface-variant font-medium">
+                Đã đóng: <span class="font-bold text-emerald-600 text-[19px]">{{ formatCurrency(pay.totalAmount) }}</span>
+              </div>
+              <div>
+                <button
+                  @click="openDetailModal(pay)"
+                  class="inline-flex items-center gap-1.5 px-4.5 py-2.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 text-[13px] font-bold border border-emerald-500/20 shadow-sm transition-all active:scale-95 cursor-pointer"
+                >
+                  <span class="material-symbols-outlined text-[18px]">receipt_long</span>
+                  Xem chi tiết
+                </button>
+              </div>
+            </template>
+            <template v-else>
+              <div class="text-[15px] text-on-surface-variant font-medium">
+                Hạn chót đóng: <span class="font-bold text-primary-container">{{ formatDate(pay.dueDate) }}</span>
+              </div>
+              <div v-if="pay.totalAmount - pay.remainingAmount > 0" class="text-[15px] text-on-surface-variant font-medium">
+                Đã đóng: <span class="font-bold text-emerald-600">{{ formatCurrency(pay.totalAmount - pay.remainingAmount) }}</span>
+              </div>
+              <div class="text-[15px] text-on-surface-variant font-medium">
+                Cần thanh toán: <span class="font-bold text-primary-container text-[19px]">{{ formatCurrency(pay.totalAmount) }}</span>
+              </div>
+              <div v-if="pay.remainingAmount > 0" class="text-[15px] font-bold text-error">
+                Còn nợ: {{ formatCurrency(pay.remainingAmount) }}
+              </div>
+            </template>
           </div>
         </div>
 
         <!-- SePay Dynamic QR Payment for Students (Unpaid/Partially Paid) -->
         <!-- Payment Banner Inline -->
-        <div v-if="!authStore.isAdmin && pay.status !== 'HoanTat'" class="p-5 border-b border-dashed border-outline-variant/30 bg-primary-container/[0.02] flex flex-col sm:flex-row items-center justify-between gap-4 animate-fade-in">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-primary-container/10 text-primary-container flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-[24px]">qr_code_2</span>
+        <div v-if="!authStore.isAdmin && pay.status !== 'HoanTat'" class="p-6 border-b border-dashed border-outline-variant/30 bg-primary-container/[0.02] flex flex-col sm:flex-row items-center justify-between gap-4 animate-fade-in">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-primary-container/10 text-primary-container flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[26px]">qr_code_2</span>
             </div>
             <div class="text-left">
-              <h4 class="font-bold text-primary-container text-body-md">Thanh toán học phí trực tuyến tự động</h4>
-              <p class="text-body-sm text-on-surface-variant">Hỗ trợ chuyển khoản quét mã VietQR tự động khớp và gạch nợ sau 10 giây qua SePay.</p>
+              <h4 class="font-bold text-primary-container text-[16px]">Thanh toán học phí trực tuyến tự động</h4>
+              <p class="text-[14px] text-on-surface-variant mt-0.5">Hỗ trợ chuyển khoản quét mã VietQR tự động khớp và gạch nợ sau 10 giây qua SePay.</p>
             </div>
           </div>
-          <button
-            @click="openPaymentQr(pay)"
-            class="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-body-sm flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer shrink-0"
-          >
-            <span class="material-symbols-outlined text-[18px]">payment</span>
-            Thanh toán ngay
-          </button>
+          <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-2.5 shrink-0">
+            <button
+              @click="confirmCancelPayment(pay)"
+              class="w-full sm:w-auto px-5 py-3 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300 font-bold text-[14px] flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer shrink-0"
+            >
+              <span class="material-symbols-outlined text-[20px]">cancel</span>
+              Hủy đăng ký
+            </button>
+            <button
+              @click="openPaymentQr(pay)"
+              class="w-full sm:w-auto px-6 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[14px] flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95 cursor-pointer shrink-0"
+            >
+              <span class="material-symbols-outlined text-[20px]">payment</span>
+              Thanh toán ngay
+            </button>
+          </div>
         </div>
 
         <!-- SePay Payment Success Notification for Students (Completed) -->
-        <div v-if="!authStore.isAdmin && pay.status === 'HoanTat'" class="p-5 border-b border-dashed border-emerald-500/30 bg-emerald-500/[0.02] flex items-center justify-between gap-4 animate-fade-in">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-[24px] font-bold">check_circle</span>
+        <div v-if="!authStore.isAdmin && pay.status === 'HoanTat'" class="p-6 border-b border-dashed border-emerald-500/30 bg-emerald-500/[0.02] flex items-center justify-between gap-4 animate-fade-in">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[26px] font-bold">check_circle</span>
             </div>
             <div>
-              <h4 class="font-bold text-emerald-700 text-body-md">Thanh toán thành công!</h4>
-              <p class="text-body-sm text-emerald-600/80">Cảm ơn bạn, học phí của lớp học này đã được ghi nhận hoàn tất tự động qua cổng SePay.</p>
+              <h4 class="font-bold text-emerald-700 text-[16px]">Thanh toán thành công!</h4>
+              <p class="text-[14px] text-emerald-600/80 mt-0.5">Cảm ơn bạn, học phí của lớp học này đã được ghi nhận hoàn tất tự động qua cổng SePay.</p>
             </div>
           </div>
-          <span class="inline-flex items-center bg-emerald-100 text-emerald-800 text-body-xs font-semibold px-3 py-1.5 rounded-full border border-emerald-200">
+          <span class="inline-flex items-center bg-emerald-100 text-emerald-800 text-[13px] font-bold px-4 py-2 rounded-full border border-emerald-200">
             Hoàn tất
           </span>
         </div>
@@ -308,6 +383,58 @@
       </div>
     </div>
   </teleport>
+
+  <!-- Dialog: Xác nhận hủy đăng ký học -->
+  <teleport to="body">
+    <div v-if="showCancelModal && activePaymentToCancel" class="fixed inset-0 glass-backdrop z-[9999] flex items-center justify-center p-4">
+      <div class="bg-white/95 backdrop-blur-[24px] border border-white/50 rounded-xl shadow-[0_20px_40px_rgba(0,31,63,0.12)] max-w-md w-full p-6 space-y-4 animate-scale-in">
+        <div class="flex items-center gap-3 text-error border-b border-white/40 pb-3 justify-between">
+          <h3 class="font-title-md text-[18px] font-bold flex items-center gap-2">
+            <span class="material-symbols-outlined text-[24px] text-error">warning</span>
+            Xác nhận hủy đăng ký học
+          </h3>
+          <button @click="closeCancelModal" class="text-on-surface-variant hover:text-primary cursor-pointer border-0 bg-transparent flex items-center justify-center">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="space-y-3">
+          <p class="text-body-sm text-on-surface-variant leading-relaxed">
+            Bạn có chắc chắn muốn hủy đăng ký học và xóa hóa đơn học phí của lớp/khóa sau?
+          </p>
+          <div class="p-4 bg-rose-500/5 rounded-lg border border-rose-500/10">
+            <h4 class="font-semibold text-rose-900 text-body-sm">{{ activePaymentToCancel.courseName }}</h4>
+            <p class="text-body-xs text-on-surface-variant mt-1">Lớp: {{ activePaymentToCancel.className }}</p>
+            <p class="text-body-xs text-on-surface-variant font-mono">Mã hóa đơn: PAY{{ activePaymentToCancel.paymentId }}</p>
+            <div class="flex justify-between items-center mt-3 pt-3 border-t border-rose-500/10">
+              <span class="text-body-xs font-semibold text-on-surface-variant">Học phí cần đóng:</span>
+              <span class="text-body-sm font-black text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-md border border-rose-100 shadow-sm">{{ formatCurrency(activePaymentToCancel.totalAmount) }}</span>
+            </div>
+          </div>
+          <p class="text-[11px] text-error leading-relaxed font-semibold italic">
+            * Hành động này sẽ xóa vĩnh viễn phiếu học phí và hủy đăng ký của bạn khỏi danh sách chờ lớp/học phần này. Bạn sẽ không thể hoàn tác thao tác này.
+          </p>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-3 border-t border-white/40">
+          <button
+            @click="closeCancelModal"
+            class="px-4 py-2 rounded-lg border border-white/60 text-on-surface-variant font-semibold text-[13px] hover:bg-white/40 transition-colors cursor-pointer"
+          >
+            Quay lại
+          </button>
+          <button
+            @click="submitCancelPayment"
+            :disabled="isCancelling"
+            class="px-4 py-2 rounded-lg bg-rose-600 text-white font-semibold text-[13px] hover:bg-rose-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer active:scale-95"
+          >
+            <span v-if="isCancelling" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
+            Xác nhận hủy
+          </button>
+        </div>
+      </div>
+    </div>
+  </teleport>
 </template>
 
 <script setup>
@@ -317,6 +444,70 @@ import api from '../../../services/api'
 
 const authStore = useAuthStore()
 const showSnackbar = inject('showSnackbar')
+
+const showCancelModal = ref(false)
+const activePaymentToCancel = ref(null)
+const isCancelling = ref(false)
+
+function confirmCancelPayment(payment) {
+  activePaymentToCancel.value = payment
+  showCancelModal.value = true
+}
+
+function closeCancelModal() {
+  showCancelModal.value = false
+  activePaymentToCancel.value = null
+  isCancelling.value = false
+}
+
+async function submitCancelPayment() {
+  if (!activePaymentToCancel.value) return
+  
+  let studentId = props.studentProfile?.studentId
+  
+  if (!studentId) {
+    try {
+      const res = await api.get(`/api/v1/students/by-user/${activePaymentToCancel.value.studentUserId}`)
+      studentId = res.data?.studentId
+    } catch (e) {
+      console.error('Error fetching studentId by user id:', e)
+    }
+  }
+  
+  if (!studentId) {
+    if (showSnackbar) {
+      showSnackbar('Không tìm thấy ID học viên để hủy đăng ký.', 'error')
+    }
+    return
+  }
+
+  isCancelling.value = true
+  try {
+    // 1. Delete payment invoice in PaymentService
+    await api.delete(`/api/v1/payments/${activePaymentToCancel.value.paymentId}`)
+    
+    // 2. Cancel enrollment in StudentService
+    await api.delete('/api/v1/enrollments/cancel', {
+      params: {
+        studentId: studentId,
+        classId: activePaymentToCancel.value.classId
+      }
+    })
+    
+    if (showSnackbar) {
+      showSnackbar('Đã hủy đăng ký học và xóa hóa đơn học phí thành công!', 'success')
+    }
+    closeCancelModal()
+    emit('refresh-payments')
+  } catch (err) {
+    console.error(err)
+    if (showSnackbar) {
+      showSnackbar(err.response?.data?.message || 'Có lỗi xảy ra khi hủy đăng ký.', 'error')
+    }
+  } finally {
+    isCancelling.value = false
+  }
+}
 
 const selectedGateway = ref('SePay')
 const checkoutInfo = ref(null)
@@ -447,8 +638,20 @@ const hasAutoOpened = ref(false)
 
 const props = defineProps({
   payments: { type: Array, required: true },
+  studentProfile: { type: Object, default: null },
   autoPayCourseName: { type: String, default: null },
   autoPayCourseId: { type: [String, Number], default: null }
+})
+
+const paymentFilter = ref('all')
+const filteredPayments = computed(() => {
+  let list = props.payments || []
+  if (paymentFilter.value === 'paid') {
+    return list.filter(p => p.status === 'HoanTat')
+  } else if (paymentFilter.value === 'pending') {
+    return list.filter(p => p.status !== 'HoanTat')
+  }
+  return list
 })
 
 watch(() => props.payments, (newPayments) => {
