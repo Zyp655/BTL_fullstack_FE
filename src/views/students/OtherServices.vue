@@ -335,79 +335,111 @@
               <p class="font-medium text-body-sm text-readable-muted">Bạn chưa thực hiện đánh giá nào.</p>
             </div>
 
-            <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-gutter animate-fade-in">
-              <div 
-                v-for="cls in evaluationHistory" 
-                :key="cls.classId" 
-                class="bg-emerald-50/[0.04] border border-emerald-100/75 rounded-xl p-5 hover:shadow-md transition-all flex flex-col justify-between gap-4"
-              >
-                <div class="space-y-3">
-                  <div class="flex justify-between items-start gap-2">
-                    <div class="flex-1 min-w-0">
-                      <h4 class="font-extrabold text-primary-container text-[17px] leading-snug line-clamp-2" :title="cls.courseName">
-                        {{ cls.courseName }}
-                      </h4>
-                      <p class="text-body-xs text-slate-400 font-semibold mt-0.5">{{ cls.className }}</p>
-                    </div>
-                    <span class="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 px-2.5 py-0.5 rounded-full text-[10px] font-bold shrink-0">
-                      Đã đánh giá
-                    </span>
-                  </div>
-                  <div class="h-[1px] bg-slate-100 w-full"></div>
-                  
-                  <div class="space-y-2 text-body-sm">
-                    <div class="flex items-center gap-2" v-if="cls.teacherName">
-                      <span class="material-symbols-outlined text-[16px] text-slate-400 shrink-0">person</span>
-                      <span class="font-bold text-slate-600 shrink-0">Giảng viên:</span>
-                      <span class="text-readable-secondary font-bold text-indigo-600">{{ cls.teacherName }}</span>
-                    </div>
-                  </div>
-
-                  <!-- Ratings Banner / Box -->
-                  <div class="w-full space-y-3 bg-emerald-50/30 p-3.5 rounded-lg border border-emerald-100/50">
-                    <div class="flex items-center justify-between text-body-xs font-bold text-emerald-700">
-                      <span class="flex items-center gap-1">
-                        <span class="material-symbols-outlined text-[16px] font-variation-settings-fill text-emerald-600">check_circle</span>
-                        Điểm trung bình
-                      </span>
-                      <span class="bg-amber-400/15 text-amber-700 font-bold text-xs px-2.5 py-0.5 rounded flex items-center gap-1 border border-amber-400/20">
-                        {{ getClassEvaluation(cls.classId).rating?.toFixed(1) || '0.0' }}
-                        <span class="material-symbols-outlined text-[12px] font-variation-settings-fill text-amber-500">star</span>
-                      </span>
-                    </div>
-
-                    <!-- Dynamic ratings layout with little star bars -->
-                    <div class="grid grid-cols-2 gap-2 text-[11px] font-semibold text-slate-600">
-                      <div 
-                        v-for="scoreObj in getEvaluationScores(getClassEvaluation(cls.classId))"
-                        :key="scoreObj.name"
-                        class="flex flex-col bg-white p-2.5 rounded-lg border border-slate-150 shadow-xs gap-1"
+            <div v-else class="bg-white/70 backdrop-blur-[24px] border border-slate-200/50 rounded-xl shadow-[0_8px_16px_rgba(0,31,63,0.03)] overflow-hidden animate-fade-in">
+              <div class="overflow-x-auto">
+                <table class="w-full border-collapse text-left">
+                  <thead>
+                    <tr class="bg-primary-container/[0.05] border-b border-primary-container/10 text-primary-container font-semibold text-body-xs uppercase tracking-wider">
+                      <th class="py-4 px-6">Môn học / Lớp học</th>
+                      <th class="py-4 px-4">Giảng viên</th>
+                      <th class="py-4 px-4">Điểm trung bình</th>
+                      <th class="py-4 px-4">Thời gian</th>
+                      <th class="py-4 px-6 text-center w-[80px]">Chi tiết</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    <template v-for="cls in evaluationHistory" :key="cls.classId">
+                      <!-- Main Row -->
+                      <tr 
+                        @click="toggleEvaluationExpansion(cls.classId)" 
+                        class="hover:bg-slate-50/50 transition-colors cursor-pointer group"
+                        :class="expandedEvaluationClassId === cls.classId ? 'bg-slate-50/70' : ''"
                       >
-                        <div class="flex items-center justify-between text-slate-500 font-bold">
-                          <span class="truncate">{{ scoreObj.name }}</span>
-                          <span class="text-indigo-600 font-black text-xs">{{ scoreObj.score }}★</span>
-                        </div>
-                        <div class="flex gap-0.5 text-amber-400">
-                          <span 
-                            v-for="s in 5" 
-                            :key="s" 
-                            class="material-symbols-outlined text-[10px]"
-                            :style="s <= scoreObj.score ? 'font-variation-settings: \'FILL\' 1;' : ''"
-                          >
-                            star
+                        <td class="py-4 px-6">
+                          <div class="flex flex-col">
+                            <span class="font-bold text-primary text-body-sm">{{ cls.courseName }}</span>
+                            <span class="text-slate-400 text-[10px] font-semibold mt-0.5">{{ cls.className }}</span>
+                          </div>
+                        </td>
+                        <td class="py-4 px-4">
+                          <div class="flex items-center gap-1.5 text-body-sm text-readable-secondary" v-if="cls.teacherName">
+                            <span class="material-symbols-outlined text-[16px] text-slate-400">person</span>
+                            <span class="font-bold text-indigo-600">{{ cls.teacherName }}</span>
+                          </div>
+                          <span v-else class="text-slate-400 text-xs italic">Chưa phân công</span>
+                        </td>
+                        <td class="py-4 px-4">
+                          <span class="bg-amber-400/15 text-amber-700 font-bold text-xs px-2.5 py-1 rounded-full border border-amber-400/20 inline-flex items-center gap-1">
+                            {{ getClassEvaluation(cls.classId).rating?.toFixed(1) || '0.0' }}
+                            <span class="material-symbols-outlined text-[12px] font-variation-settings-fill text-amber-500" style="font-variation-settings: 'FILL' 1;">star</span>
                           </span>
-                        </div>
-                      </div>
-                    </div>
+                        </td>
+                        <td class="py-4 px-4">
+                          <div class="flex items-center gap-1 text-body-xs text-on-surface-variant">
+                            <span class="material-symbols-outlined text-[14px]">schedule</span>
+                            <span>{{ formatDateTime(getClassEvaluation(cls.classId).createdAt) }}</span>
+                          </div>
+                        </td>
+                        <td class="py-4 px-6 text-center">
+                          <span class="material-symbols-outlined text-primary-container/60 group-hover:text-primary transition-transform duration-300" :class="{'rotate-180': expandedEvaluationClassId === cls.classId}">
+                            keyboard_arrow_down
+                          </span>
+                        </td>
+                      </tr>
 
-                    <p v-if="getClassEvaluation(cls.classId).comment" class="text-body-xs text-readable-secondary italic bg-white/60 p-2.5 rounded-lg border border-emerald-50 mt-2">
-                      "{{ getClassEvaluation(cls.classId).comment }}"
-                    </p>
-                    <div class="text-[9px] text-slate-400 font-semibold text-right pt-1">
-                      Ngày đánh giá: {{ formatDateTime(getClassEvaluation(cls.classId).createdAt) }}
-                    </div>
-                  </div>
-                </div>
+                      <!-- Expanded Detail Row -->
+                      <tr v-if="expandedEvaluationClassId === cls.classId" class="bg-slate-50/40">
+                        <td colspan="5" class="p-6 border-t border-slate-100">
+                          <div class="space-y-4 max-w-4xl mx-auto">
+                            <!-- Ratings Banner / Box -->
+                            <div class="w-full space-y-4 bg-emerald-50/20 p-5 rounded-xl border border-emerald-100/50">
+                              <div class="text-[11px] font-bold text-emerald-800 uppercase tracking-wider flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[18px]">rate_review</span>
+                                Điểm đánh giá chi tiết
+                              </div>
+
+                              <!-- Dynamic ratings layout with little star bars -->
+                              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-body-xs font-semibold text-slate-600">
+                                <div 
+                                  v-for="scoreObj in getEvaluationScores(getClassEvaluation(cls.classId))"
+                                  :key="scoreObj.name"
+                                  class="flex flex-col bg-white p-3 rounded-lg border border-slate-200/60 shadow-xs gap-1.5"
+                                >
+                                  <div class="flex items-center justify-between text-slate-500 font-bold">
+                                    <span class="truncate">{{ scoreObj.name }}</span>
+                                    <span class="text-indigo-600 font-black text-body-sm">{{ scoreObj.score }}★</span>
+                                  </div>
+                                  <div class="flex gap-0.5 text-amber-400">
+                                    <span 
+                                      v-for="s in 5" 
+                                      :key="s" 
+                                      class="material-symbols-outlined text-[12px]"
+                                      :style="s <= scoreObj.score ? 'font-variation-settings: \'FILL\' 1;' : ''"
+                                    >
+                                      star
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <!-- Review comment -->
+                              <div v-if="getClassEvaluation(cls.classId).comment" class="space-y-1">
+                                <div class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Ý kiến phản hồi / Góp ý</div>
+                                <p class="text-body-sm text-readable-secondary italic bg-white p-3.5 rounded-lg border border-emerald-100/50 shadow-xs">
+                                  "{{ getClassEvaluation(cls.classId).comment }}"
+                                </p>
+                              </div>
+                              
+                              <div class="text-[10px] text-slate-400 font-semibold text-right">
+                                Ngày gửi đánh giá: {{ formatDateTime(getClassEvaluation(cls.classId).createdAt) }}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -697,6 +729,15 @@ const supportStatusFilter = ref('all')
 // Search & Filter state for Evaluation tab
 const evalSearchQuery = ref('')
 const evalStatusFilter = ref('all')
+const expandedEvaluationClassId = ref(null)
+
+function toggleEvaluationExpansion(classId) {
+  if (expandedEvaluationClassId.value === classId) {
+    expandedEvaluationClassId.value = null
+  } else {
+    expandedEvaluationClassId.value = classId
+  }
+}
 
 // Computed: filtered support messages
 const filteredSupportMessages = computed(() => {
