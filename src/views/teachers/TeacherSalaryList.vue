@@ -1204,7 +1204,7 @@ onMounted(async () => {
 
 <style scoped>
 .bg-surface {
-  background-color: var(--color-surface, rgba(255, 255, 255, 0.7));
+  background-color: var(--color-surface, rgba(255, 255, 255, 0.96));
   backdrop-filter: blur(10px);
 }
 .text-info {
