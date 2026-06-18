@@ -589,11 +589,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, inject } from 'vue'
 import { useAuthStore } from '../../stores'
 import api from '../../services/api'
 
 const authStore = useAuthStore()
+const showSnackbar = inject('showSnackbar')
 const activeTab = ref('payroll') // payroll, configs
 const loadingSlips = ref(false)
 const loadingConfigs = ref(false)
@@ -698,10 +699,10 @@ const calculatePayroll = async () => {
       year: payrollDate.value.year
     })
     slips.value = response.data || []
-    alert(`Đã tính toán xong bảng lương tháng ${payrollDate.value.month}/${payrollDate.value.year} cho tất cả giảng viên!`)
+    showSnackbar(`Đã tính toán xong bảng lương tháng ${payrollDate.value.month}/${payrollDate.value.year} cho tất cả giảng viên!`, 'success')
   } catch (error) {
     console.error('Error calculating payroll:', error)
-    alert(error.response?.data?.message || 'Lỗi khi tính toán bảng lương.')
+    showSnackbar(error.response?.data?.message || 'Lỗi khi tính toán bảng lương.', 'error')
   } finally {
     calculating.value = false
   }
@@ -863,11 +864,11 @@ const confirmSlip = async (slipId, accepted, feedbackText = '', bankAccountVal =
       slips.value[idx] = data
     }
     
-    alert(accepted ? 'Đã chấp nhận phiếu lương thành công!' : 'Đã gửi báo cáo không hợp lý đến Admin thành công!')
+    showSnackbar(accepted ? 'Đã chấp nhận phiếu lương thành công!' : 'Đã gửi báo cáo không hợp lý đến Admin thành công!', 'success')
     return true
   } catch (error) {
     console.error('Error confirming slip:', error)
-    alert(error.response?.data?.message || 'Có lỗi xảy ra khi xác nhận phiếu lương.')
+    showSnackbar(error.response?.data?.message || 'Có lỗi xảy ra khi xác nhận phiếu lương.', 'error')
     return false
   }
 }
@@ -875,7 +876,7 @@ const confirmSlip = async (slipId, accepted, feedbackText = '', bankAccountVal =
 const handleAcceptSlip = (slip) => {
   const chosenAccount = selectedBankAccounts.value[slip.salarySlipId]
   if (!chosenAccount) {
-    alert('Vui lòng thêm tài khoản ngân hàng trong trang Cá nhân trước khi chấp nhận phiếu lương!')
+    showSnackbar('Vui lòng thêm tài khoản ngân hàng trong trang Cá nhân trước khi chấp nhận phiếu lương!', 'warning')
     return
   }
   confirmSlip(slip.salarySlipId, true, '', chosenAccount)
