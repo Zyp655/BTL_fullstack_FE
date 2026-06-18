@@ -497,7 +497,52 @@
             </div>
           </div>
 
-          <div class="space-y-1">
+          <!-- Approved status workflow: Show bank account transfer info & transaction completion checkbox -->
+          <div v-if="slipModal.slip?.status === 'Approved'" class="space-y-3 pt-1">
+            <!-- Warning/Instruction alert -->
+            <div class="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-body-xs flex gap-2 items-start shadow-sm">
+              <span class="material-symbols-outlined text-[18px] text-emerald-600 shrink-0">check_circle</span>
+              <div>
+                <p class="font-bold">Giảng viên đã phê duyệt phiếu lương!</p>
+                <p class="mt-0.5 text-emerald-700/95">Vui lòng chuyển tiền lương theo thông tin tài khoản dưới đây và xác nhận hoàn thành giao dịch.</p>
+              </div>
+            </div>
+
+            <!-- Copyable bank details card -->
+            <div class="p-3.5 bg-primary-container/[0.03] border border-primary-container/10 rounded-xl space-y-2">
+              <div class="flex justify-between items-center text-[10px]">
+                <span class="text-on-surface-variant/70 font-semibold uppercase tracking-wider">Thông tin chuyển tiền</span>
+                <button
+                  type="button"
+                  @click="copyToClipboard(slipModal.slip?.bankAccount)"
+                  class="text-primary-container hover:opacity-80 flex items-center gap-1 font-bold cursor-pointer transition-opacity"
+                >
+                  <span class="material-symbols-outlined text-[14px]">content_copy</span>
+                  Sao chép STK
+                </button>
+              </div>
+              <div class="text-body-md font-bold text-primary-container font-mono bg-white/70 border border-primary-container/5 rounded-lg px-3 py-2 flex justify-between items-center shadow-sm">
+                <span>{{ getAccountNumberOnly(slipModal.slip?.bankAccount) }}</span>
+                <span class="text-xs font-semibold text-on-surface-variant/80 uppercase">{{ getBankNameOnly(slipModal.slip?.bankAccount) }}</span>
+              </div>
+              <div class="text-[10px] text-on-surface-variant/70 font-bold uppercase tracking-wide">
+                Chủ tài khoản: {{ getAccountHolderOnly(slipModal.slip?.bankAccount) }}
+              </div>
+            </div>
+
+            <!-- Transaction complete checkbox -->
+            <label class="flex items-center gap-2.5 p-3 bg-primary-container/[0.02] border border-primary-container/10 rounded-xl cursor-pointer hover:bg-primary-container/[0.05] transition-colors">
+              <input
+                type="checkbox"
+                v-model="isTransactionCompleted"
+                class="w-4 h-4 text-primary bg-white/50 border-primary-container/20 rounded focus:ring-primary-container focus:ring-2 cursor-pointer"
+              />
+              <span class="text-body-xs font-bold text-primary-container">Đã chuyển khoản thành công (Hoàn thành giao dịch)</span>
+            </label>
+          </div>
+
+          <!-- Other statuses (Pending, Rejected, Paid): Show standard select dropdown -->
+          <div v-else class="space-y-1">
             <label class="text-body-sm font-semibold text-primary-container">Trạng thái phê duyệt</label>
             <select
               v-model="slipModal.form.status"
@@ -822,6 +867,41 @@ const saveConfig = async () => {
   }
 }
 
+const isTransactionCompleted = ref(false)
+
+const getBankNameOnly = (str) => {
+  if (!str) return 'Không xác định'
+  const parts = str.split(' - ')
+  return parts[0] || str
+}
+
+const getAccountNumberOnly = (str) => {
+  if (!str) return 'Chưa cấu hình'
+  const parts = str.split(' - ')
+  if (parts.length > 1) {
+    const subParts = parts[1].split(' (')
+    return subParts[0] || parts[1]
+  }
+  return str
+}
+
+const getAccountHolderOnly = (str) => {
+  if (!str) return 'Chưa cấu hình'
+  const openParenIndex = str.indexOf('(')
+  const closeParenIndex = str.indexOf(')')
+  if (openParenIndex !== -1 && closeParenIndex !== -1) {
+    return str.substring(openParenIndex + 1, closeParenIndex)
+  }
+  return ''
+}
+
+const copyToClipboard = (str) => {
+  const accountNo = getAccountNumberOnly(str)
+  if (!accountNo || accountNo === 'Chưa cấu hình') return
+  navigator.clipboard.writeText(accountNo)
+  showSnackbar('Đã sao chép số tài khoản thành công!', 'success')
+}
+
 // Slip Modal Helpers
 const openSlipModal = (slip) => {
   slipModal.value = {
@@ -835,17 +915,24 @@ const openSlipModal = (slip) => {
     },
     error: ''
   }
+  isTransactionCompleted.value = slip.status === 'Paid'
 }
 
 const closeSlipModal = () => {
   slipModal.value.show = false
   slipModal.value.slip = null
   slipModal.value.error = ''
+  isTransactionCompleted.value = false
 }
 
 const saveSlipStatus = async () => {
   savingSlip.value = true
   slipModal.value.error = ''
+  
+  if (slipModal.value.slip?.status === 'Approved') {
+    slipModal.value.form.status = isTransactionCompleted.value ? 'Paid' : 'Approved'
+  }
+
   try {
     const response = await api.put(`/api/v1/teachers/salary/slips/${slipModal.value.slip.salarySlipId}/status`, slipModal.value.form)
     
