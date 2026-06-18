@@ -586,6 +586,10 @@ const navItems = computed(() => {
     items.push({ title: 'Phiếu lương của tôi', icon: 'receipt_long', path: '/teachers/salary' })
   }
 
+  if (authStore.isTeacher) {
+    items.push({ title: 'Phiếu lương của tôi', icon: 'receipt_long', path: '/teachers/salary' })
+  }
+
   return items
 })
 

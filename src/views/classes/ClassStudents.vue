@@ -1029,7 +1029,7 @@ async function saveAttendance() {
     // API: Batch attendance
     await api.post('/api/v1/attendances', {
       classId: classId,
-      sessionDate: new Date(attendanceDate.value).toISOString(),
+      sessionDate: attendanceDate.value,
       attendances: listToSave
     })
     

@@ -85,6 +85,107 @@
                 <input v-model="profileForm.phone" type="tel" class="w-full glass-input px-4 py-2.5 rounded-lg text-body-sm text-primary" placeholder="Nhập số điện thoại" />
               </div>
 
+              <!-- Bank Accounts Management (Only for GiaoVien) -->
+              <div v-if="authStore.isTeacher" class="space-y-3 sm:col-span-2 border-t border-white/40 pt-4 mt-2">
+                <div class="flex justify-between items-center">
+                  <label class="text-body-sm font-semibold text-primary">Danh sách tài khoản ngân hàng nhận lương</label>
+                  <button
+                    type="button"
+                    @click="showAddBankForm = !showAddBankForm"
+                    class="text-xs font-bold text-primary bg-white/50 border border-outline-variant/30 px-3 py-1.5 rounded-lg hover:bg-white/90 transition-all flex items-center gap-1 cursor-pointer"
+                  >
+                    <span class="material-symbols-outlined text-[16px]">{{ showAddBankForm ? 'remove' : 'add' }}</span>
+                    Thêm tài khoản
+                  </button>
+                </div>
+
+                <!-- Form to Add Bank Account -->
+                <div v-if="showAddBankForm" class="p-4 bg-primary-container/[0.03] border border-dashed border-primary-container/20 rounded-xl space-y-3 animate-fade-in">
+                  <h4 class="text-xs font-bold text-primary-container">Nhập thông tin tài khoản mới</h4>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="space-y-1">
+                      <label class="text-[10px] font-bold text-primary uppercase">Tên ngân hàng</label>
+                      <input v-model="newBank.bankName" type="text" class="w-full glass-input px-3 py-2 text-xs text-primary" placeholder="Ví dụ: Techcombank" />
+                    </div>
+                    <div class="space-y-1">
+                      <label class="text-[10px] font-bold text-primary uppercase">Số tài khoản</label>
+                      <input v-model="newBank.accountNumber" type="text" class="w-full glass-input px-3 py-2 text-xs text-primary" placeholder="Ví dụ: 1903..." />
+                    </div>
+                    <div class="space-y-1">
+                      <label class="text-[10px] font-bold text-primary uppercase">Tên chủ tài khoản</label>
+                      <input v-model="newBank.accountHolder" type="text" class="w-full glass-input px-3 py-2 text-xs text-primary" placeholder="Ví dụ: NGUYEN VAN A" />
+                    </div>
+                  </div>
+                  <div class="flex justify-end gap-2 pt-1">
+                    <button
+                      type="button"
+                      @click="showAddBankForm = false"
+                      class="px-3 py-1.5 rounded-lg border border-outline-variant text-[11px] font-semibold text-on-surface-variant hover:bg-white/40 cursor-pointer"
+                    >
+                      Hủy
+                    </button>
+                    <button
+                      type="button"
+                      @click="addBankAccount"
+                      class="px-3 py-1.5 rounded-lg bg-primary-container text-white text-[11px] font-bold hover:opacity-95 cursor-pointer"
+                    >
+                      Thêm
+                    </button>
+                  </div>
+                </div>
+
+                <!-- List of Bank Accounts -->
+                <div v-if="bankAccounts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div
+                    v-for="a in bankAccounts"
+                    :key="a.id"
+                    class="p-4 rounded-xl border transition-all flex justify-between items-start gap-3 bg-white/50"
+                    :class="a.isDefault ? 'border-emerald-500 bg-emerald-500/[0.02] shadow-[0_0_12px_rgba(16,185,129,0.05)]' : 'border-outline-variant/30 hover:border-primary-container/30'"
+                  >
+                    <div class="space-y-1.5 min-w-0">
+                      <div class="flex items-center gap-2">
+                        <span class="font-extrabold text-body-sm text-primary truncate" :title="a.bankName">{{ a.bankName }}</span>
+                        <span v-if="a.isDefault" class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-[9px] font-extrabold uppercase shrink-0">
+                          Nhận lương
+                        </span>
+                      </div>
+                      <div class="text-[13px] font-bold font-mono text-primary-container">{{ a.accountNumber }}</div>
+                      <div class="text-[10px] uppercase font-bold text-on-surface-variant/70">{{ a.accountHolder }}</div>
+                    </div>
+
+                    <div class="flex items-center gap-1 shrink-0">
+                      <!-- Set Default Button -->
+                      <button
+                        v-if="!a.isDefault"
+                        type="button"
+                        @click="setDefaultBankAccount(a.id)"
+                        class="w-7 h-7 rounded-lg bg-primary-container/5 hover:bg-emerald-500/10 text-on-surface-variant hover:text-emerald-600 flex items-center justify-center cursor-pointer transition-colors"
+                        title="Chọn tài khoản này để nhận lương"
+                      >
+                        <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                      </button>
+                      
+                      <!-- Delete Button -->
+                      <button
+                        type="button"
+                        @click="deleteBankAccount(a.id)"
+                        class="w-7 h-7 rounded-lg bg-rose-500/[0.03] hover:bg-rose-500/10 text-rose-600 flex items-center justify-center cursor-pointer transition-colors"
+                        title="Xóa tài khoản"
+                      >
+                        <span class="material-symbols-outlined text-[16px]">delete</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Empty State -->
+                <div v-else class="p-8 text-center bg-primary-container/[0.02] border border-dashed border-primary-container/15 rounded-xl flex flex-col items-center justify-center">
+                  <span class="material-symbols-outlined text-primary-container/40 text-[32px] mb-1">payments</span>
+                  <p class="text-xs font-semibold text-on-surface-variant/70">Chưa có tài khoản ngân hàng nào.</p>
+                  <p class="text-[10px] text-on-surface-variant/50 mt-0.5">Vui lòng nhấn nút "Thêm tài khoản" ở góc phải để thêm mới.</p>
+                </div>
+              </div>
+
               <!-- If HocVien, show additional student profile fields -->
               <template v-if="authStore.isStudent">
                 <!-- Gender -->
@@ -181,6 +282,7 @@ const profileForm = ref({
   fullName: '',
   email: '',
   phone: '',
+  bankAccount: '',
   gender: 'Nam',
   dateOfBirth: '',
   address: ''
@@ -191,6 +293,61 @@ const passwordForm = ref({
   newPassword: '',
   confirmPassword: ''
 })
+
+const bankAccounts = ref([])
+const showAddBankForm = ref(false)
+const newBank = ref({
+  bankName: '',
+  accountNumber: '',
+  accountHolder: ''
+})
+
+const addBankAccount = () => {
+  if (!newBank.value.bankName || !newBank.value.accountNumber || !newBank.value.accountHolder) {
+    showSnackbar('Vui lòng nhập đầy đủ thông tin tài khoản ngân hàng.', 'error')
+    return
+  }
+  
+  const hasAccounts = bankAccounts.value.length > 0
+  const isDefault = !hasAccounts // First account is default
+  
+  bankAccounts.value.push({
+    id: Date.now().toString(),
+    bankName: newBank.value.bankName.trim(),
+    accountNumber: newBank.value.accountNumber.trim(),
+    accountHolder: newBank.value.accountHolder.trim().toUpperCase(),
+    isDefault
+  })
+  
+  // Reset form
+  newBank.value = {
+    bankName: '',
+    accountNumber: '',
+    accountHolder: profileForm.value.fullName.toUpperCase() || ''
+  }
+  showAddBankForm.value = false
+  showSnackbar('Đã thêm tài khoản ngân hàng mới.', 'success')
+}
+
+const deleteBankAccount = (id) => {
+  const accountToDelete = bankAccounts.value.find(a => a.id === id)
+  if (!accountToDelete) return
+  
+  bankAccounts.value = bankAccounts.value.filter(a => a.id !== id)
+  
+  // If we deleted the default account, make the first remaining account default
+  if (accountToDelete.isDefault && bankAccounts.value.length > 0) {
+    bankAccounts.value[0].isDefault = true
+  }
+  showSnackbar('Đã xóa tài khoản ngân hàng.', 'success')
+}
+
+const setDefaultBankAccount = (id) => {
+  bankAccounts.value.forEach(a => {
+    a.isDefault = (a.id === id)
+  })
+  showSnackbar('Đã chọn tài khoản này để nhận lương.', 'success')
+}
 
 const studentProfileId = ref(null)
 
@@ -244,6 +401,37 @@ const loadProfile = async () => {
     profileForm.value.fullName = user.fullName || ''
     profileForm.value.email = user.email || ''
     profileForm.value.phone = user.phone || ''
+    profileForm.value.bankAccount = user.bankAccount || ''
+    
+    // Parse Bank Account JSON
+    bankAccounts.value = []
+    if (user.bankAccount) {
+      try {
+        const parsed = JSON.parse(user.bankAccount)
+        if (Array.isArray(parsed)) {
+          bankAccounts.value = parsed
+        } else {
+          bankAccounts.value = [{
+            id: Date.now().toString(),
+            bankName: 'Mặc định',
+            accountNumber: user.bankAccount,
+            accountHolder: user.fullName || '',
+            isDefault: true
+          }]
+        }
+      } catch (e) {
+        bankAccounts.value = [{
+          id: Date.now().toString(),
+          bankName: 'Mặc định',
+          accountNumber: user.bankAccount,
+          accountHolder: user.fullName || '',
+          isDefault: true
+        }]
+      }
+    }
+    
+    // Set default name for new bank form
+    newBank.value.accountHolder = (user.fullName || '').toUpperCase()
 
     if (authStore.isStudent) {
       try {
@@ -274,11 +462,14 @@ const loadProfile = async () => {
 const saveProfile = async () => {
   savingProfile.value = true
   try {
+    const bankAccountJson = JSON.stringify(bankAccounts.value)
+
     // 1. Update general user info in PaymentService
     await api.put('/api/v1/auth/profile', {
       fullName: profileForm.value.fullName,
       email: profileForm.value.email,
-      phone: profileForm.value.phone
+      phone: profileForm.value.phone,
+      bankAccount: bankAccountJson
     })
 
     // 2. If student, update student info in StudentService
