@@ -75,7 +75,7 @@
       <!-- Charts & Tables Layout -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Revenue Line Chart -->
-        <div class="glass-panel p-6 rounded-2xl lg:col-span-2 flex flex-col justify-between hover-shadow">
+        <div class="glass-panel p-6 rounded-2xl lg:col-span-2 flex flex-col hover-shadow gap-4">
           <div>
             <h3 class="font-title-md text-title-md font-bold text-primary-container flex items-center gap-2 mb-1">
               <span class="material-symbols-outlined text-on-tertiary-container">trending_up</span>
@@ -93,7 +93,7 @@
         </div>
 
         <!-- Class Fill Rates -->
-        <div class="glass-panel p-6 rounded-2xl flex flex-col hover-shadow justify-between">
+        <div class="glass-panel p-6 rounded-2xl flex flex-col hover-shadow gap-4">
           <div>
             <h3 class="font-title-md text-title-md font-bold text-primary-container flex items-center gap-2 mb-1">
               <span class="material-symbols-outlined text-on-tertiary-container">groups</span>
@@ -130,7 +130,7 @@
       <!-- Quick Actions and Operations Warnings -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Support Requests / Warnings -->
-        <div class="glass-panel p-6 rounded-2xl lg:col-span-2 hover-shadow flex flex-col justify-between">
+        <div class="glass-panel p-6 rounded-2xl lg:col-span-2 hover-shadow flex flex-col gap-4">
           <div>
             <h3 class="font-title-md text-title-md font-bold text-rose-600 flex items-center gap-2 mb-1">
               <span class="material-symbols-outlined text-rose-600">warning</span>
@@ -265,7 +265,7 @@
       <!-- Schedule and Classes Section -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Today's Schedule -->
-        <div class="glass-panel p-6 rounded-2xl lg:col-span-2 hover-shadow flex flex-col justify-between">
+        <div class="glass-panel p-6 rounded-2xl lg:col-span-2 hover-shadow flex flex-col gap-4">
           <div>
             <h3 class="font-title-md text-title-md font-bold text-primary-container flex items-center gap-2 mb-1">
               <span class="material-symbols-outlined text-on-tertiary-container">calendar_today</span>
@@ -302,7 +302,7 @@
         </div>
 
         <!-- Assigned Classes List -->
-        <div class="glass-panel p-6 rounded-2xl hover-shadow flex flex-col justify-between">
+        <div class="glass-panel p-6 rounded-2xl hover-shadow flex flex-col gap-4">
           <div>
             <h3 class="font-title-md text-title-md font-bold text-primary-container flex items-center gap-2 mb-1">
               <span class="material-symbols-outlined text-on-tertiary-container">school</span>
