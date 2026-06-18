@@ -1443,7 +1443,7 @@ const isCourseFormValid = computed(() => {
 })
 
 function onTotalSessionsInput() {
-  if (formData.value.totalSessions > 0 && (!formData.value.durationWeeks || formData.value.durationWeeks === 0)) {
+  if (formData.value.totalSessions > 0) {
     formData.value.durationWeeks = Math.ceil(formData.value.totalSessions / 2)
   }
 }

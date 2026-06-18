@@ -337,6 +337,83 @@
         </div>
       </div>
 
+      <!-- Weekly Teaching Calendar -->
+      <div class="glass-panel p-6 rounded-2xl hover-shadow">
+        <h3 class="font-title-md text-title-md font-bold text-primary-container flex items-center gap-2 mb-1">
+          <span class="material-symbols-outlined text-on-tertiary-container">calendar_month</span>
+          Lịch Dạy Trong Tuần
+        </h3>
+        <p class="text-body-sm text-on-surface-variant/70 mb-6">Tổng quan các ca dạy được xếp lịch biểu cố định của bạn</p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4">
+          <div
+            v-for="day in weekDays"
+            :key="day.value"
+            class="flex flex-col border rounded-xl overflow-hidden min-h-[200px] transition-all duration-200"
+            :class="[
+              isToday(day.value)
+                ? 'border-primary-container/40 bg-primary-container/[0.04] shadow-md ring-2 ring-primary-container/10'
+                : 'border-primary-container/10 bg-white/40'
+            ]"
+          >
+            <!-- Day Header -->
+            <div 
+              class="px-3 py-2 text-center text-body-xs font-bold border-b transition-colors flex justify-center items-center gap-1"
+              :class="[
+                isToday(day.value)
+                  ? 'bg-primary-container text-white'
+                  : 'bg-primary-container/[0.05] text-primary-container'
+              ]"
+            >
+              <span>{{ day.label }}</span>
+              <span v-if="isToday(day.value)" class="text-[9px] bg-white text-primary-container px-1 py-0.5 rounded font-black uppercase tracking-wider animate-pulse">Nay</span>
+            </div>
+
+            <!-- Day Body -->
+            <div class="p-2 space-y-2 flex-1 flex flex-col justify-start">
+              <div v-if="getSchedulesForDay(day.value).length === 0" class="flex-1 flex flex-col items-center justify-center py-8 text-on-surface-variant/40">
+                <span class="material-symbols-outlined text-[20px] mb-0.5">event_busy</span>
+                <span class="text-[10px] font-medium italic">Không có ca dạy</span>
+              </div>
+              <div
+                v-else
+                v-for="s in getSchedulesForDay(day.value)"
+                :key="s.scheduleId"
+                class="p-2.5 rounded-lg border text-left hover-scale transition-all cursor-pointer flex flex-col gap-1 shadow-sm"
+                :class="[
+                  s.session === 'Sang' ? 'bg-sky-500/5 border-sky-500/20 text-sky-900 hover:bg-sky-500/10' :
+                  s.session === 'Chieu' ? 'bg-amber-500/5 border-amber-500/20 text-amber-950 hover:bg-amber-500/10' :
+                  'bg-indigo-500/5 border-indigo-500/20 text-indigo-950 hover:bg-indigo-500/10'
+                ]"
+                @click="router.push(`/classes/${s.classId}/students`)"
+                :title="'Click để xem điểm danh lớp ' + s.className"
+              >
+                <div class="flex justify-between items-center text-[10px] font-bold">
+                  <span class="truncate max-w-[80px]" :class="[
+                    s.session === 'Sang' ? 'text-sky-700' :
+                    s.session === 'Chieu' ? 'text-amber-700' :
+                    'text-indigo-700'
+                  ]">{{ s.className }}</span>
+                  <span class="text-[9px] px-1 rounded" :class="[
+                    s.session === 'Sang' ? 'bg-sky-500/10 text-sky-700' :
+                    s.session === 'Chieu' ? 'bg-amber-500/10 text-amber-800' :
+                    'bg-indigo-500/10 text-indigo-700'
+                  ]">{{ s.session === 'Sang' ? 'Sáng' : s.session === 'Chieu' ? 'Chiều' : 'Tối' }}</span>
+                </div>
+                <div class="text-[10px] font-semibold flex items-center gap-0.5">
+                  <span class="material-symbols-outlined text-[12px]">schedule</span>
+                  {{ s.startTime.substring(0, 5) }} - {{ s.endTime.substring(0, 5) }}
+                </div>
+                <div class="text-[9px] font-medium text-on-surface-variant/80 flex items-center gap-0.5 mt-0.5">
+                  <span class="material-symbols-outlined text-[11px]">meeting_room</span>
+                  Phòng {{ s.room || '303' }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Recent Pay Slips -->
       <div class="glass-panel p-6 rounded-2xl hover-shadow">
         <h3 class="font-title-md text-title-md font-bold text-primary-container flex items-center gap-2 mb-1">
@@ -383,6 +460,7 @@
 
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores'
 import api from '../../services/api'
 import { Chart, registerables } from 'chart.js'
@@ -390,6 +468,7 @@ import { Chart, registerables } from 'chart.js'
 Chart.register(...registerables)
 
 const authStore = useAuthStore()
+const router = useRouter()
 
 // Datetime helper
 const todayString = computed(() => {
@@ -535,6 +614,7 @@ const teacherStats = ref({
   recentSlips: []
 })
 const todaySchedules = ref([])
+const teacherSchedules = ref([])
 
 const loadTeacherDashboard = async () => {
   if (!authStore.isTeacher) return
@@ -555,18 +635,47 @@ const loadTeacherDashboard = async () => {
 
 const loadTeacherSchedules = async (classesList) => {
   try {
-    const todayDay = new Date().getDay() // 0 = CN, 1 = T2...
+    const jsDay = new Date().getDay()
+    const todayDay = jsDay === 0 ? 0 : jsDay + 1
     const promises = classesList.map(c => 
       api.get(`/api/v1/classes/${c.classId}/schedules`)
-        .then(res => res.data.map(s => ({ ...s, className: c.className, courseName: c.courseName })))
+        .then(res => res.data.map(s => ({ 
+          ...s, 
+          className: c.className, 
+          courseName: c.courseName,
+          room: c.room || '303'
+        })))
         .catch(() => [])
     )
     const results = await Promise.all(promises)
     const allSchedules = results.flat()
+    teacherSchedules.value = allSchedules
     todaySchedules.value = allSchedules.filter(s => s.dayOfWeek === todayDay)
   } catch (error) {
     console.error('Error loading schedules:', error)
   }
+}
+
+const weekDays = [
+  { value: 2, label: 'Thứ 2' },
+  { value: 3, label: 'Thứ 3' },
+  { value: 4, label: 'Thứ 4' },
+  { value: 5, label: 'Thứ 5' },
+  { value: 6, label: 'Thứ 6' },
+  { value: 7, label: 'Thứ 7' },
+  { value: 0, label: 'Chủ nhật' }
+]
+
+const getSchedulesForDay = (dayValue) => {
+  return teacherSchedules.value
+    .filter(s => s.dayOfWeek === dayValue)
+    .sort((a, b) => a.startTime.localeCompare(b.startTime))
+}
+
+const isToday = (dayValue) => {
+  const jsDay = new Date().getDay()
+  const todayDay = jsDay === 0 ? 0 : jsDay + 1
+  return todayDay === dayValue
 }
 
 // ----------------------------------------------------

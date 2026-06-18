@@ -135,3 +135,9 @@
   -webkit-backdrop-filter: blur(12px);
 }
 
+/* Global Placeholder styling to ensure readability */
+::placeholder {
+  color: #000000 !important;
+  opacity: 0.65 !important;
+}
+
