@@ -293,6 +293,37 @@
                 <span class="font-semibold text-error">-{{ formatCurrency(s.deductions) }}</span>
               </div>
             </div>
+
+            <!-- Bank Account section -->
+            <div class="pt-2.5 border-t border-primary-container/10 space-y-1">
+              <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider block">Tài khoản nhận lương</span>
+              
+              <!-- Selected/Saved Bank Account for Approved/Paid -->
+              <div v-if="s.status !== 'Pending' && s.status !== 'Rejected'" class="text-body-xs font-semibold text-primary-container flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px] text-emerald-500">account_balance</span>
+                <span>{{ s.bankAccount || 'Chưa cấu hình tài khoản' }}</span>
+              </div>
+              
+              <!-- Select Dropdown for Pending/Rejected -->
+              <div v-else-if="getUserBankAccounts().length > 0">
+                <select
+                  v-model="selectedBankAccounts[s.salarySlipId]"
+                  class="w-full bg-primary-container/[0.03] border border-primary-container/15 rounded-lg px-2.5 py-1.5 text-body-xs text-primary-container font-semibold focus:outline-none focus:border-primary-container/30 cursor-pointer"
+                >
+                  <option
+                    v-for="a in getUserBankAccounts()"
+                    :key="a.id"
+                    :value="`${a.bankName} - ${a.accountNumber} (${a.accountHolder})`"
+                  >
+                    {{ a.bankName }} - {{ a.accountNumber }} ({{ a.accountHolder }})
+                  </option>
+                </select>
+              </div>
+              <div v-else class="text-[10px] text-error font-bold flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px]">warning</span>
+                Chưa có tài khoản ngân hàng. Hãy cấu hình ở trang Cá nhân!
+              </div>
+            </div>
           </div>
 
           <!-- Slip Bottom -->
@@ -307,10 +338,10 @@
             </div>
           </div>
 
-          <!-- Action Buttons for Teacher if Pending -->
-          <div v-if="s.status === 'Pending'" class="pt-3 border-t border-dashed border-primary-container/10 flex gap-2">
+          <!-- Action Buttons for Teacher if Pending or Rejected -->
+          <div v-if="s.status === 'Pending' || s.status === 'Rejected'" class="pt-3 border-t border-dashed border-primary-container/10 flex gap-2">
             <button
-              @click="confirmSlip(s.salarySlipId, true)"
+              @click="handleAcceptSlip(s)"
               class="flex-1 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-body-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 shadow-sm"
             >
               <span class="material-symbols-outlined text-[16px]">check_circle</span>
@@ -330,7 +361,7 @@
             Đã xác nhận chính xác
           </div>
 
-          <div v-else-if="s.status === 'Rejected'" class="pt-2 text-left text-[11px] text-rose-600 font-medium bg-rose-50 border border-rose-100 p-2 rounded-lg mt-1 space-y-0.5">
+          <div v-if="s.status === 'Rejected'" class="pt-2 text-left text-[11px] text-rose-600 font-medium bg-rose-50 border border-rose-100 p-2 rounded-lg mt-1 space-y-0.5">
             <div class="font-bold flex items-center gap-1">
               <span class="material-symbols-outlined text-[14px]">info</span>
               Đã báo cáo không hợp lý
@@ -438,6 +469,12 @@
             <div class="flex justify-between">
               <span>Thực nhận dự kiến:</span>
               <span class="font-extrabold text-success text-body-sm">{{ formatCurrency(slipModal.slip?.calculatedSalary + (slipModal.form.bonus || 0) - (slipModal.form.deductions || 0)) }}</span>
+            </div>
+            <div class="flex justify-between pt-1.5 border-t border-primary-container/10 mt-1.5">
+              <span>Tài khoản nhận lương:</span>
+              <span class="font-bold text-primary-container truncate max-w-[200px]" :title="slipModal.slip?.bankAccount">
+                {{ slipModal.slip?.bankAccount || 'Chưa cấu hình tài khoản' }}
+              </span>
             </div>
           </div>
 
@@ -752,7 +789,43 @@ const saveSlipStatus = async () => {
   }
 }
 
-// Teacher slip accept/decline feedback
+// Teacher slip accept/decline feedback and bank account selection
+const selectedBankAccounts = ref({})
+
+const getUserBankAccounts = () => {
+  const accountStr = authStore.currentUser?.bankAccount
+  if (!accountStr) return []
+  try {
+    const parsed = JSON.parse(accountStr)
+    return Array.isArray(parsed) ? parsed : []
+  } catch (e) {
+    return []
+  }
+}
+
+const initializeBankSelections = () => {
+  slips.value.forEach(s => {
+    if (s.bankAccount) {
+      selectedBankAccounts.value[s.salarySlipId] = s.bankAccount
+    } else {
+      const userAccounts = getUserBankAccounts()
+      const defaultAcc = userAccounts.find(a => a.isDefault) || userAccounts[0]
+      if (defaultAcc) {
+        selectedBankAccounts.value[s.salarySlipId] = `${defaultAcc.bankName} - ${defaultAcc.accountNumber} (${defaultAcc.accountHolder})`
+      } else {
+        selectedBankAccounts.value[s.salarySlipId] = ''
+      }
+    }
+  })
+}
+
+// Watch slips to initialize selections for Teacher view
+watch(slips, () => {
+  if (!authStore.isAdmin) {
+    initializeBankSelections()
+  }
+}, { deep: true, immediate: true })
+
 const feedbackModal = ref({
   show: false,
   slipId: null,
@@ -776,11 +849,12 @@ const closeFeedbackModal = () => {
   feedbackModal.value.error = ''
 }
 
-const confirmSlip = async (slipId, accepted, feedbackText = '') => {
+const confirmSlip = async (slipId, accepted, feedbackText = '', bankAccountVal = '') => {
   try {
     const { data } = await api.put(`/api/v1/teachers/salary/slips/${slipId}/feedback`, {
       accepted,
-      feedback: feedbackText
+      feedback: feedbackText,
+      bankAccount: bankAccountVal
     })
     
     // Update local slip status
@@ -798,6 +872,15 @@ const confirmSlip = async (slipId, accepted, feedbackText = '') => {
   }
 }
 
+const handleAcceptSlip = (slip) => {
+  const chosenAccount = selectedBankAccounts.value[slip.salarySlipId]
+  if (!chosenAccount) {
+    alert('Vui lòng thêm tài khoản ngân hàng trong trang Cá nhân trước khi chấp nhận phiếu lương!')
+    return
+  }
+  confirmSlip(slip.salarySlipId, true, '', chosenAccount)
+}
+
 const submitDeclineSlip = async () => {
   if (!feedbackModal.value.feedback.trim()) {
     feedbackModal.value.error = 'Vui lòng nhập lý do không hợp lý.'
@@ -810,7 +893,8 @@ const submitDeclineSlip = async () => {
   const success = await confirmSlip(
     feedbackModal.value.slipId,
     false,
-    feedbackModal.value.feedback
+    feedbackModal.value.feedback,
+    selectedBankAccounts.value[feedbackModal.value.slipId]
   )
   
   submittingFeedback.value = false
@@ -850,7 +934,14 @@ const getSlipStatusLabel = (status) => {
   return map[status] || status
 }
 
-onMounted(() => {
+onMounted(async () => {
+  if (!authStore.isAdmin) {
+    try {
+      await authStore.fetchProfile()
+    } catch (e) {
+      console.error('Error fetching profile:', e)
+    }
+  }
   // Correctly adjust payroll calculation default date to last month
   const now = new Date()
   let targetMonth = now.getMonth() // 0-indexed, so 6 (July) -> 6 (June) which represents last month
