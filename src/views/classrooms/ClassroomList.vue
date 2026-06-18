@@ -167,6 +167,29 @@
               Sẵn sàng sử dụng cho lớp học
             </div>
           </div>
+
+          <!-- Assigned classes list -->
+          <div v-if="room.assignedClasses && room.assignedClasses.length > 0" class="border-t border-primary-container/10 pt-3 mt-1 space-y-1.5">
+            <div class="text-[10px] font-semibold text-on-surface-variant/70 uppercase tracking-wider flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">assignment</span>
+              Lớp được phân công ({{ room.assignedClasses.length }})
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <span 
+                v-for="className in room.assignedClasses" 
+                :key="className" 
+                class="bg-primary-container/[0.05] text-primary-container text-[11px] font-semibold px-2 py-0.5 rounded border border-primary-container/10"
+              >
+                {{ className }}
+              </span>
+            </div>
+          </div>
+          <div v-else class="border-t border-primary-container/10 pt-3 mt-1">
+            <div class="text-[10px] font-semibold text-on-surface-variant/40 uppercase tracking-wider flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">assignment</span>
+              Chưa có lớp phân công
+            </div>
+          </div>
         </div>
 
         <!-- Card Bottom Toggle Action Area -->
