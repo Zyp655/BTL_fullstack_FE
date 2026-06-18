@@ -355,6 +355,165 @@
               </div>
             </div>
 
+            <!-- Course Evaluations Section -->
+            <div class="pt-4 border-t border-outline-variant/30">
+              <h4 class="font-title-md text-body-sm font-bold text-primary-container mb-3 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px] text-amber-500 font-variation-settings-fill">star</span>
+                Đánh giá & Phản hồi môn học
+              </h4>
+              
+              <!-- Loading Evaluations -->
+              <div v-if="loadingEvaluations" class="text-xs text-slate-400 italic flex items-center gap-1.5 py-2">
+                <div class="w-3.5 h-3.5 border-2 border-primary-container/30 border-t-primary-container rounded-full animate-spin"></div>
+                Đang tải đánh giá môn học...
+              </div>
+              
+              <div v-else>
+                <!-- Rating Stats Block -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50/50 p-4 rounded-xl border border-slate-150 shadow-sm mb-4">
+                  <!-- Avg Rating -->
+                  <div class="flex flex-col items-center justify-center text-center sm:border-r border-slate-200 p-2">
+                    <span class="text-3xl font-black text-slate-800">{{ evaluationSummary.averageRating?.toFixed(1) || '0.0' }}</span>
+                    <div class="flex gap-0.5 text-amber-400 my-1">
+                      <span 
+                        v-for="s in 5" 
+                        :key="s" 
+                        class="material-symbols-outlined text-[18px]"
+                        :style="s <= Math.round(evaluationSummary.averageRating || 0) ? 'font-variation-settings: \'FILL\' 1;' : ''"
+                      >
+                        star
+                      </span>
+                    </div>
+                    <span class="text-[11px] font-bold text-slate-500">Trên {{ evaluationSummary.totalReviews || 0 }} lượt đánh giá</span>
+                  </div>
+                  
+                  <!-- Stars Breakdown -->
+                  <div class="col-span-2 space-y-1 text-xs font-semibold text-slate-600 p-2">
+                    <div v-for="star in [5, 4, 3, 2, 1]" :key="star" class="flex items-center gap-2">
+                      <span class="w-3 text-right">{{ star }}★</span>
+                      <div class="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                        <div 
+                          class="h-full bg-amber-400 rounded-full" 
+                          :style="{ width: `${getStarPercentage(star)}%` }"
+                        ></div>
+                      </div>
+                      <span class="w-8 text-right font-mono text-[10px] text-slate-500">
+                        {{ getStarCount(star) }} ({{ getStarPercentage(star) }}%)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Write a Review Button / Form -->
+                <div v-if="canReviewCourse" class="mb-4 bg-indigo-50/30 border border-indigo-100 rounded-xl p-4 space-y-3">
+                  <div class="flex justify-between items-center">
+                    <span class="text-xs font-bold text-indigo-700 uppercase tracking-wider flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[16px]">rate_review</span>
+                      Gửi đánh giá của bạn
+                    </span>
+                    <button 
+                      v-if="!showReviewForm"
+                      @click="showReviewForm = true"
+                      class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition-all cursor-pointer border-0 shadow-xs"
+                    >
+                      Viết đánh giá
+                    </button>
+                  </div>
+                  
+                  <div v-if="showReviewForm" class="space-y-3 animate-fade-in">
+                    <!-- Rating Star Select -->
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-semibold text-slate-600">Chọn mức điểm:</span>
+                      <div class="flex gap-1">
+                        <button 
+                          v-for="s in 5" 
+                          :key="s" 
+                          type="button"
+                          @click="myReviewRating = s"
+                          class="text-amber-400 hover:scale-110 active:scale-95 transition-transform cursor-pointer border-0 bg-transparent p-0 flex items-center justify-center"
+                        >
+                          <span 
+                            class="material-symbols-outlined text-[24px]"
+                            :style="s <= myReviewRating ? 'font-variation-settings: \'FILL\' 1;' : ''"
+                          >
+                            star
+                          </span>
+                        </button>
+                      </div>
+                      <span class="text-xs font-bold text-slate-500">({{ getStarLabel(myReviewRating) }})</span>
+                    </div>
+                    
+                    <!-- Comment input -->
+                    <div class="space-y-1">
+                      <textarea
+                        v-model="myReviewComment"
+                        rows="2"
+                        class="w-full bg-white border border-slate-250 rounded-lg p-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition-all resize-none font-medium"
+                        placeholder="Chia sẻ nhận xét của bạn về môn học này..."
+                      ></textarea>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="flex justify-end gap-2">
+                      <button 
+                        @click="showReviewForm = false"
+                        class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-100 transition-all cursor-pointer bg-white"
+                      >
+                        Hủy
+                      </button>
+                      <button 
+                        @click="submitCourseReview"
+                        :disabled="submittingReview || myReviewRating === 0"
+                        class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed border-0"
+                      >
+                        {{ submittingReview ? 'Đang gửi...' : 'Gửi đánh giá' }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Reviews List -->
+                <div v-if="evaluationSummary.reviews && evaluationSummary.reviews.length > 0" class="space-y-3 max-h-60 overflow-y-auto pr-1">
+                  <div 
+                    v-for="review in evaluationSummary.reviews" 
+                    :key="review.id"
+                    class="bg-white p-3 rounded-lg border border-slate-150 shadow-xs space-y-1.5 animate-fade-in"
+                  >
+                    <div class="flex justify-between items-start">
+                      <div class="space-y-0.5">
+                        <div class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                          {{ review.studentName }}
+                          <span class="text-[10px] font-bold text-indigo-500 bg-indigo-50 border border-indigo-100 rounded px-1.5 py-0.2 shrink-0">Học viên</span>
+                        </div>
+                        <div class="flex gap-0.5 text-amber-400">
+                          <span 
+                            v-for="s in 5" 
+                            :key="s" 
+                            class="material-symbols-outlined text-[11px]"
+                            :style="s <= review.rating ? 'font-variation-settings: \'FILL\' 1;' : ''"
+                          >
+                            star
+                          </span>
+                        </div>
+                      </div>
+                      <span class="text-[10px] text-slate-400 font-semibold flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[12px]">schedule</span>
+                        {{ formatDateTime(review.createdAt) }}
+                      </span>
+                    </div>
+                    
+                    <p class="text-xs text-slate-600 font-medium leading-relaxed italic">
+                      "{{ review.comment || '— Không có bình luận' }}"
+                    </p>
+                  </div>
+                </div>
+                
+                <div v-else class="text-center py-6 bg-slate-50/50 rounded-lg border border-slate-100/60 text-xs font-semibold text-slate-500 italic">
+                  Chưa có đánh giá nào cho môn học này.
+                </div>
+              </div>
+            </div>
+
             <!-- Classes List Section -->
             <div class="pt-2 border-t border-outline-variant/30">
               <h4 class="font-title-md text-body-sm font-bold text-primary-container mb-2.5 flex items-center gap-1.5">
@@ -575,6 +734,103 @@ const courseClasses = ref([])
 const loadingClasses = ref(false)
 const teacherRatings = ref({})
 
+// Course Evaluations state
+const loadingEvaluations = ref(false)
+const evaluationSummary = ref({ averageRating: 0, totalReviews: 0, ratingDistribution: {}, reviews: [] })
+const showReviewForm = ref(false)
+const myReviewRating = ref(0)
+const myReviewComment = ref('')
+const submittingReview = ref(false)
+const myReviewedCourseIds = ref([])
+
+const canReviewCourse = computed(() => {
+  if (!props.studentProfile || !selectedCourseForDetail.value) return false
+  const courseId = selectedCourseForDetail.value.courseId
+  
+  // 1. Verify student is enrolled/completed in any class of this course
+  const hasEnrolled = props.enrolledClasses.some(cls => 
+    cls.courseId === courseId && 
+    (cls.status === 'DangHoc' || cls.status === 'DaXong' || cls.status === 'HoanThanh')
+  )
+  
+  // 2. Verify they haven't reviewed it already
+  const alreadyReviewed = myReviewedCourseIds.value.includes(courseId)
+  
+  return hasEnrolled && !alreadyReviewed
+})
+
+async function fetchCourseEvaluations(courseId) {
+  loadingEvaluations.value = true
+  try {
+    const res = await api.get(`/api/v1/course-evaluations/course/${courseId}`)
+    evaluationSummary.value = res.data || { averageRating: 0, totalReviews: 0, ratingDistribution: {}, reviews: [] }
+  } catch (err) {
+    console.error('Error fetching course evaluations:', err)
+    evaluationSummary.value = { averageRating: 0, totalReviews: 0, ratingDistribution: {}, reviews: [] }
+  } finally {
+    loadingEvaluations.value = false
+  }
+}
+
+async function fetchMyCourseEvaluations() {
+  try {
+    const res = await api.get('/api/v1/course-evaluations/my-evaluations')
+    myReviewedCourseIds.value = (res.data || []).map(r => r.courseId)
+  } catch (err) {
+    console.error('Error fetching my course evaluations:', err)
+  }
+}
+
+function getStarPercentage(star) {
+  const total = evaluationSummary.value.totalReviews || 0
+  if (total === 0) return 0
+  const count = evaluationSummary.value.ratingDistribution?.[star] || 0
+  return Math.round((count / total) * 100)
+}
+
+function getStarCount(star) {
+  return evaluationSummary.value.ratingDistribution?.[star] || 0
+}
+
+function getStarLabel(rating) {
+  const labels = { 1: 'Rất tệ', 2: 'Tệ', 3: 'Bình thường', 4: 'Tốt', 5: 'Rất tốt' }
+  return labels[rating] || 'Chưa chọn'
+}
+
+async function submitCourseReview() {
+  const courseId = selectedCourseForDetail.value?.courseId
+  if (!courseId || myReviewRating.value === 0) return
+  submittingReview.value = true
+  try {
+    await api.post('/api/v1/course-evaluations', {
+      courseId: courseId,
+      rating: myReviewRating.value,
+      comment: myReviewComment.value
+    })
+    showSnackbar('Gửi đánh giá môn học thành công!', 'success')
+    
+    // Reset form
+    showReviewForm.value = false
+    myReviewRating.value = 0
+    myReviewComment.value = ''
+    
+    // Reload data
+    await fetchCourseEvaluations(courseId)
+    await fetchMyCourseEvaluations()
+  } catch (err) {
+    console.error(err)
+    showSnackbar(err.response?.data?.message || 'Lỗi khi gửi đánh giá môn học.', 'error')
+  } finally {
+    submittingReview.value = false
+  }
+}
+
+function formatDateTime(dateStr) {
+  if (!dateStr) return '—'
+  const date = new Date(dateStr)
+  return date.toLocaleDateString('vi-VN') + ' ' + date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+}
+
 const courseInstructors = computed(() => {
   const teachers = new Map() // teacherId -> teacherName
   courseClasses.value.forEach(cls => {
@@ -679,6 +935,10 @@ function openCourseDetail(course) {
   activeDetailImageIndex.value = 0
   detailModal.value = true
   fetchCourseClasses(course.courseId)
+  fetchCourseEvaluations(course.courseId)
+  if (props.studentProfile) {
+    fetchMyCourseEvaluations()
+  }
 }
 
 function getLevelLabel(level) {
