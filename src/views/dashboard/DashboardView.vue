@@ -158,7 +158,7 @@
                     </span>
                   </td>
                   <td class="py-2.5 px-4 text-right font-bold text-rose-600">
-                    {{ Math.round(w.attendanceRate * 100) }}%
+                    {{ Math.round(w.attendanceRate) }}%
                   </td>
                 </tr>
               </tbody>

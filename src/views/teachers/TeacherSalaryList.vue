@@ -26,26 +26,47 @@
 
     <!-- Admin View: Tabs System -->
     <div v-if="authStore.isAdmin" class="space-y-6">
-      <!-- Tabs Selector -->
-      <div class="flex border-b border-primary-container/15">
-        <button
-          @click="activeTab = 'payroll'"
-          class="px-6 py-3 border-b-2 font-bold text-body-sm transition-all duration-200"
-          :class="activeTab === 'payroll' 
-            ? 'border-primary-container text-primary-container' 
-            : 'border-transparent text-on-surface-variant/70 hover:text-primary-container'"
-        >
-          Tính Toán Lương Tháng
-        </button>
-        <button
-          @click="activeTab = 'configs'"
-          class="px-6 py-3 border-b-2 font-bold text-body-sm transition-all duration-200"
-          :class="activeTab === 'configs' 
-            ? 'border-primary-container text-primary-container' 
-            : 'border-transparent text-on-surface-variant/70 hover:text-primary-container'"
-        >
-          Cấu Hình Hợp Đồng Lương
-        </button>
+      <!-- Tabs Selector & Search Input -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-primary-container/15 pb-2 sm:pb-0 gap-3">
+        <div class="flex flex-wrap">
+          <button
+            @click="activeTab = 'payroll'"
+            class="px-6 py-3 border-b-2 font-bold text-body-sm transition-all duration-200"
+            :class="activeTab === 'payroll' 
+              ? 'border-primary-container text-primary-container' 
+              : 'border-transparent text-on-surface-variant/70 hover:text-primary-container'"
+          >
+            Tính Toán Lương Tháng
+          </button>
+          <button
+            @click="activeTab = 'configs'"
+            class="px-6 py-3 border-b-2 font-bold text-body-sm transition-all duration-200"
+            :class="activeTab === 'configs' 
+              ? 'border-primary-container text-primary-container' 
+              : 'border-transparent text-on-surface-variant/70 hover:text-primary-container'"
+          >
+            Cấu Hợp Đồng Lương
+          </button>
+        </div>
+
+        <!-- Single Optimized Search Box -->
+        <div class="relative w-full sm:w-72 mb-2 sm:mb-0 sm:mr-2">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary-container/60 text-[18px]">search</span>
+          <input
+            v-model="searchQuery"
+            type="text"
+            :placeholder="activeTab === 'payroll' ? 'Tìm giảng viên...' : 'Tìm theo tên, tài khoản...'"
+            class="w-full pl-9 pr-8 py-2 text-body-sm bg-primary-container/[0.03] border border-primary-container/10 rounded-lg focus:outline-none focus:border-primary-container/30 text-primary-container font-semibold placeholder-primary-container/40"
+          />
+          <!-- Clear Button -->
+          <button
+            v-if="searchQuery"
+            @click="searchQuery = ''"
+            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant/70 hover:text-primary-container flex items-center justify-center cursor-pointer"
+          >
+            <span class="material-symbols-outlined text-[16px]">close</span>
+          </button>
+        </div>
       </div>
 
       <!-- TAB 1: CALCULATE PAYROLL -->
@@ -98,7 +119,7 @@
           </div>
 
           <div v-else-if="slips.length > 0" class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+            <table v-if="filteredSlips.length > 0" class="w-full text-left border-collapse">
               <thead>
                 <tr class="bg-primary-container/[0.05] text-primary-container font-bold text-body-sm border-b border-primary-container/10">
                   <th class="py-4 px-6">Giảng viên</th>
@@ -115,7 +136,7 @@
               </thead>
               <tbody class="text-body-sm text-on-surface">
                 <tr
-                  v-for="s in slips"
+                  v-for="s in filteredSlips"
                   :key="s.salarySlipId"
                   class="border-t border-primary-container/5 hover:bg-primary-container/[0.02] transition-colors"
                 >
@@ -150,6 +171,12 @@
                 </tr>
               </tbody>
             </table>
+            <!-- Empty search result -->
+            <div v-else class="p-12 text-center flex flex-col items-center justify-center space-y-2 bg-white/70">
+              <span class="material-symbols-outlined text-[40px] text-on-surface-variant/40">search_off</span>
+              <h4 class="text-body-md font-bold text-primary-container">Không tìm thấy giảng viên "{{ searchQuery }}"</h4>
+              <p class="text-body-xs text-on-surface-variant/60">Vui lòng thử lại với tên khác.</p>
+            </div>
           </div>
 
           <div v-else class="p-12 text-center flex flex-col items-center justify-center space-y-3">
@@ -163,7 +190,7 @@
       <!-- TAB 2: EDIT SALARY CONTRACTS -->
       <div v-if="activeTab === 'configs'" class="space-y-6">
         <div class="bg-white/70 backdrop-blur-[15px] border border-primary-container/10 rounded-xl overflow-hidden shadow-sm">
-          <table class="w-full text-left border-collapse">
+          <table v-if="filteredConfigs.length > 0" class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-primary-container/[0.05] text-primary-container font-bold text-body-sm border-b border-primary-container/10">
                 <th class="py-4 px-6">Giảng viên</th>
@@ -177,7 +204,7 @@
             </thead>
             <tbody class="text-body-sm text-on-surface">
               <tr
-                v-for="cfg in configs"
+                v-for="cfg in filteredConfigs"
                 :key="cfg.userId"
                 class="border-t border-primary-container/5 hover:bg-primary-container/[0.02] transition-colors"
               >
@@ -198,6 +225,12 @@
               </tr>
             </tbody>
           </table>
+          <!-- Empty search result for configs -->
+          <div v-else class="p-12 text-center flex flex-col items-center justify-center space-y-2 bg-white/70">
+            <span class="material-symbols-outlined text-[40px] text-on-surface-variant/40">search_off</span>
+            <h4 class="text-body-md font-bold text-primary-container">Không tìm thấy giảng viên nào khớp với "{{ searchQuery }}"</h4>
+            <p class="text-body-xs text-on-surface-variant/60">Vui lòng kiểm tra lại từ khóa.</p>
+          </div>
         </div>
       </div>
     </div>
@@ -272,6 +305,37 @@
               <span v-if="s.paidAt">Chi trả ngày: {{ formatDate(s.paidAt) }}</span>
               <span v-else>Dự kiến thanh toán</span>
             </div>
+          </div>
+
+          <!-- Action Buttons for Teacher if Pending -->
+          <div v-if="s.status === 'Pending'" class="pt-3 border-t border-dashed border-primary-container/10 flex gap-2">
+            <button
+              @click="confirmSlip(s.salarySlipId, true)"
+              class="flex-1 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-body-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 shadow-sm"
+            >
+              <span class="material-symbols-outlined text-[16px]">check_circle</span>
+              Chấp nhận
+            </button>
+            <button
+              @click="openFeedbackModal(s)"
+              class="flex-1 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white text-body-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 shadow-sm"
+            >
+              <span class="material-symbols-outlined text-[16px]">cancel</span>
+              Không đồng ý
+            </button>
+          </div>
+
+          <div v-else-if="s.status === 'Approved'" class="pt-2 text-right text-[11px] text-emerald-600 font-bold flex items-center justify-end gap-1">
+            <span class="material-symbols-outlined text-[16px]">check_circle</span>
+            Đã xác nhận chính xác
+          </div>
+
+          <div v-else-if="s.status === 'Rejected'" class="pt-2 text-left text-[11px] text-rose-600 font-medium bg-rose-50 border border-rose-100 p-2 rounded-lg mt-1 space-y-0.5">
+            <div class="font-bold flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">info</span>
+              Đã báo cáo không hợp lý
+            </div>
+            <div class="italic text-[10px] text-on-surface-variant/80 truncate" :title="s.notes">Lý do: {{ s.notes }}</div>
           </div>
         </div>
       </div>
@@ -438,11 +502,57 @@
         </div>
       </div>
     </div>
+
+    <!-- DIALOG MODAL 3: TEACHER SLIP FEEDBACK (DISPUTE REASON) -->
+    <div v-if="feedbackModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm transition-opacity duration-300">
+      <div class="bg-surface w-full max-w-md rounded-2xl shadow-xl border border-primary-container/15 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div class="bg-rose-600 px-6 py-4 flex items-center justify-between border-b border-primary-container/10">
+          <h3 class="text-body-lg font-bold text-white flex items-center gap-2">
+            <span class="material-symbols-outlined text-[20px]">warning</span>
+            Báo cáo phiếu lương không hợp lý
+          </h3>
+          <button @click="closeFeedbackModal" class="text-white/80 hover:text-white flex items-center justify-center">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="p-6 space-y-4">
+          <div class="space-y-1">
+            <label class="text-body-sm font-semibold text-primary-container">Lý do không hợp lý *</label>
+            <textarea
+              v-model="feedbackModal.feedback"
+              rows="4"
+              required
+              class="w-full bg-primary-container/[0.03] border border-primary-container/15 rounded-lg px-4 py-2.5 text-body-sm text-primary-container resize-none focus:outline-none focus:border-rose-500"
+              placeholder="Vui lòng giải thích chi tiết tại sao bảng tính lương này chưa hợp lý (Ví dụ: sai số buổi dạy, thiếu phụ cấp...)"
+            ></textarea>
+          </div>
+          <p v-if="feedbackModal.error" class="text-error text-[11px] font-semibold">{{ feedbackModal.error }}</p>
+        </div>
+
+        <div class="bg-primary-container/[0.03] border-t border-primary-container/10 px-6 py-4 flex justify-end gap-3">
+          <button
+            @click="closeFeedbackModal"
+            class="px-4 py-2 border border-primary-container/10 hover:bg-primary-container/[0.05] text-primary-container rounded-lg font-semibold text-body-sm transition-all duration-200"
+          >
+            Hủy
+          </button>
+          <button
+            @click="submitDeclineSlip"
+            :disabled="submittingFeedback || !feedbackModal.feedback.trim()"
+            class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-lg font-semibold text-body-sm shadow transition-all duration-200 disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+          >
+            <span v-if="submittingFeedback" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+            Gửi yêu cầu điều chỉnh
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useAuthStore } from '../../stores'
 import api from '../../services/api'
 
@@ -456,6 +566,30 @@ const savingSlip = ref(false)
 
 const slips = ref([])
 const configs = ref([])
+
+const searchQuery = ref('')
+
+// Clear search query when switching tabs
+watch(activeTab, () => {
+  searchQuery.value = ''
+})
+
+const filteredSlips = computed(() => {
+  if (!searchQuery.value) return slips.value
+  const query = searchQuery.value.toLowerCase().trim()
+  return slips.value.filter(s => 
+    s.teacherName?.toLowerCase().includes(query)
+  )
+})
+
+const filteredConfigs = computed(() => {
+  if (!searchQuery.value) return configs.value
+  const query = searchQuery.value.toLowerCase().trim()
+  return configs.value.filter(cfg => 
+    cfg.fullName?.toLowerCase().includes(query) ||
+    cfg.username?.toLowerCase().includes(query)
+  )
+})
 
 const payrollDate = ref({
   month: new Date().getMonth() || 12, // Default to last month
@@ -618,6 +752,73 @@ const saveSlipStatus = async () => {
   }
 }
 
+// Teacher slip accept/decline feedback
+const feedbackModal = ref({
+  show: false,
+  slipId: null,
+  feedback: '',
+  error: ''
+})
+const submittingFeedback = ref(false)
+
+const openFeedbackModal = (slip) => {
+  feedbackModal.value = {
+    show: true,
+    slipId: slip.salarySlipId,
+    feedback: '',
+    error: ''
+  }
+}
+
+const closeFeedbackModal = () => {
+  feedbackModal.value.show = false
+  feedbackModal.value.slipId = null
+  feedbackModal.value.error = ''
+}
+
+const confirmSlip = async (slipId, accepted, feedbackText = '') => {
+  try {
+    const { data } = await api.put(`/api/v1/teachers/salary/slips/${slipId}/feedback`, {
+      accepted,
+      feedback: feedbackText
+    })
+    
+    // Update local slip status
+    const idx = slips.value.findIndex(s => s.salarySlipId === slipId)
+    if (idx !== -1) {
+      slips.value[idx] = data
+    }
+    
+    alert(accepted ? 'Đã chấp nhận phiếu lương thành công!' : 'Đã gửi báo cáo không hợp lý đến Admin thành công!')
+    return true
+  } catch (error) {
+    console.error('Error confirming slip:', error)
+    alert(error.response?.data?.message || 'Có lỗi xảy ra khi xác nhận phiếu lương.')
+    return false
+  }
+}
+
+const submitDeclineSlip = async () => {
+  if (!feedbackModal.value.feedback.trim()) {
+    feedbackModal.value.error = 'Vui lòng nhập lý do không hợp lý.'
+    return
+  }
+  
+  submittingFeedback.value = true
+  feedbackModal.value.error = ''
+  
+  const success = await confirmSlip(
+    feedbackModal.value.slipId,
+    false,
+    feedbackModal.value.feedback
+  )
+  
+  submittingFeedback.value = false
+  if (success) {
+    closeFeedbackModal()
+  }
+}
+
 // Utility Helpers
 const formatCurrency = (val) => {
   if (val === undefined || val === null) return '0 đ'
@@ -633,7 +834,8 @@ const getSlipStatusClass = (status) => {
   const map = {
     Pending: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
     Approved: 'bg-info/10 text-info border-info/20',
-    Paid: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+    Paid: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+    Rejected: 'bg-rose-500/10 text-rose-600 border-rose-500/20'
   }
   return map[status] || 'bg-white/40 text-on-surface border-white/60'
 }
@@ -642,7 +844,8 @@ const getSlipStatusLabel = (status) => {
   const map = {
     Pending: 'Chờ duyệt',
     Approved: 'Đã phê duyệt',
-    Paid: 'Đã thanh toán'
+    Paid: 'Đã thanh toán',
+    Rejected: 'Không hợp lý'
   }
   return map[status] || status
 }

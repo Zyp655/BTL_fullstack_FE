@@ -561,7 +561,7 @@
                     <td class="py-3 px-3 text-on-surface-variant">{{ w.className }}</td>
                     <td class="py-3 px-3 text-center"><span class="px-2 py-0.5 rounded bg-rose-500/10 text-rose-600 font-bold border border-rose-500/20">{{ w.absentCount }} buổi</span></td>
                     <td class="py-3 px-3 text-center font-semibold text-amber-600">{{ w.lateCount }} buổi</td>
-                    <td class="py-3 px-3 text-right font-bold text-rose-600">{{ Math.round(w.attendanceRate * 100) }}%</td>
+                    <td class="py-3 px-3 text-right font-bold text-rose-600">{{ Math.round(w.attendanceRate) }}%</td>
                   </tr>
                 </tbody>
               </table>

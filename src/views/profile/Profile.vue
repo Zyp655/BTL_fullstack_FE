@@ -85,6 +85,12 @@
                 <input v-model="profileForm.phone" type="tel" class="w-full glass-input px-4 py-2.5 rounded-lg text-body-sm text-primary" placeholder="Nhập số điện thoại" />
               </div>
 
+              <!-- Bank Account (Only for GiaoVien) -->
+              <div v-if="authStore.isTeacher" class="space-y-1">
+                <label class="text-body-sm font-semibold text-primary block">Tài khoản ngân hàng (Nhận lương)</label>
+                <input v-model="profileForm.bankAccount" type="text" class="w-full glass-input px-4 py-2.5 rounded-lg text-body-sm text-primary" placeholder="Tên ngân hàng - Số tài khoản - Chủ tài khoản" />
+              </div>
+
               <!-- If HocVien, show additional student profile fields -->
               <template v-if="authStore.isStudent">
                 <!-- Gender -->
@@ -181,6 +187,7 @@ const profileForm = ref({
   fullName: '',
   email: '',
   phone: '',
+  bankAccount: '',
   gender: 'Nam',
   dateOfBirth: '',
   address: ''
@@ -244,6 +251,7 @@ const loadProfile = async () => {
     profileForm.value.fullName = user.fullName || ''
     profileForm.value.email = user.email || ''
     profileForm.value.phone = user.phone || ''
+    profileForm.value.bankAccount = user.bankAccount || ''
 
     if (authStore.isStudent) {
       try {
@@ -278,7 +286,8 @@ const saveProfile = async () => {
     await api.put('/api/v1/auth/profile', {
       fullName: profileForm.value.fullName,
       email: profileForm.value.email,
-      phone: profileForm.value.phone
+      phone: profileForm.value.phone,
+      bankAccount: profileForm.value.bankAccount
     })
 
     // 2. If student, update student info in StudentService
