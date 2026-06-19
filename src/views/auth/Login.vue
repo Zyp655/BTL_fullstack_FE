@@ -169,7 +169,7 @@
               <button 
                 type="button"
                 @click="openForgotPasswordModal"
-                class="font-body-sm text-body-sm text-blue-600 hover:text-blue-800 hover:underline font-semibold transition-all hover:scale-105 focus:outline-none rounded px-1 bg-transparent border-none p-0 cursor-pointer"
+                class="font-body-sm text-body-sm text-slate-800 hover:text-black hover:underline font-semibold transition-all hover:scale-105 focus:outline-none rounded px-1 bg-transparent border-none p-0 cursor-pointer"
               >
                 Quên mật khẩu?
               </button>
