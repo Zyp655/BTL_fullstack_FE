@@ -96,26 +96,35 @@
         <div class="glass-panel p-6 rounded-2xl flex flex-col hover-shadow gap-4">
           <div>
             <h3 class="font-title-md text-title-md font-bold text-primary-container flex items-center gap-2 mb-1">
-              <span class="material-symbols-outlined text-on-tertiary-container">groups</span>
-              Lớp Học Điển Hình
+              <span class="material-symbols-outlined text-on-tertiary-container">leaderboard</span>
+              Xếp Hạng Các Lớp
             </h3>
-            <p class="text-body-sm text-on-surface-variant/70 mb-4">Danh sách lớp học có tỷ lệ lấp đầy cao nhất</p>
+            <p class="text-body-sm text-on-surface-variant/70 mb-4">Danh sách lớp học theo tỷ lệ lấp đầy</p>
           </div>
           <div class="overflow-y-auto max-h-[300px] space-y-3 flex-1 pr-1">
             <div v-if="loadingClassStats" class="space-y-3 animate-pulse">
               <div v-for="i in 4" :key="i" class="h-10 bg-primary-container/5 rounded"></div>
             </div>
             <div v-else-if="classFillRates.length > 0" class="space-y-3">
-              <div v-for="c in classFillRates.slice(0, 5)" :key="c.classId" class="p-3 bg-primary-container/[0.02] border border-primary-container/10 rounded-xl space-y-2 hover:bg-primary-container/[0.05] transition-colors">
-                <div class="flex justify-between items-center text-body-xs font-semibold">
-                  <span class="text-primary-container truncate max-w-[150px]">{{ c.className }}</span>
-                  <span class="text-on-surface-variant">{{ c.currentStudents }} / {{ c.maxStudents }} học viên</span>
+              <div v-for="(c, idx) in classFillRates.slice(0, 5)" :key="c.classId" class="p-3 bg-primary-container/[0.02] border border-primary-container/10 rounded-xl flex items-center gap-3 hover:bg-primary-container/[0.05] transition-colors">
+                <!-- Rank Badge -->
+                <div class="shrink-0 flex items-center justify-center">
+                  <span v-if="idx === 0" class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-400 text-white text-[11px] font-black shadow-xs">1</span>
+                  <span v-else-if="idx === 1" class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-300 text-slate-800 text-[11px] font-bold shadow-xs">2</span>
+                  <span v-else-if="idx === 2" class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-orange-350 text-white text-[11px] font-bold shadow-xs">3</span>
+                  <span v-else class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-[11px] font-semibold">{{ idx + 1 }}</span>
                 </div>
-                <div class="flex items-center gap-2">
-                  <div class="flex-1 bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                    <div :class="['h-full rounded-full', getProgressColor(c.fillRate)]" :style="{ width: (c.fillRate * 100) + '%' }"></div>
+                <div class="flex-1 min-w-0 space-y-1.5">
+                  <div class="flex justify-between items-center text-body-xs font-semibold">
+                    <span class="text-primary-container truncate pr-2">{{ c.className }}</span>
+                    <span class="text-on-surface-variant shrink-0">{{ c.currentStudents }} / {{ c.maxStudents }} học viên</span>
                   </div>
-                  <span class="font-bold text-[10px]" :class="getTextColor(c.fillRate)">{{ Math.round(c.fillRate * 100) }}%</span>
+                  <div class="flex items-center gap-2">
+                    <div class="flex-1 bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                      <div :class="['h-full rounded-full', getProgressColor(c.fillRate)]" :style="{ width: (c.fillRate * 100) + '%' }"></div>
+                    </div>
+                    <span class="font-bold text-[10px]" :class="getTextColor(c.fillRate)">{{ Math.round(c.fillRate * 100) }}%</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -199,6 +208,83 @@
               </div>
             </router-link>
           </div>
+        </div>
+      </div>
+
+      <!-- 3. Teacher Rankings Section -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Teacher Rankings Table -->
+        <div class="glass-panel p-6 rounded-2xl lg:col-span-2 hover-shadow flex flex-col gap-4">
+          <div>
+            <h3 class="font-title-md text-title-md font-bold text-primary-container flex items-center gap-2 mb-1">
+              <span class="material-symbols-outlined text-on-tertiary-container">leaderboard</span>
+              Bảng Xếp Hạng Giảng Viên
+            </h3>
+            <p class="text-body-sm text-on-surface-variant/70 mb-4">Bảng xếp hạng và mức độ hài lòng của học viên đối với giảng viên</p>
+          </div>
+          <div class="overflow-x-auto">
+            <div v-if="loadingTeacherRankings" class="space-y-3 animate-pulse">
+              <div v-for="i in 4" :key="i" class="h-10 bg-primary-container/5 rounded"></div>
+            </div>
+            <table class="w-full text-left border-collapse" v-else-if="teacherRankings.length > 0">
+              <thead>
+                <tr class="bg-primary-container/[0.05] text-[11px] font-bold text-on-surface-variant uppercase">
+                  <th class="py-2.5 px-4 rounded-l-lg text-center w-16">Hạng</th>
+                  <th class="py-2.5 px-4">Giảng viên</th>
+                  <th class="py-2.5 px-4 text-center">Đánh giá trung bình</th>
+                  <th class="py-2.5 px-4 text-right rounded-r-lg">Số lượt đánh giá</th>
+                </tr>
+              </thead>
+              <tbody class="text-body-sm text-on-surface divide-y divide-primary-container/5">
+                <tr v-for="(rank, idx) in teacherRankings.slice(0, 5)" :key="rank.teacherId" class="hover:bg-primary-container/[0.02] transition-colors">
+                  <td class="py-2.5 px-4 text-center font-extrabold">
+                    <span v-if="idx === 0" class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-400 text-white text-[10px] font-black">1</span>
+                    <span v-else-if="idx === 1" class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-300 text-slate-800 text-[10px] font-bold">2</span>
+                    <span v-else-if="idx === 2" class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-orange-350 text-white text-[10px] font-bold">3</span>
+                    <span v-else class="text-on-surface-variant">{{ idx + 1 }}</span>
+                  </td>
+                  <td class="py-2.5 px-4 font-semibold">
+                    <div class="flex items-center gap-2">
+                      <div class="w-6 h-6 rounded-full bg-primary-container/10 text-primary-container flex items-center justify-center font-bold text-[10px] uppercase">
+                        {{ rank.name.substring(0, 2) }}
+                      </div>
+                      <span>{{ rank.name }}</span>
+                    </div>
+                  </td>
+                  <td class="py-2.5 px-4 text-center">
+                    <span class="inline-flex items-center gap-0.5 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded text-amber-700 font-extrabold text-xs">
+                      {{ rank.averageRating.toFixed(2) }}
+                      <span class="material-symbols-outlined text-[12px] font-variation-settings-fill text-amber-500">star</span>
+                    </span>
+                  </td>
+                  <td class="py-2.5 px-4 text-right font-bold text-on-surface-variant">
+                    {{ rank.count }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div v-else class="text-center py-10 flex flex-col items-center justify-center text-on-surface-variant/60 font-semibold">
+              <span class="material-symbols-outlined text-[36px] text-on-surface-variant/30 mb-1">leaderboard</span>
+              <p class="text-body-sm">Chưa có thông tin xếp hạng giảng viên!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side Panel next to rankings (lg:col-span-1) -->
+        <div class="glass-panel p-6 rounded-2xl hover-shadow flex flex-col justify-between gap-4">
+          <div>
+            <h3 class="font-title-md text-title-md font-bold text-primary-container flex items-center gap-2 mb-2">
+              <span class="material-symbols-outlined text-on-tertiary-container">analytics</span>
+              Chi Tiết Đánh Giá
+            </h3>
+            <p class="text-body-sm text-on-surface-variant/70">
+              Hệ thống khảo sát cung cấp báo cáo chi tiết về chất lượng giảng dạy của giảng viên và mức độ phổ biến môn học dựa trên ý kiến phản hồi thực tế từ học viên.
+            </p>
+          </div>
+          <router-link to="/evaluation-management?tab=ranking" class="mt-auto bg-primary-container text-white px-4 py-2.5 rounded-xl text-center text-body-sm font-semibold shadow-sm hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-[20px]">visibility</span>
+            Xem bảng chi tiết
+          </router-link>
         </div>
       </div>
     </div>
@@ -406,6 +492,7 @@ const todayString = computed(() => {
 // ----------------------------------------------------
 const loadingAdminCharts = ref(false)
 const loadingClassStats = ref(false)
+const loadingTeacherRankings = ref(false)
 const adminStats = ref({
   totalRevenue: 0,
   totalDebt: 0,
@@ -416,12 +503,53 @@ const adminStats = ref({
 const selectedYear = ref(new Date().getFullYear())
 const classFillRates = ref([])
 const academicWarnings = ref([])
+const teacherEvaluations = ref([])
+const teachersMap = ref({})
 const revenueChartCanvas = ref(null)
 let revenueChart = null
+
+const teacherRankings = computed(() => {
+  // Group evaluations by teacherId
+  const groups = {}
+  teacherEvaluations.value.forEach(e => {
+    if (!groups[e.teacherId]) {
+      groups[e.teacherId] = []
+    }
+    groups[e.teacherId].push(e.rating)
+  })
+
+  // Construct ranking list
+  const rankings = []
+  Object.keys(groups).forEach(tIdStr => {
+    const tId = parseInt(tIdStr)
+    const ratings = groups[tId]
+    const avg = ratings.length > 0 ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length : 0.0
+    const name = teachersMap.value[tId] || 'Giảng viên #' + tId
+
+    rankings.push({
+      teacherId: tId,
+      name: name,
+      averageRating: parseFloat(avg.toFixed(2)),
+      count: ratings.length
+    })
+  })
+
+  // Sort descending by rating, then count, then name
+  return rankings.sort((a, b) => {
+    if (b.averageRating !== a.averageRating) {
+      return b.averageRating - a.averageRating
+    }
+    if (b.count !== a.count) {
+      return b.count - a.count
+    }
+    return a.name.localeCompare(b.name)
+  })
+})
 
 const loadAdminDashboard = async () => {
   if (!authStore.isAdmin) return
   loadingClassStats.value = true
+  loadingTeacherRankings.value = true
   try {
     // 1. Fetch dashboard metrics
     const { data: dbData } = await api.get('/api/v1/reports/dashboard')
@@ -440,13 +568,33 @@ const loadAdminDashboard = async () => {
     const { data: warnAna } = await api.get('/api/v1/enrollments/analytics')
     academicWarnings.value = warnAna.academicWarnings || []
 
-    // 4. Render Chart
+    // 4. Fetch teacher rankings data
+    try {
+      const [evalsRes, teachersRes] = await Promise.all([
+        api.get('/api/v1/teacher-evaluations/all'),
+        api.get('/api/v1/teachers')
+      ])
+      teacherEvaluations.value = evalsRes.data || []
+      
+      const tMap = {}
+      if (teachersRes.data?.items) {
+        teachersRes.data.items.forEach(t => {
+          tMap[t.teacherId] = t.name
+        })
+      }
+      teachersMap.value = tMap
+    } catch (err) {
+      console.error('Error loading teacher rankings for dashboard:', err)
+    }
+
+    // 5. Render Chart
     await nextTick()
     renderRevenueChart(dbData.recentRevenues || [])
   } catch (error) {
     console.error('Error loading admin dashboard:', error)
   } finally {
     loadingClassStats.value = false
+    loadingTeacherRankings.value = false
   }
 }
 
