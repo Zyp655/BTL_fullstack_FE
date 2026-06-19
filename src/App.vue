@@ -576,6 +576,7 @@ const navItems = computed(() => {
       path: '/evaluation-management',
       children: [
         { title: 'Kết quả đánh giá', icon: 'history', path: '/evaluation-management', query: { tab: 'results' } },
+        { title: 'Bảng xếp hạng', icon: 'leaderboard', path: '/evaluation-management', query: { tab: 'ranking' } },
         { title: 'Tiêu chí đánh giá', icon: 'tune', path: '/evaluation-management', query: { tab: 'criteria' } },
         { title: 'Khoá đánh giá (Lớp)', icon: 'lock', path: '/evaluation-management', query: { tab: 'lock-settings' } }
       ]

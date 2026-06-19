@@ -379,6 +379,246 @@
         </div>
       </div>
 
+      <!-- 4. TAB: Rankings (Bảng xếp hạng) -->
+      <div v-if="activeTab === 'ranking'" class="space-y-8 animate-fade-in">
+        <!-- Sub-tabs for Rankings (Teacher vs Course) -->
+        <div class="flex gap-2 p-1 bg-slate-100/80 backdrop-blur-md rounded-xl w-fit border border-slate-200/50">
+          <button
+            @click="rankingSubTab = 'teachers'"
+            :class="[
+              'px-5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer border-0',
+              rankingSubTab === 'teachers'
+                ? 'bg-white text-indigo-600 shadow-sm'
+                : 'text-slate-500 hover:text-slate-800 bg-transparent'
+            ]"
+          >
+            Xếp hạng Giảng viên
+          </button>
+          <button
+            @click="rankingSubTab = 'courses'"
+            :class="[
+              'px-5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer border-0',
+              rankingSubTab === 'courses'
+                ? 'bg-white text-indigo-600 shadow-sm'
+                : 'text-slate-500 hover:text-slate-800 bg-transparent'
+            ]"
+          >
+            Mức độ phổ biến Môn học
+          </button>
+        </div>
+
+        <!-- 4A. TAB VIEW: Teacher Rankings -->
+        <div v-if="rankingSubTab === 'teachers'" class="space-y-8 animate-fade-in">
+          <!-- Search & Filter bar -->
+          <section class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-sm rounded-xl p-4 flex flex-col md:flex-row gap-4 items-center">
+            <div class="relative w-full md:w-48">
+              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Chọn Tháng</label>
+              <div class="relative">
+                <select
+                  v-model="rankingMonth"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-lg appearance-none pl-3 pr-8 py-2 text-body-sm font-semibold text-slate-700 bg-transparent cursor-pointer focus:outline-none focus:border-indigo-500 transition-colors"
+                >
+                  <option value="all">Tất cả các tháng</option>
+                  <option v-for="m in 12" :key="m" :value="String(m)">Tháng {{ m }}</option>
+                </select>
+                <span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">expand_more</span>
+              </div>
+            </div>
+
+            <div class="relative w-full md:w-36">
+              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Chọn Năm</label>
+              <div class="relative">
+                <select
+                  v-model="rankingYear"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-lg appearance-none pl-3 pr-8 py-2 text-body-sm font-semibold text-slate-700 bg-transparent cursor-pointer focus:outline-none focus:border-indigo-500 transition-colors"
+                >
+                  <option value="all">Tất cả các năm</option>
+                  <option v-for="y in availableYears" :key="y" :value="String(y)">Năm {{ y }}</option>
+                </select>
+                <span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">expand_more</span>
+              </div>
+            </div>
+
+            <div class="relative flex-1 w-full">
+              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Chọn Môn học</label>
+              <div class="relative">
+                <select
+                  v-model="rankingCourseId"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-lg appearance-none pl-3 pr-8 py-2.5 text-body-sm font-semibold text-slate-700 bg-transparent cursor-pointer focus:outline-none focus:border-indigo-500 transition-colors"
+                >
+                  <option value="all">Tất cả môn học</option>
+                  <option v-for="c in courses" :key="c.courseId" :value="String(c.courseId)">{{ c.courseName }}</option>
+                </select>
+                <span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">expand_more</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Podium (Top 3) -->
+          <div v-if="teacherRankings.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end pt-8">
+            <!-- 2nd Place -->
+            <div v-if="teacherRankings[1]" class="bg-gradient-to-t from-slate-100 to-white border border-slate-200 rounded-2xl p-6 text-center shadow-sm relative md:h-[220px] flex flex-col justify-center items-center">
+              <div class="w-12 h-12 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-extrabold text-lg border-2 border-slate-300 absolute -top-6 shadow-sm">2</div>
+              <h4 class="font-bold text-slate-800 text-base mt-2">{{ teacherRankings[1].name }}</h4>
+              <div class="mt-2 flex items-center gap-1 bg-slate-100 border border-slate-200 px-3 py-1 rounded-full text-slate-700 font-extrabold text-sm">
+                {{ teacherRankings[1].averageRating.toFixed(2) }}
+                <span class="material-symbols-outlined text-[14px] font-variation-settings-fill text-amber-500">star</span>
+              </div>
+              <p class="text-xs text-slate-400 font-medium mt-1.5">{{ teacherRankings[1].count }} lượt đánh giá</p>
+            </div>
+
+            <!-- 1st Place -->
+            <div v-if="teacherRankings[0]" class="bg-gradient-to-t from-amber-50/50 to-white border-2 border-amber-300 rounded-2xl p-8 text-center shadow-md relative md:h-[260px] flex flex-col justify-center items-center">
+              <span class="material-symbols-outlined text-amber-500 absolute -top-12 text-[48px] animate-bounce">emoji_events</span>
+              <div class="w-14 h-14 rounded-full bg-amber-400 text-white flex items-center justify-center font-black text-xl border-4 border-white absolute -top-7 shadow-md">1</div>
+              <h4 class="font-black text-slate-900 text-lg mt-3">{{ teacherRankings[0].name }}</h4>
+              <div class="mt-2.5 flex items-center gap-1 bg-amber-500/10 border border-amber-500/25 px-4 py-1.5 rounded-full text-amber-700 font-black text-base shadow-sm">
+                {{ teacherRankings[0].averageRating.toFixed(2) }}
+                <span class="material-symbols-outlined text-[16px] font-variation-settings-fill text-amber-500">star</span>
+              </div>
+              <p class="text-xs text-slate-500 font-bold mt-2">{{ teacherRankings[0].count }} lượt đánh giá</p>
+            </div>
+
+            <!-- 3rd Place -->
+            <div v-if="teacherRankings[2]" class="bg-gradient-to-t from-orange-50/20 to-white border border-orange-200 rounded-2xl p-6 text-center shadow-sm relative md:h-[200px] flex flex-col justify-center items-center">
+              <div class="w-12 h-12 rounded-full bg-orange-100 text-orange-850 flex items-center justify-center font-extrabold text-lg border-2 border-orange-200 absolute -top-6 shadow-sm">3</div>
+              <h4 class="font-bold text-slate-800 text-base mt-2">{{ teacherRankings[2].name }}</h4>
+              <div class="mt-2 flex items-center gap-1 bg-orange-50 border border-orange-100 px-3 py-1 rounded-full text-orange-700 font-extrabold text-sm">
+                {{ teacherRankings[2].averageRating.toFixed(2) }}
+                <span class="material-symbols-outlined text-[14px] font-variation-settings-fill text-amber-500">star</span>
+              </div>
+              <p class="text-xs text-slate-400 font-medium mt-1.5">{{ teacherRankings[2].count }} lượt đánh giá</p>
+            </div>
+          </div>
+
+          <!-- Leaderboard Table -->
+          <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-sm rounded-xl overflow-hidden">
+            <div class="overflow-x-auto">
+              <table v-if="teacherRankings.length > 0" class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-slate-100 bg-slate-50/50">
+                    <th class="py-3 px-6 font-bold text-slate-500 text-xs w-20 text-center">Thứ hạng</th>
+                    <th class="py-3 px-6 font-bold text-slate-500 text-xs">Giảng viên</th>
+                    <th class="py-3 px-6 font-bold text-slate-500 text-xs text-center w-48">Điểm đánh giá TB</th>
+                    <th class="py-3 px-6 font-bold text-slate-500 text-xs text-center w-48">Số lượt đánh giá</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700 text-sm">
+                  <tr v-for="(rank, idx) in teacherRankings" :key="rank.teacherId" class="hover:bg-slate-50/40 transition-colors">
+                    <td class="py-4 px-6 text-center font-extrabold">
+                      <span v-if="idx === 0" class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-400 text-white text-xs font-black">1</span>
+                      <span v-else-if="idx === 1" class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-300 text-slate-800 text-xs font-bold">2</span>
+                      <span v-else-if="idx === 2" class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-orange-200 text-orange-850 text-xs font-bold">3</span>
+                      <span v-else class="text-slate-400 font-semibold">{{ idx + 1 }}</span>
+                    </td>
+                    <td class="py-4 px-6 font-bold text-slate-800 flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs uppercase">
+                        {{ rank.name.substring(0, 2) }}
+                      </div>
+                      <div>
+                        <span>{{ rank.name }}</span>
+                        <span class="block text-[10px] text-slate-400 font-medium font-mono">ID: GV-{{ String(rank.teacherId).padStart(4, '0') }}</span>
+                      </div>
+                    </td>
+                    <td class="py-4 px-6 text-center">
+                      <span class="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded text-amber-700 font-extrabold text-sm">
+                        {{ rank.averageRating.toFixed(2) }}
+                        <span class="material-symbols-outlined text-[14px] font-variation-settings-fill text-amber-500">star</span>
+                      </span>
+                    </td>
+                    <td class="py-4 px-6 text-center font-bold text-slate-600">{{ rank.count }}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div v-else class="p-12 text-center flex flex-col items-center justify-center bg-white/30">
+                <span class="material-symbols-outlined text-slate-300 text-[64px] mb-4">leaderboard</span>
+                <p class="text-base text-slate-600 font-medium">Không có dữ liệu xếp hạng giảng viên trong khoảng thời gian này</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4B. TAB VIEW: Course Popularity Rankings -->
+        <div v-if="rankingSubTab === 'courses'" class="space-y-6 animate-fade-in">
+          <!-- Sort Order Toggle -->
+          <section class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-sm rounded-xl p-4 flex flex-col sm:flex-row justify-between gap-4 items-center">
+            <span class="text-sm font-bold text-slate-700">Sắp xếp theo số lượng học viên:</span>
+            <div class="flex gap-2">
+              <button
+                @click="courseRankingSortOrder = 'desc'"
+                :class="[
+                  'px-4 py-2 text-xs font-bold rounded-lg border transition-all cursor-pointer',
+                  courseRankingSortOrder === 'desc'
+                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-xs'
+                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                ]"
+              >
+                Học nhiều nhất (Phổ biến)
+              </button>
+              <button
+                @click="courseRankingSortOrder = 'asc'"
+                :class="[
+                  'px-4 py-2 text-xs font-bold rounded-lg border transition-all cursor-pointer',
+                  courseRankingSortOrder === 'asc'
+                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-xs'
+                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                ]"
+              >
+                Học ít nhất
+              </button>
+            </div>
+          </section>
+
+          <!-- Leaderboard Table with Progress Bars -->
+          <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-sm rounded-xl overflow-hidden">
+            <div class="overflow-x-auto">
+              <table v-if="coursePopularityRankings.length > 0" class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-slate-100 bg-slate-50/50">
+                    <th class="py-3 px-6 font-bold text-slate-500 text-xs w-20 text-center">Thứ hạng</th>
+                    <th class="py-3 px-6 font-bold text-slate-500 text-xs">Môn học</th>
+                    <th class="py-3 px-6 font-bold text-slate-500 text-xs text-center w-36">Tổng số lớp</th>
+                    <th class="py-3 px-6 font-bold text-slate-500 text-xs text-center w-[300px]">Số học viên thực tế</th>
+                    <th class="py-3 px-6 font-bold text-slate-500 text-xs text-center w-24">Tỷ lệ</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700 text-sm">
+                  <tr v-for="(rank, idx) in coursePopularityRankings" :key="rank.courseId" class="hover:bg-slate-50/40 transition-colors">
+                    <td class="py-4 px-6 text-center font-extrabold text-slate-400">
+                      {{ courseRankingSortOrder === 'desc' ? idx + 1 : coursePopularityRankings.length - idx }}
+                    </td>
+                    <td class="py-4 px-6 font-bold text-slate-800">
+                      {{ rank.courseName }}
+                      <span class="block text-[10px] text-slate-400 font-medium font-mono">ID: MH-{{ String(rank.courseId).padStart(3, '0') }}</span>
+                    </td>
+                    <td class="py-4 px-6 text-center font-bold text-indigo-600">{{ rank.totalClasses }} lớp</td>
+                    <td class="py-4 px-6">
+                      <div class="flex items-center gap-3">
+                        <span class="font-extrabold text-slate-850 shrink-0 w-12 text-right">{{ rank.totalStudents }} HV</span>
+                        <!-- Visual popularity bar -->
+                        <div class="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50">
+                          <div
+                            class="h-full bg-gradient-to-r from-indigo-500 to-sky-500 rounded-full transition-all duration-500"
+                            :style="{ width: `${getPopularityPercentage(rank.totalStudents)}%` }"
+                          ></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-4 px-6 text-center font-bold text-slate-500">
+                      {{ getPopularityPercentage(rank.totalStudents) }}%
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div v-else class="p-12 text-center flex flex-col items-center justify-center bg-white/30">
+                <span class="material-symbols-outlined text-slate-300 text-[64px] mb-4">school</span>
+                <p class="text-base text-slate-600 font-medium">Không tìm thấy môn học nào</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- Modal Criterion Add/Edit -->
@@ -548,9 +788,17 @@ const criteria = ref([])
 const teachersMap = ref({})
 const classes = ref([])
 const enabledClassIds = ref([])
+const courses = ref([])
 
 const activeResultSubTab = ref('teachers')
 const activeEvalType = ref('teacher')
+
+// Ranking filters & tabs
+const rankingMonth = ref('all')
+const rankingYear = ref(new Date().getFullYear().toString())
+const rankingCourseId = ref('all')
+const rankingSubTab = ref('teachers')
+const courseRankingSortOrder = ref('desc') // 'desc' (nhiều nhất) or 'asc' (ít nhất)
 
 // Active Tab query calculation
 const activeTab = computed(() => route.query.tab || 'results')
@@ -559,12 +807,20 @@ const activeTab = computed(() => route.query.tab || 'results')
 const pageTitle = computed(() => {
   if (activeTab.value === 'criteria') return 'Thiết lập tiêu chí đánh giá'
   if (activeTab.value === 'lock-settings') return 'Quản lý khóa cổng đánh giá'
+  if (activeTab.value === 'ranking') {
+    return rankingSubTab.value === 'courses' ? 'Mức độ phổ biến Môn học' : 'Bảng xếp hạng Giảng viên'
+  }
   return 'Kết quả Khảo sát & Đánh giá'
 })
 
 const pageDesc = computed(() => {
   if (activeTab.value === 'criteria') return 'Quản lý và điều chỉnh các tiêu chí chấm điểm chất lượng giảng dạy.'
   if (activeTab.value === 'lock-settings') return 'Kiểm soát quyền làm khảo sát theo từng lớp học riêng lẻ.'
+  if (activeTab.value === 'ranking') {
+    return rankingSubTab.value === 'courses'
+      ? 'Xem danh sách xếp hạng môn học được học nhiều nhất và ít nhất dựa trên sĩ số học viên thực tế.'
+      : 'Xem bảng xếp hạng và mức độ hài lòng của học viên đối với giảng viên.'
+  }
   return 'Xem danh sách và ý kiến phản hồi chi tiết từ học viên.'
 })
 
@@ -599,14 +855,15 @@ const activeEval = ref({})
 async function loadData() {
   loading.value = true
   try {
-    const [evalsRes, courseEvalsRes, critRes, teachersRes, statusRes, classesRes, enabledClassesRes] = await Promise.all([
+    const [evalsRes, courseEvalsRes, critRes, teachersRes, statusRes, classesRes, enabledClassesRes, coursesRes] = await Promise.all([
       api.get('/api/v1/teacher-evaluations/all'),
       api.get('/api/v1/course-evaluations/all'),
       api.get('/api/v1/teacher-evaluations/criteria/all'),
       api.get('/api/v1/teachers'),
       api.get('/api/v1/teacher-evaluations/status'),
       api.get('/api/v1/classes', { params: { pageSize: 100 } }),
-      api.get('/api/v1/teacher-evaluations/enabled-classes')
+      api.get('/api/v1/teacher-evaluations/enabled-classes'),
+      api.get('/api/v1/courses', { params: { pageSize: 100 } })
     ])
 
     evaluations.value = evalsRes.data || []
@@ -615,6 +872,7 @@ async function loadData() {
     isEvaluationEnabled.value = statusRes.data?.isEvaluationEnabled ?? true
     classes.value = classesRes.data?.items || []
     enabledClassIds.value = enabledClassesRes.data?.classIds || []
+    courses.value = coursesRes.data?.items || []
 
     const map = {}
     if (teachersRes.data?.items) {
@@ -631,6 +889,125 @@ async function loadData() {
   }
 }
 
+// Computed properties for Teacher Rankings
+const availableYears = computed(() => {
+  const years = new Set([new Date().getFullYear()])
+  evaluations.value.forEach(e => {
+    if (e.createdAt) {
+      years.add(new Date(e.createdAt).getFullYear())
+    }
+  })
+  return Array.from(years).sort((a, b) => b - a)
+})
+
+const teacherRankings = computed(() => {
+  // 1. Filter evaluations based on month, year, course
+  let filtered = evaluations.value
+
+  if (rankingMonth.value !== 'all') {
+    const m = parseInt(rankingMonth.value)
+    filtered = filtered.filter(e => e.createdAt && (new Date(e.createdAt).getMonth() + 1 === m))
+  }
+
+  if (rankingYear.value !== 'all') {
+    const y = parseInt(rankingYear.value)
+    filtered = filtered.filter(e => e.createdAt && (new Date(e.createdAt).getFullYear() === y))
+  }
+
+  if (rankingCourseId.value !== 'all') {
+    const cId = parseInt(rankingCourseId.value)
+    filtered = filtered.filter(e => {
+      const cls = classes.value.find(c => c.classId === e.classId)
+      return cls && cls.courseId === cId
+    })
+  }
+
+  // 2. Group evaluations by teacherId
+  const groups = {}
+  filtered.forEach(e => {
+    if (!groups[e.teacherId]) {
+      groups[e.teacherId] = []
+    }
+    groups[e.teacherId].push(e.rating)
+  })
+
+  // 3. Construct ranking list
+  const rankings = []
+  Object.keys(groups).forEach(tIdStr => {
+    const tId = parseInt(tIdStr)
+    const ratings = groups[tId]
+    const avg = ratings.length > 0 ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length : 0.0
+    const name = teachersMap.value[tId] || 'Giảng viên #' + tId
+
+    rankings.push({
+      teacherId: tId,
+      name: name,
+      averageRating: parseFloat(avg.toFixed(2)),
+      count: ratings.length
+    })
+  })
+
+  // 4. Sort descending by rating, then count, then name
+  return rankings.sort((a, b) => {
+    if (b.averageRating !== a.averageRating) {
+      return b.averageRating - a.averageRating
+    }
+    if (b.count !== a.count) {
+      return b.count - a.count
+    }
+    return a.name.localeCompare(b.name)
+  })
+})
+
+const coursePopularityRankings = computed(() => {
+  const courseMap = {}
+
+  // Initialize all courses
+  courses.value.forEach(c => {
+    courseMap[c.courseId] = {
+      courseId: c.courseId,
+      courseName: c.courseName,
+      totalStudents: 0,
+      totalClasses: 0
+    }
+  })
+
+  // Aggregate classes data
+  classes.value.forEach(cls => {
+    if (!courseMap[cls.courseId]) {
+      courseMap[cls.courseId] = {
+        courseId: cls.courseId,
+        courseName: cls.courseName || 'Môn học #' + cls.courseId,
+        totalStudents: 0,
+        totalClasses: 0
+      }
+    }
+    courseMap[cls.courseId].totalClasses++
+    courseMap[cls.courseId].totalStudents += cls.currentStudents || 0
+  })
+
+  const list = Object.values(courseMap)
+
+  // Sort based on chosen sort order (desc = most popular first, asc = least popular first)
+  return list.sort((a, b) => {
+    const factor = courseRankingSortOrder.value === 'asc' ? 1 : -1
+    if (a.totalStudents !== b.totalStudents) {
+      return (a.totalStudents - b.totalStudents) * factor
+    }
+    if (a.totalClasses !== b.totalClasses) {
+      return (a.totalClasses - b.totalClasses) * factor
+    }
+    return a.courseName.localeCompare(b.courseName)
+  })
+})
+
+function getPopularityPercentage(totalStudents) {
+  if (coursePopularityRankings.value.length === 0) return 0
+  const max = Math.max(...coursePopularityRankings.value.map(r => r.totalStudents))
+  if (max === 0) return 0
+  return Math.round((totalStudents / max) * 100)
+}
+
 // Watch routing query tab parameter changes
 watch(() => route.query.tab, () => {
   // Reset search queries
@@ -638,6 +1015,11 @@ watch(() => route.query.tab, () => {
   classSearchQuery.value = ''
   filters.value.search = ''
   filters.value.rating = 'all'
+  rankingMonth.value = 'all'
+  rankingYear.value = new Date().getFullYear().toString()
+  rankingCourseId.value = 'all'
+  rankingSubTab.value = 'teachers'
+  courseRankingSortOrder.value = 'desc'
 })
 
 // Update evaluation global status
