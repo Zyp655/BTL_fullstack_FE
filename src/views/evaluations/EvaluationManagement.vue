@@ -409,124 +409,201 @@
 
         <!-- 4A. TAB VIEW: Teacher Rankings -->
         <div v-if="rankingSubTab === 'teachers'" class="space-y-8 animate-fade-in">
+          <!-- KPI Summary Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Card 1: Total Evaluations -->
+            <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-xs flex items-center gap-4 transition-all hover:shadow-sm">
+              <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-650 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">rate_review</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">TỔNG SỐ LƯỢT ĐÁNH GIÁ</p>
+                <p class="text-xl font-extrabold text-slate-850">{{ totalReviewsCount }} lượt</p>
+              </div>
+            </div>
+
+            <!-- Card 2: System Average Rating -->
+            <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-xs flex items-center gap-4 transition-all hover:shadow-sm">
+              <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">star</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">ĐIỂM TRUNG BÌNH HỆ THỐNG</p>
+                <p class="text-xl font-extrabold text-slate-850">
+                  {{ systemAverageRating.toFixed(2) }} <span class="text-xs text-slate-400 font-bold">/ 5.0</span>
+                  <span class="text-amber-500 font-bold ml-1">★</span>
+                </p>
+              </div>
+            </div>
+
+            <!-- Card 3: Top Teacher -->
+            <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-xs flex items-center gap-4 transition-all hover:shadow-sm">
+              <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">GIẢNG VIÊN DẪN ĐẦU</p>
+                <p class="text-sm font-extrabold text-slate-850 truncate flex items-center gap-1.5 flex-wrap" v-if="teacherRankings.length > 0">
+                  <span class="text-emerald-750 font-extrabold">{{ teacherRankings[0].name }}</span>
+                  <span class="inline-flex items-center gap-0.5 bg-emerald-100 border border-emerald-250 px-2 py-0.5 rounded text-emerald-700 text-xs font-black">
+                    {{ teacherRankings[0].averageRating.toFixed(2) }}
+                    <span class="material-symbols-outlined text-[10px] font-variation-settings-fill text-amber-500">star</span>
+                  </span>
+                </p>
+                <p class="text-sm font-extrabold text-slate-400" v-else>Không có dữ liệu</p>
+              </div>
+            </div>
+          </div>
+
           <!-- Search & Filter bar -->
-          <section class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-sm rounded-xl p-4 flex flex-col md:flex-row gap-4 items-center">
-            <div class="relative w-full md:w-48">
-              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Chọn Tháng</label>
-              <div class="relative">
-                <select
-                  v-model="rankingMonth"
-                  class="w-full bg-slate-50 border border-slate-200 rounded-lg appearance-none pl-3 pr-8 py-2 text-body-sm font-semibold text-slate-700 bg-transparent cursor-pointer focus:outline-none focus:border-indigo-500 transition-colors"
-                >
-                  <option value="all">Tất cả các tháng</option>
-                  <option v-for="m in 12" :key="m" :value="String(m)">Tháng {{ m }}</option>
-                </select>
-                <span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">expand_more</span>
+          <section class="bg-white border border-slate-100 shadow-xs rounded-2xl p-5">
+            <h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">tune</span>
+              BỘ LỌC THỐNG KÊ XẾP HẠNG
+            </h4>
+            <div class="flex flex-col md:flex-row gap-4 items-center">
+              <!-- Search Input -->
+              <div class="relative w-full md:flex-1">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+                <input
+                  v-model="rankingSearchQuery"
+                  type="text"
+                  placeholder="Tìm theo tên giảng viên..."
+                  class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-4 py-2 text-sm font-semibold text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition-colors"
+                />
               </div>
-            </div>
 
-            <div class="relative w-full md:w-36">
-              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Chọn Năm</label>
-              <div class="relative">
-                <select
-                  v-model="rankingYear"
-                  class="w-full bg-slate-50 border border-slate-200 rounded-lg appearance-none pl-3 pr-8 py-2 text-body-sm font-semibold text-slate-700 bg-transparent cursor-pointer focus:outline-none focus:border-indigo-500 transition-colors"
-                >
-                  <option value="all">Tất cả các năm</option>
-                  <option v-for="y in availableYears" :key="y" :value="String(y)">Năm {{ y }}</option>
-                </select>
-                <span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">expand_more</span>
-              </div>
-            </div>
-
-            <div class="relative flex-1 w-full">
-              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Chọn Môn học</label>
-              <div class="relative">
+              <!-- Course Select -->
+              <div class="relative w-full md:w-56">
                 <select
                   v-model="rankingCourseId"
-                  class="w-full bg-slate-50 border border-slate-200 rounded-lg appearance-none pl-3 pr-8 py-2.5 text-body-sm font-semibold text-slate-700 bg-transparent cursor-pointer focus:outline-none focus:border-indigo-500 transition-colors"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-lg appearance-none pl-3 pr-8 py-2 text-sm font-semibold text-slate-700 cursor-pointer focus:outline-none focus:border-indigo-500 transition-colors"
                 >
                   <option value="all">Tất cả môn học</option>
                   <option v-for="c in courses" :key="c.courseId" :value="String(c.courseId)">{{ c.courseName }}</option>
                 </select>
                 <span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">expand_more</span>
               </div>
+
+              <!-- Class Select -->
+              <div class="relative w-full md:w-56">
+                <select
+                  v-model="rankingClassId"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-lg appearance-none pl-3 pr-8 py-2 text-sm font-semibold text-slate-700 cursor-pointer focus:outline-none focus:border-indigo-500 transition-colors"
+                >
+                  <option value="all">Tất cả lớp học</option>
+                  <option v-for="cls in filteredRankingClasses" :key="cls.classId" :value="String(cls.classId)">{{ cls.className }}</option>
+                </select>
+                <span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">expand_more</span>
+              </div>
+
+              <!-- Time Select -->
+              <div class="relative w-full md:w-48">
+                <select
+                  v-model="rankingMonth"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-lg appearance-none pl-3 pr-8 py-2 text-sm font-semibold text-slate-700 cursor-pointer focus:outline-none focus:border-indigo-500 transition-colors"
+                >
+                  <option value="all">Tất cả thời gian</option>
+                  <option v-for="m in 12" :key="m" :value="String(m)">Tháng {{ m }}</option>
+                </select>
+                <span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">expand_more</span>
+              </div>
             </div>
           </section>
 
-          <!-- Podium (Top 3) -->
-          <div v-if="teacherRankings.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end pt-8">
-            <!-- 2nd Place -->
-            <div v-if="teacherRankings[1]" class="bg-gradient-to-t from-slate-100 to-white border border-slate-200 rounded-2xl p-6 text-center shadow-sm relative md:h-[220px] flex flex-col justify-center items-center">
-              <div class="w-12 h-12 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-extrabold text-lg border-2 border-slate-300 absolute -top-6 shadow-sm">2</div>
-              <h4 class="font-bold text-slate-800 text-base mt-2">{{ teacherRankings[1].name }}</h4>
-              <div class="mt-2 flex items-center gap-1 bg-slate-100 border border-slate-200 px-3 py-1 rounded-full text-slate-700 font-extrabold text-sm">
-                {{ teacherRankings[1].averageRating.toFixed(2) }}
-                <span class="material-symbols-outlined text-[14px] font-variation-settings-fill text-amber-500">star</span>
+          <!-- Charts Section -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Bar Chart Card -->
+            <div class="bg-white border border-slate-100 shadow-xs rounded-2xl p-6 flex flex-col h-[400px]">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="material-symbols-outlined text-indigo-600 font-bold">bar_chart</span>
+                <h3 class="font-bold text-slate-800 text-base">So sánh điểm số của Giảng viên</h3>
               </div>
-              <p class="text-xs text-slate-400 font-medium mt-1.5">{{ teacherRankings[1].count }} lượt đánh giá</p>
+              <p class="text-xs text-slate-500 font-medium mb-4">Biểu đồ so sánh điểm trung bình tổng quát của các giảng viên đứng lớp.</p>
+              <div class="flex-1 relative min-h-0">
+                <canvas ref="barChartCanvas"></canvas>
+              </div>
             </div>
 
-            <!-- 1st Place -->
-            <div v-if="teacherRankings[0]" class="bg-gradient-to-t from-amber-50/50 to-white border-2 border-amber-300 rounded-2xl p-8 text-center shadow-md relative md:h-[260px] flex flex-col justify-center items-center">
-              <span class="material-symbols-outlined text-amber-500 absolute -top-12 text-[48px] animate-bounce">emoji_events</span>
-              <div class="w-14 h-14 rounded-full bg-amber-400 text-white flex items-center justify-center font-black text-xl border-4 border-white absolute -top-7 shadow-md">1</div>
-              <h4 class="font-black text-slate-900 text-lg mt-3">{{ teacherRankings[0].name }}</h4>
-              <div class="mt-2.5 flex items-center gap-1 bg-amber-500/10 border border-amber-500/25 px-4 py-1.5 rounded-full text-amber-700 font-black text-base shadow-sm">
-                {{ teacherRankings[0].averageRating.toFixed(2) }}
-                <span class="material-symbols-outlined text-[16px] font-variation-settings-fill text-amber-500">star</span>
+            <!-- Radar Chart Card -->
+            <div class="bg-white border border-slate-100 shadow-xs rounded-2xl p-6 flex flex-col h-[400px]">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="material-symbols-outlined text-indigo-600 font-bold">radar</span>
+                <h3 class="font-bold text-slate-800 text-base">Phân tích tiêu chí chất lượng</h3>
               </div>
-              <p class="text-xs text-slate-500 font-bold mt-2">{{ teacherRankings[0].count }} lượt đánh giá</p>
-            </div>
-
-            <!-- 3rd Place -->
-            <div v-if="teacherRankings[2]" class="bg-gradient-to-t from-orange-50/20 to-white border border-orange-200 rounded-2xl p-6 text-center shadow-sm relative md:h-[200px] flex flex-col justify-center items-center">
-              <div class="w-12 h-12 rounded-full bg-orange-100 text-orange-850 flex items-center justify-center font-extrabold text-lg border-2 border-orange-200 absolute -top-6 shadow-sm">3</div>
-              <h4 class="font-bold text-slate-800 text-base mt-2">{{ teacherRankings[2].name }}</h4>
-              <div class="mt-2 flex items-center gap-1 bg-orange-50 border border-orange-100 px-3 py-1 rounded-full text-orange-700 font-extrabold text-sm">
-                {{ teacherRankings[2].averageRating.toFixed(2) }}
-                <span class="material-symbols-outlined text-[14px] font-variation-settings-fill text-amber-500">star</span>
+              <p class="text-xs text-slate-500 font-medium mb-4">Biểu đồ thể hiện mạnh giảng dạy chi tiết theo 4 tiêu chí cốt lõi.</p>
+              <div class="flex-1 relative min-h-0 flex justify-center items-center">
+                <canvas ref="radarChartCanvas"></canvas>
               </div>
-              <p class="text-xs text-slate-400 font-medium mt-1.5">{{ teacherRankings[2].count }} lượt đánh giá</p>
             </div>
           </div>
 
           <!-- Leaderboard Table -->
-          <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-sm rounded-xl overflow-hidden">
+          <div class="bg-white border border-slate-100 shadow-xs rounded-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-slate-50/30">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-indigo-650 font-bold">assignment</span>
+                <div>
+                  <h3 class="font-bold text-slate-800 text-base">Danh sách xếp hạng hiệu quả giảng dạy</h3>
+                </div>
+              </div>
+              <span class="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 font-bold text-xs">
+                {{ teacherRankings.length }} Giảng viên được xếp hạng
+              </span>
+            </div>
+
             <div class="overflow-x-auto">
-              <table v-if="teacherRankings.length > 0" class="w-full text-left border-collapse">
+              <table v-if="teacherRankings.length > 0" class="w-full text-left border-collapse text-slate-750">
                 <thead>
-                  <tr class="border-b border-slate-100 bg-slate-50/50">
-                    <th class="py-3 px-6 font-bold text-slate-500 text-xs w-20 text-center">Thứ hạng</th>
-                    <th class="py-3 px-6 font-bold text-slate-500 text-xs">Giảng viên</th>
-                    <th class="py-3 px-6 font-bold text-slate-500 text-xs text-center w-48">Điểm đánh giá TB</th>
-                    <th class="py-3 px-6 font-bold text-slate-500 text-xs text-center w-48">Số lượt đánh giá</th>
+                  <tr class="border-b border-slate-150 bg-slate-100/50">
+                    <th class="py-3.5 px-6 font-bold text-slate-500 text-xs w-20 text-center">Hạng</th>
+                    <th class="py-3.5 px-6 font-bold text-slate-500 text-xs">Giảng viên</th>
+                    <th class="py-3.5 px-6 font-bold text-slate-500 text-xs text-center w-36">ĐTB Đánh giá</th>
+                    <th class="py-3.5 px-6 font-bold text-slate-500 text-xs text-center w-36">Lượt đánh giá</th>
+                    <th class="py-3.5 px-6 font-bold text-slate-500 text-xs text-center w-36">Kỹ năng sư phạm</th>
+                    <th class="py-3.5 px-6 font-bold text-slate-500 text-xs text-center w-36">Thái độ & Hỗ trợ</th>
+                    <th class="py-3.5 px-6 font-bold text-slate-500 text-xs text-center w-36">Tài liệu học tập</th>
+                    <th class="py-3.5 px-6 font-bold text-slate-500 text-xs text-center w-36">Tác phong lên lớp</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-slate-700 text-sm">
                   <tr v-for="(rank, idx) in teacherRankings" :key="rank.teacherId" class="hover:bg-slate-50/40 transition-colors">
                     <td class="py-4 px-6 text-center font-extrabold">
-                      <span v-if="idx === 0" class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-400 text-white text-xs font-black">1</span>
-                      <span v-else-if="idx === 1" class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-300 text-slate-800 text-xs font-bold">2</span>
-                      <span v-else-if="idx === 2" class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-orange-200 text-orange-850 text-xs font-bold">3</span>
+                      <span v-if="idx === 0" class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-400 text-white text-xs font-black shadow-xs">1</span>
+                      <span v-else-if="idx === 1" class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-300 text-slate-800 text-xs font-bold shadow-xs">2</span>
+                      <span v-else-if="idx === 2" class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-orange-200 text-orange-850 text-xs font-bold shadow-xs">3</span>
                       <span v-else class="text-slate-400 font-semibold">{{ idx + 1 }}</span>
                     </td>
-                    <td class="py-4 px-6 font-bold text-slate-800 flex items-center gap-3">
-                      <div class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs uppercase">
-                        {{ rank.name.substring(0, 2) }}
-                      </div>
-                      <div>
-                        <span>{{ rank.name }}</span>
-                        <span class="block text-[10px] text-slate-400 font-medium font-mono">ID: GV-{{ String(rank.teacherId).padStart(4, '0') }}</span>
+                    <td class="py-4 px-6 font-bold text-slate-850">
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs uppercase shadow-inner">
+                          {{ rank.name.substring(0, 2) }}
+                        </div>
+                        <div>
+                          <span class="text-slate-800 font-bold block">{{ rank.name }}</span>
+                          <span class="block text-[10px] text-slate-400 font-medium font-mono mt-0.5">ID: GV-{{ String(rank.teacherId).padStart(4, '0') }}</span>
+                        </div>
                       </div>
                     </td>
                     <td class="py-4 px-6 text-center">
-                      <span class="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded text-amber-700 font-extrabold text-sm">
+                      <span class="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full text-amber-700 font-extrabold text-sm">
                         {{ rank.averageRating.toFixed(2) }}
                         <span class="material-symbols-outlined text-[14px] font-variation-settings-fill text-amber-500">star</span>
                       </span>
                     </td>
                     <td class="py-4 px-6 text-center font-bold text-slate-600">{{ rank.count }}</td>
+                    <td class="py-4 px-6 text-center">
+                      <span class="font-semibold text-slate-700">{{ rank.teachingQuality.toFixed(2) }}</span>
+                    </td>
+                    <td class="py-4 px-6 text-center">
+                      <span class="font-semibold text-slate-700">{{ rank.support.toFixed(2) }}</span>
+                    </td>
+                    <td class="py-4 px-6 text-center">
+                      <span class="font-semibold text-slate-700">{{ rank.curriculum.toFixed(2) }}</span>
+                    </td>
+                    <td class="py-4 px-6 text-center">
+                      <span class="font-semibold text-slate-700">{{ rank.punctuality.toFixed(2) }}</span>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -774,9 +851,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject, watch } from 'vue'
+import { ref, computed, onMounted, inject, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../../services/api'
+import { Chart, registerables } from 'chart.js'
+
+Chart.register(...registerables)
 
 const route = useRoute()
 const showSnackbar = inject('showSnackbar')
@@ -797,8 +877,16 @@ const activeEvalType = ref('teacher')
 const rankingMonth = ref('all')
 const rankingYear = ref(new Date().getFullYear().toString())
 const rankingCourseId = ref('all')
+const rankingClassId = ref('all')
+const rankingSearchQuery = ref('')
 const rankingSubTab = ref('teachers')
 const courseRankingSortOrder = ref('desc') // 'desc' (nhiều nhất) or 'asc' (ít nhất)
+
+// Chart refs & instances
+const barChartCanvas = ref(null)
+const radarChartCanvas = ref(null)
+let barChart = null
+let radarChart = null
 
 // Active Tab query calculation
 const activeTab = computed(() => route.query.tab || 'results')
@@ -819,7 +907,7 @@ const pageDesc = computed(() => {
   if (activeTab.value === 'ranking') {
     return rankingSubTab.value === 'courses'
       ? 'Xem danh sách xếp hạng môn học được học nhiều nhất và ít nhất dựa trên sĩ số học viên thực tế.'
-      : 'Xem bảng xếp hạng và mức độ hài lòng của học viên đối với giảng viên.'
+      : 'Thống kê điểm số đánh giá và xếp hạng chất lượng giảng dạy của đội ngũ giảng viên.'
   }
   return 'Xem danh sách và ý kiến phản hồi chi tiết từ học viên.'
 })
@@ -901,7 +989,7 @@ const availableYears = computed(() => {
 })
 
 const teacherRankings = computed(() => {
-  // 1. Filter evaluations based on month, year, course
+  // 1. Filter evaluations based on month, year, course, class, search query
   let filtered = evaluations.value
 
   if (rankingMonth.value !== 'all') {
@@ -922,28 +1010,68 @@ const teacherRankings = computed(() => {
     })
   }
 
+  if (rankingClassId.value !== 'all') {
+    const clId = parseInt(rankingClassId.value)
+    filtered = filtered.filter(e => e.classId === clId)
+  }
+
+  if (rankingSearchQuery.value.trim()) {
+    const q = rankingSearchQuery.value.trim().toLowerCase()
+    filtered = filtered.filter(e => {
+      const teacherName = (teachersMap.value[e.teacherId] || '').toLowerCase()
+      return teacherName.includes(q)
+    })
+  }
+
   // 2. Group evaluations by teacherId
   const groups = {}
   filtered.forEach(e => {
     if (!groups[e.teacherId]) {
       groups[e.teacherId] = []
     }
-    groups[e.teacherId].push(e.rating)
+    groups[e.teacherId].push(e)
   })
 
   // 3. Construct ranking list
   const rankings = []
   Object.keys(groups).forEach(tIdStr => {
     const tId = parseInt(tIdStr)
-    const ratings = groups[tId]
-    const avg = ratings.length > 0 ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length : 0.0
+    const evalsList = groups[tId]
+    const count = evalsList.length
+    const avg = count > 0 ? evalsList.reduce((sum, e) => sum + e.rating, 0) / count : 0.0
     const name = teachersMap.value[tId] || 'Giảng viên #' + tId
+
+    // Criteria sums
+    let sumTeaching = 0
+    let sumSupport = 0
+    let sumCurriculum = 0
+    let sumPunctuality = 0
+
+    evalsList.forEach(e => {
+      if (e.detailedRatings && e.detailedRatings.length > 0) {
+        e.detailedRatings.forEach(r => {
+          if (r.criterionId === 1 || r.criterionName === 'Chất lượng giảng dạy') sumTeaching += r.rating
+          else if (r.criterionId === 2 || r.criterionName === 'Thái độ & Hỗ trợ') sumSupport += r.rating
+          else if (r.criterionId === 3 || r.criterionName === 'Tài liệu & Giáo trình') sumCurriculum += r.rating
+          else if (r.criterionId === 4 || r.criterionName === 'Tác phong & Đúng giờ') sumPunctuality += r.rating
+        })
+      } else {
+        sumTeaching += e.teachingQualityRating || e.rating || 0
+        sumSupport += e.supportRating || e.rating || 0
+        sumCurriculum += e.curriculumRating || e.rating || 0
+        sumPunctuality += e.punctualityRating || e.rating || 0
+      }
+    })
 
     rankings.push({
       teacherId: tId,
       name: name,
       averageRating: parseFloat(avg.toFixed(2)),
-      count: ratings.length
+      count: count,
+      teachingQuality: count > 0 ? parseFloat((sumTeaching / count).toFixed(2)) : 0,
+      support: count > 0 ? parseFloat((sumSupport / count).toFixed(2)) : 0,
+      curriculum: count > 0 ? parseFloat((sumCurriculum / count).toFixed(2)) : 0,
+      punctuality: count > 0 ? parseFloat((sumPunctuality / count).toFixed(2)) : 0
     })
   })
 
@@ -958,6 +1086,261 @@ const teacherRankings = computed(() => {
     return a.name.localeCompare(b.name)
   })
 })
+
+// Additional computed statistics for Overview Cards
+const totalReviewsCount = computed(() => {
+  return teacherRankings.value.reduce((sum, r) => sum + r.count, 0)
+})
+
+const systemAverageRating = computed(() => {
+  let filtered = evaluations.value
+
+  if (rankingMonth.value !== 'all') {
+    const m = parseInt(rankingMonth.value)
+    filtered = filtered.filter(e => e.createdAt && (new Date(e.createdAt).getMonth() + 1 === m))
+  }
+
+  if (rankingYear.value !== 'all') {
+    const y = parseInt(rankingYear.value)
+    filtered = filtered.filter(e => e.createdAt && (new Date(e.createdAt).getFullYear() === y))
+  }
+
+  if (rankingCourseId.value !== 'all') {
+    const cId = parseInt(rankingCourseId.value)
+    filtered = filtered.filter(e => {
+      const cls = classes.value.find(c => c.classId === e.classId)
+      return cls && cls.courseId === cId
+    })
+  }
+
+  if (rankingClassId.value !== 'all') {
+    const clId = parseInt(rankingClassId.value)
+    filtered = filtered.filter(e => e.classId === clId)
+  }
+
+  if (rankingSearchQuery.value.trim()) {
+    const q = rankingSearchQuery.value.trim().toLowerCase()
+    filtered = filtered.filter(e => {
+      const teacherName = (teachersMap.value[e.teacherId] || '').toLowerCase()
+      return teacherName.includes(q)
+    })
+  }
+
+  if (filtered.length === 0) return 0.0
+  const sum = filtered.reduce((total, e) => total + e.rating, 0)
+  return parseFloat((sum / filtered.length).toFixed(2))
+})
+
+const criteriaAverages = computed(() => {
+  let filtered = evaluations.value
+
+  if (rankingMonth.value !== 'all') {
+    const m = parseInt(rankingMonth.value)
+    filtered = filtered.filter(e => e.createdAt && (new Date(e.createdAt).getMonth() + 1 === m))
+  }
+
+  if (rankingYear.value !== 'all') {
+    const y = parseInt(rankingYear.value)
+    filtered = filtered.filter(e => e.createdAt && (new Date(e.createdAt).getFullYear() === y))
+  }
+
+  if (rankingCourseId.value !== 'all') {
+    const cId = parseInt(rankingCourseId.value)
+    filtered = filtered.filter(e => {
+      const cls = classes.value.find(c => c.classId === e.classId)
+      return cls && cls.courseId === cId
+    })
+  }
+
+  if (rankingClassId.value !== 'all') {
+    const clId = parseInt(rankingClassId.value)
+    filtered = filtered.filter(e => e.classId === clId)
+  }
+
+  if (rankingSearchQuery.value.trim()) {
+    const q = rankingSearchQuery.value.trim().toLowerCase()
+    filtered = filtered.filter(e => {
+      const teacherName = (teachersMap.value[e.teacherId] || '').toLowerCase()
+      return teacherName.includes(q)
+    })
+  }
+
+  if (filtered.length === 0) {
+    return { teachingQuality: 0, support: 0, curriculum: 0, punctuality: 0 }
+  }
+
+  let sumTeaching = 0
+  let sumSupport = 0
+  let sumCurriculum = 0
+  let sumPunctuality = 0
+
+  filtered.forEach(e => {
+    if (e.detailedRatings && e.detailedRatings.length > 0) {
+      e.detailedRatings.forEach(r => {
+        if (r.criterionId === 1 || r.criterionName === 'Chất lượng giảng dạy') sumTeaching += r.rating
+        else if (r.criterionId === 2 || r.criterionName === 'Thái độ & Hỗ trợ') sumSupport += r.rating
+        else if (r.criterionId === 3 || r.criterionName === 'Tài liệu & Giáo trình') sumCurriculum += r.rating
+        else if (r.criterionId === 4 || r.criterionName === 'Tác phong & Đúng giờ') sumPunctuality += r.rating
+      })
+    } else {
+      sumTeaching += e.teachingQualityRating || e.rating || 0
+      sumSupport += e.supportRating || e.rating || 0
+      sumCurriculum += e.curriculumRating || e.rating || 0
+      sumPunctuality += e.punctualityRating || e.rating || 0
+    }
+  })
+
+  const count = filtered.length
+  return {
+    teachingQuality: parseFloat((sumTeaching / count).toFixed(2)),
+    support: parseFloat((sumSupport / count).toFixed(2)),
+    curriculum: parseFloat((sumCurriculum / count).toFixed(2)),
+    punctuality: parseFloat((sumPunctuality / count).toFixed(2))
+  }
+})
+
+const filteredRankingClasses = computed(() => {
+  if (rankingCourseId.value === 'all') return []
+  const cId = parseInt(rankingCourseId.value)
+  return classes.value.filter(c => c.courseId === cId)
+})
+
+// Reset class select when course select changes
+watch(rankingCourseId, () => {
+  rankingClassId.value = 'all'
+})
+
+// Chart Rendering Logic
+const renderCharts = () => {
+  // Bar Chart Comparison
+  if (barChartCanvas.value) {
+    if (barChart) barChart.destroy()
+    const ctx = barChartCanvas.value.getContext('2d')
+    const labels = teacherRankings.value.map(r => r.name)
+    const data = teacherRankings.value.map(r => r.averageRating)
+
+    barChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: data,
+          backgroundColor: 'rgba(99, 102, 241, 0.85)',
+          borderColor: 'rgba(99, 102, 241, 1)',
+          borderWidth: 0,
+          borderRadius: 8,
+          borderSkipped: false,
+          barThickness: Math.min(45, 180 / (labels.length || 1))
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            titleFont: { size: 13, weight: 'bold' },
+            bodyFont: { size: 12 },
+            padding: 10,
+            cornerRadius: 8
+          }
+        },
+        scales: {
+          y: {
+            min: 0,
+            max: 5,
+            ticks: {
+              stepSize: 1,
+              font: { size: 11, weight: '500' },
+              color: '#64748b'
+            },
+            grid: { color: '#f1f5f9' }
+          },
+          x: {
+            ticks: {
+              font: { size: 11, weight: '600' },
+              color: '#334155'
+            },
+            grid: { display: false }
+          }
+        }
+      }
+    })
+  }
+
+  // Radar Chart Breakdown
+  if (radarChartCanvas.value) {
+    if (radarChart) radarChart.destroy()
+    const ctx = radarChartCanvas.value.getContext('2d')
+    const avg = criteriaAverages.value
+    const data = [
+      avg.teachingQuality,
+      avg.support,
+      avg.curriculum,
+      avg.punctuality
+    ]
+
+    radarChart = new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: ['Kỹ năng sư phạm', 'Thái độ & Hỗ trợ', 'Tài liệu học tập', 'Tác phong lên lớp'],
+        datasets: [{
+          data: data,
+          backgroundColor: 'rgba(14, 165, 233, 0.12)',
+          borderColor: 'rgba(14, 165, 233, 1)',
+          borderWidth: 2,
+          pointBackgroundColor: 'rgba(14, 165, 233, 1)',
+          pointBorderColor: '#fff',
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: 'rgba(14, 165, 233, 1)',
+          pointRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            padding: 10,
+            cornerRadius: 8
+          }
+        },
+        scales: {
+          r: {
+            min: 0,
+            max: 5,
+            ticks: {
+              stepSize: 1,
+              display: false
+            },
+            grid: { color: '#e2e8f0' },
+            angleLines: { color: '#e2e8f0' },
+            pointLabels: {
+              font: { size: 11, weight: 'bold' },
+              color: '#334155'
+            }
+          }
+        }
+      }
+    })
+  }
+}
+
+const triggerChartRender = () => {
+  if (activeTab.value === 'ranking' && rankingSubTab.value === 'teachers') {
+    nextTick(() => {
+      renderCharts()
+    })
+  }
+}
+
+// Watchers to trigger chart updates
+watch([activeTab, rankingSubTab, teacherRankings], () => {
+  triggerChartRender()
+}, { deep: true })
 
 const coursePopularityRankings = computed(() => {
   const courseMap = {}
@@ -1018,6 +1401,8 @@ watch(() => route.query.tab, () => {
   rankingMonth.value = 'all'
   rankingYear.value = new Date().getFullYear().toString()
   rankingCourseId.value = 'all'
+  rankingClassId.value = 'all'
+  rankingSearchQuery.value = ''
   rankingSubTab.value = 'teachers'
   courseRankingSortOrder.value = 'desc'
 })
@@ -1257,8 +1642,9 @@ function formatDateTime(dateStr) {
   return date.toLocaleString('vi-VN')
 }
 
-onMounted(() => {
-  loadData()
+onMounted(async () => {
+  await loadData()
+  triggerChartRender()
 })
 </script>
 
