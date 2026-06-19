@@ -35,6 +35,32 @@
       
       <!-- 1. TAB: Results (Kết quả đánh giá) -->
       <div v-if="activeTab === 'results'" class="space-y-6 animate-fade-in">
+        <!-- Sub-tabs for Results (Teacher vs Course) -->
+        <div class="flex gap-2 p-1 bg-slate-100/80 backdrop-blur-md rounded-xl w-fit border border-slate-200/50">
+          <button
+            @click="activeResultSubTab = 'teachers'"
+            :class="[
+              'px-5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer border-0',
+              activeResultSubTab === 'teachers'
+                ? 'bg-white text-indigo-600 shadow-sm'
+                : 'text-slate-500 hover:text-slate-800 bg-transparent'
+            ]"
+          >
+            Đánh giá Giảng viên
+          </button>
+          <button
+            @click="activeResultSubTab = 'courses'"
+            :class="[
+              'px-5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer border-0',
+              activeResultSubTab === 'courses'
+                ? 'bg-white text-indigo-600 shadow-sm'
+                : 'text-slate-500 hover:text-slate-800 bg-transparent'
+            ]"
+          >
+            Đánh giá Môn học
+          </button>
+        </div>
+
         <!-- Search & Filter bar -->
         <section class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-sm rounded-xl p-4 flex flex-col sm:flex-row gap-4 items-center">
           <div class="relative flex-1 w-full">
@@ -72,7 +98,8 @@
         <!-- Results Table -->
         <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 shadow-sm rounded-xl overflow-hidden">
           <div class="overflow-x-auto">
-            <table v-if="filteredEvaluations.length > 0" class="w-full text-left border-collapse">
+            <!-- 1. Table for Teacher Evaluations -->
+            <table v-if="activeResultSubTab === 'teachers' && filteredEvaluations.length > 0" class="w-full text-left border-collapse">
               <thead>
                 <tr class="border-b border-slate-100 bg-slate-50/50">
                   <th class="py-3 px-4 font-bold text-slate-500 text-xs w-16 text-center">STT</th>
@@ -109,7 +136,7 @@
                   </td>
                   <td class="py-4 px-4 text-center">
                     <button
-                      @click="viewDetail(evalObj)"
+                      @click="viewDetail(evalObj, 'teacher')"
                       class="px-2.5 py-1.5 rounded-lg bg-indigo-50 border border-indigo-100 hover:bg-indigo-100/60 text-indigo-600 text-[12px] font-bold transition-all cursor-pointer"
                     >
                       Chi tiết
@@ -118,6 +145,51 @@
                 </tr>
               </tbody>
             </table>
+
+            <!-- 2. Table for Course Evaluations -->
+            <table v-else-if="activeResultSubTab === 'courses' && filteredCourseEvaluations.length > 0" class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-slate-100 bg-slate-50/50">
+                  <th class="py-3 px-4 font-bold text-slate-500 text-xs w-16 text-center">STT</th>
+                  <th class="py-3 px-4 font-bold text-slate-500 text-xs">Học viên</th>
+                  <th class="py-3 px-4 font-bold text-slate-500 text-xs">Môn học</th>
+                  <th class="py-3 px-4 font-bold text-slate-500 text-xs text-center">Đánh giá Sao</th>
+                  <th class="py-3 px-4 font-bold text-slate-500 text-xs">Ý kiến phản hồi</th>
+                  <th class="py-3 px-4 font-bold text-slate-500 text-xs text-center w-28">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-slate-700 text-sm">
+                <tr v-for="(evalObj, idx) in filteredCourseEvaluations" :key="evalObj.id" class="hover:bg-slate-50/40 transition-colors">
+                  <td class="py-4 px-4 text-center text-slate-400">{{ idx + 1 }}</td>
+                  <td class="py-4 px-4 font-bold text-slate-800">
+                    {{ evalObj.studentName }}
+                    <span class="block text-[10px] text-slate-400 font-medium">Mã HV: HV-{{ String(evalObj.studentId).padStart(4, '0') }}</span>
+                  </td>
+                  <td class="py-4 px-4">
+                    <span class="font-semibold text-slate-700">{{ evalObj.courseName || '—' }}</span>
+                    <span class="block text-[10px] text-slate-400 font-medium">Mã môn: MH-{{ String(evalObj.courseId).padStart(3, '0') }}</span>
+                  </td>
+                  <td class="py-4 px-4 text-center">
+                    <span class="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded text-amber-700 font-extrabold text-xs">
+                      {{ evalObj.rating?.toFixed(1) || '0.0' }}
+                      <span class="material-symbols-outlined text-[12px] font-variation-settings-fill text-amber-500">star</span>
+                    </span>
+                  </td>
+                  <td class="py-4 px-4 max-w-xs truncate italic text-slate-600">
+                    {{ evalObj.comment ? `"${evalObj.comment}"` : '— Không có ý kiến khác' }}
+                  </td>
+                  <td class="py-4 px-4 text-center">
+                    <button
+                      @click="viewDetail(evalObj, 'course')"
+                      class="px-2.5 py-1.5 rounded-lg bg-indigo-50 border border-indigo-100 hover:bg-indigo-100/60 text-indigo-600 text-[12px] font-bold transition-all cursor-pointer"
+                    >
+                      Chi tiết
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
             <div v-else class="p-12 text-center flex flex-col items-center justify-center bg-white/30">
               <span class="material-symbols-outlined text-slate-300 text-[64px] mb-4">rate_review</span>
               <p class="text-base text-slate-600 font-medium">Không tìm thấy khảo sát đánh giá nào</p>
@@ -394,11 +466,15 @@
                 <span>Học viên:</span>
                 <span class="text-slate-800 font-bold">{{ activeEval.studentName }}</span>
               </div>
-              <div class="text-xs text-slate-500 font-semibold flex justify-between">
+              <div v-if="activeEvalType === 'teacher'" class="text-xs text-slate-500 font-semibold flex justify-between">
                 <span>Lớp học:</span>
                 <span class="text-slate-800 font-bold">{{ activeEval.className }}</span>
               </div>
-              <div class="text-xs text-slate-500 font-semibold flex justify-between">
+              <div v-if="activeEvalType === 'course'" class="text-xs text-slate-500 font-semibold flex justify-between">
+                <span>Môn học:</span>
+                <span class="text-slate-800 font-bold">{{ activeEval.courseName || '—' }}</span>
+              </div>
+              <div v-if="activeEvalType === 'teacher'" class="text-xs text-slate-500 font-semibold flex justify-between">
                 <span>Giảng viên:</span>
                 <span class="text-indigo-600 font-bold">{{ teachersMap[activeEval.teacherId] || 'Đang tải...' }}</span>
               </div>
@@ -410,15 +486,15 @@
 
             <!-- Score overview -->
             <div class="flex items-center justify-between border-y border-slate-100 py-3">
-              <span class="text-sm font-bold text-slate-700">Điểm đánh giá trung bình:</span>
+              <span class="text-sm font-bold text-slate-700">Điểm đánh giá:</span>
               <span class="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded text-amber-700 font-extrabold text-sm">
                 {{ activeEval.rating?.toFixed(1) || '0.0' }}
                 <span class="material-symbols-outlined text-[14px] font-variation-settings-fill text-amber-500">star</span>
               </span>
             </div>
 
-            <!-- Dynamic Criteria Scores -->
-            <div class="space-y-3">
+            <!-- Dynamic Criteria Scores (Only for Teacher) -->
+            <div v-if="activeEvalType === 'teacher'" class="space-y-3">
               <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Điểm chi tiết theo tiêu chí</h4>
               <div class="space-y-2">
                 <div
@@ -467,10 +543,14 @@ const showSnackbar = inject('showSnackbar')
 
 const loading = ref(true)
 const evaluations = ref([])
+const courseEvaluations = ref([])
 const criteria = ref([])
 const teachersMap = ref({})
 const classes = ref([])
 const enabledClassIds = ref([])
+
+const activeResultSubTab = ref('teachers')
+const activeEvalType = ref('teacher')
 
 // Active Tab query calculation
 const activeTab = computed(() => route.query.tab || 'results')
@@ -519,8 +599,9 @@ const activeEval = ref({})
 async function loadData() {
   loading.value = true
   try {
-    const [evalsRes, critRes, teachersRes, statusRes, classesRes, enabledClassesRes] = await Promise.all([
+    const [evalsRes, courseEvalsRes, critRes, teachersRes, statusRes, classesRes, enabledClassesRes] = await Promise.all([
       api.get('/api/v1/teacher-evaluations/all'),
+      api.get('/api/v1/course-evaluations/all'),
       api.get('/api/v1/teacher-evaluations/criteria/all'),
       api.get('/api/v1/teachers'),
       api.get('/api/v1/teacher-evaluations/status'),
@@ -529,6 +610,7 @@ async function loadData() {
     ])
 
     evaluations.value = evalsRes.data || []
+    courseEvaluations.value = courseEvalsRes.data || []
     criteria.value = critRes.data || []
     isEvaluationEnabled.value = statusRes.data?.isEvaluationEnabled ?? true
     classes.value = classesRes.data?.items || []
@@ -634,7 +716,7 @@ const filteredClasses = computed(() => {
   )
 })
 
-// Client-side filtering of evaluations
+// Client-side filtering of evaluations (teachers)
 const filteredEvaluations = computed(() => {
   let list = evaluations.value
 
@@ -662,6 +744,39 @@ const filteredEvaluations = computed(() => {
         e.className?.toLowerCase().includes(searchVal) ||
         e.comment?.toLowerCase().includes(searchVal) ||
         teacherName.includes(searchVal)
+      )
+    })
+  }
+
+  return list
+})
+
+// Client-side filtering of course evaluations
+const filteredCourseEvaluations = computed(() => {
+  let list = courseEvaluations.value
+
+  // Rating filter
+  if (filters.value.rating !== 'all') {
+    const val = parseFloat(filters.value.rating)
+    if (val === 5) {
+      list = list.filter(e => e.rating === 5)
+    } else if (val === 4) {
+      list = list.filter(e => e.rating >= 4)
+    } else if (val === 3) {
+      list = list.filter(e => e.rating >= 3)
+    } else if (val === 2) {
+      list = list.filter(e => e.rating < 3)
+    }
+  }
+
+  // Search filter
+  const searchVal = filters.value.search.trim().toLowerCase()
+  if (searchVal) {
+    list = list.filter(e => {
+      return (
+        e.studentName?.toLowerCase().includes(searchVal) ||
+        e.courseName?.toLowerCase().includes(searchVal) ||
+        e.comment?.toLowerCase().includes(searchVal)
       )
     })
   }
@@ -729,8 +844,9 @@ async function toggleCriterionStatus(crit) {
 }
 
 // Evaluation detail helper
-function viewDetail(evalObj) {
+function viewDetail(evalObj, type = 'teacher') {
   activeEval.value = evalObj
+  activeEvalType.value = type
   showDetailModal.value = true
 }
 
