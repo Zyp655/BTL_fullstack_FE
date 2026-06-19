@@ -139,7 +139,7 @@
       <!-- Quick Actions and Operations Warnings -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Support Requests / Warnings -->
-        <div class="glass-panel p-6 rounded-2xl lg:col-span-2 hover-shadow flex flex-col gap-4">
+        <div class="glass-panel p-6 rounded-2xl lg:col-span-3 hover-shadow flex flex-col gap-4">
           <div>
             <h3 class="font-title-md text-title-md font-bold text-rose-600 flex items-center gap-2 mb-1">
               <span class="material-symbols-outlined text-rose-600">warning</span>
@@ -178,43 +178,12 @@
             </div>
           </div>
         </div>
-
-        <!-- Quick Access -->
-        <div class="glass-panel p-6 rounded-2xl hover-shadow flex flex-col">
-          <h3 class="font-title-md text-title-md font-bold text-primary-container flex items-center gap-2 mb-4">
-            <span class="material-symbols-outlined text-on-tertiary-container">near_me</span>
-            Lối Tắt Thao Tác
-          </h3>
-          <div class="grid grid-cols-1 gap-3 flex-1">
-            <router-link to="/classes" class="flex items-center gap-3 p-3 bg-primary-container/[0.03] border border-primary-container/10 rounded-xl hover:bg-primary-container/10 transition-all group">
-              <span class="material-symbols-outlined text-primary-container group-hover:scale-110 transition-transform">groups</span>
-              <div>
-                <div class="text-body-sm font-semibold text-primary-container">Xem danh sách lớp học</div>
-                <div class="text-[11px] text-on-surface-variant">Thêm mới, gán giáo viên & xếp phòng</div>
-              </div>
-            </router-link>
-            <router-link to="/payments" class="flex items-center gap-3 p-3 bg-primary-container/[0.03] border border-primary-container/10 rounded-xl hover:bg-primary-container/10 transition-all group">
-              <span class="material-symbols-outlined text-primary-container group-hover:scale-110 transition-transform">payments</span>
-              <div>
-                <div class="text-body-sm font-semibold text-primary-container">Đối soát hóa đơn & thanh toán</div>
-                <div class="text-[11px] text-on-surface-variant">Thu học phí, báo cáo tài chính</div>
-              </div>
-            </router-link>
-            <router-link to="/teachers/salary" class="flex items-center gap-3 p-3 bg-primary-container/[0.03] border border-primary-container/10 rounded-xl hover:bg-primary-container/10 transition-all group">
-              <span class="material-symbols-outlined text-primary-container group-hover:scale-110 transition-transform">account_balance</span>
-              <div>
-                <div class="text-body-sm font-semibold text-primary-container">Tính lương giảng viên</div>
-                <div class="text-[11px] text-on-surface-variant">Lập bảng lương tháng, hợp đồng giảng dạy</div>
-              </div>
-            </router-link>
-          </div>
-        </div>
       </div>
 
       <!-- 3. Teacher Rankings Section -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Teacher Rankings Table -->
-        <div class="glass-panel p-6 rounded-2xl lg:col-span-2 hover-shadow flex flex-col gap-4">
+        <div class="glass-panel p-6 rounded-2xl lg:col-span-3 hover-shadow flex flex-col gap-4">
           <div>
             <h3 class="font-title-md text-title-md font-bold text-primary-container flex items-center gap-2 mb-1">
               <span class="material-symbols-outlined text-on-tertiary-container">leaderboard</span>
@@ -268,23 +237,6 @@
               <p class="text-body-sm">Chưa có thông tin xếp hạng giảng viên!</p>
             </div>
           </div>
-        </div>
-
-        <!-- Right Side Panel next to rankings (lg:col-span-1) -->
-        <div class="glass-panel p-6 rounded-2xl hover-shadow flex flex-col justify-between gap-4">
-          <div>
-            <h3 class="font-title-md text-title-md font-bold text-primary-container flex items-center gap-2 mb-2">
-              <span class="material-symbols-outlined text-on-tertiary-container">analytics</span>
-              Chi Tiết Đánh Giá
-            </h3>
-            <p class="text-body-sm text-on-surface-variant/70">
-              Hệ thống khảo sát cung cấp báo cáo chi tiết về chất lượng giảng dạy của giảng viên và mức độ phổ biến môn học dựa trên ý kiến phản hồi thực tế từ học viên.
-            </p>
-          </div>
-          <router-link to="/evaluation-management?tab=ranking" class="mt-auto bg-primary-container text-white px-4 py-2.5 rounded-xl text-center text-body-sm font-semibold shadow-sm hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2">
-            <span class="material-symbols-outlined text-[20px]">visibility</span>
-            Xem bảng chi tiết
-          </router-link>
         </div>
       </div>
     </div>
