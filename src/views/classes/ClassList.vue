@@ -1443,6 +1443,14 @@ const submitResolutions = async () => {
       showSnackbar('Đã hủy lớp và giải quyết thành công cho các học viên', 'success')
     } else {
       // VIP Mode:
+      if (vipFormData.value.room) {
+        const selectedRoom = availableRooms.value.find(r => r.roomNumber === vipFormData.value.room)
+        if (selectedRoom && selectedRoom.isMaintenance) {
+          showSnackbar(`Phòng ${vipFormData.value.room} đang bảo trì, không thể chọn cho lớp học VIP`, 'error')
+          return
+        }
+      }
+
       // 1. Create a new VIP class in CourseService
       const newClassPayload = {
         courseId: resolveTargetClass.value.courseId,
@@ -1631,6 +1639,15 @@ function openEditDialog(cls) {
 
 async function saveForm() {
   if (!isFormValid.value) return
+  
+  if (formData.value.room) {
+    const selectedRoom = availableRooms.value.find(r => r.roomNumber === formData.value.room)
+    if (selectedRoom && selectedRoom.isMaintenance) {
+      showSnackbar(`Phòng ${formData.value.room} đang bảo trì, không thể chọn cho lớp học`, 'error')
+      return
+    }
+  }
+
   saving.value = true
   try {
     if (isEdit.value) {

@@ -4,13 +4,20 @@
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-primary-container/10 pb-5">
       <div>
         <h1 class="text-display-sm font-bold tracking-tight text-primary-container">Quản Lý Phòng Học</h1>
-        <p class="text-body-md text-on-surface-variant/80 mt-1">Quản lý và giám sát trạng thái sử dụng của phòng học từ 301 đến 309.</p>
+        <p class="text-body-md text-on-surface-variant/80 mt-1">Quản lý và giám sát trạng thái sử dụng của các phòng học.</p>
       </div>
-      <div>
+      <div class="flex items-center gap-3">
+        <button
+          @click="openCreateModal"
+          class="flex items-center gap-2 bg-emerald-600 text-white hover:bg-emerald-700 px-4 py-2 rounded-lg font-semibold text-body-sm shadow transition-all duration-200 cursor-pointer"
+        >
+          <span class="material-symbols-outlined text-[18px]">add</span>
+          Thêm phòng mới
+        </button>
         <button
           @click="fetchClassrooms"
           :disabled="loading"
-          class="flex items-center gap-2 bg-primary-container text-white hover:bg-primary-container/90 px-4 py-2 rounded-lg font-semibold text-body-sm shadow transition-all duration-200"
+          class="flex items-center gap-2 bg-primary-container text-white hover:bg-primary-container/90 px-4 py-2 rounded-lg font-semibold text-body-sm shadow transition-all duration-200 cursor-pointer"
         >
           <span class="material-symbols-outlined text-[18px]" :class="{ 'animate-spin': loading }">refresh</span>
           Làm mới
@@ -169,7 +176,7 @@
           </div>
 
           <!-- Assigned classes list -->
-          <div v-if="room.assignedClasses && room.assignedClasses.length > 0" class="border-t border-primary-container/10 pt-3 mt-1 space-y-1.5">
+          <div v-if="room.status !== 'Maintenance' && room.assignedClasses && room.assignedClasses.length > 0" class="border-t border-primary-container/10 pt-3 mt-1 space-y-1.5">
             <div class="text-[10px] font-semibold text-on-surface-variant/70 uppercase tracking-wider flex items-center gap-1">
               <span class="material-symbols-outlined text-[14px]">assignment</span>
               Lớp được phân công ({{ room.assignedClasses.length }})
@@ -184,7 +191,7 @@
               </span>
             </div>
           </div>
-          <div v-else class="border-t border-primary-container/10 pt-3 mt-1">
+          <div v-else-if="room.status !== 'Maintenance'" class="border-t border-primary-container/10 pt-3 mt-1">
             <div class="text-[10px] font-semibold text-on-surface-variant/40 uppercase tracking-wider flex items-center gap-1">
               <span class="material-symbols-outlined text-[14px]">assignment</span>
               Chưa có lớp phân công
@@ -267,6 +274,62 @@
         </div>
       </div>
     </div>
+
+    <!-- Create Classroom Dialog Modal -->
+    <div v-if="createModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm transition-opacity duration-300">
+      <div class="bg-surface w-full max-w-md rounded-2xl shadow-xl border border-primary-container/15 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <!-- Modal header -->
+        <div class="bg-primary-container px-6 py-4 flex items-center justify-between border-b border-primary-container/10">
+          <h3 class="text-body-lg font-bold text-white flex items-center gap-2">
+            <span class="material-symbols-outlined text-[20px]">add_circle</span>
+            Thêm phòng học mới
+          </h3>
+          <button @click="closeCreateModal" class="text-white/80 hover:text-white">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <!-- Modal body -->
+        <div class="p-6 space-y-4">
+          <div class="space-y-1">
+            <label class="text-body-sm font-semibold text-primary-container">Số / Tên phòng học *</label>
+            <input
+              v-model="createModal.roomNumber"
+              type="text"
+              placeholder="Nhập số hoặc tên phòng học (ví dụ: 310, Lab 3)..."
+              class="w-full bg-primary-container/[0.03] border border-primary-container/15 rounded-lg px-4 py-2.5 text-body-sm text-primary-container placeholder:text-on-surface-variant/40 focus:border-primary-container/40 focus:ring-2 focus:ring-primary-container/20 focus:outline-none transition-all"
+            />
+          </div>
+          <div class="space-y-1">
+            <label class="text-body-sm font-semibold text-primary-container">Ghi chú phòng học</label>
+            <textarea
+              v-model="createModal.notes"
+              rows="3"
+              placeholder="Nhập ghi chú hoặc mô tả cho phòng học..."
+              class="w-full bg-primary-container/[0.03] border border-primary-container/15 rounded-lg px-4 py-2.5 text-body-sm text-primary-container placeholder:text-on-surface-variant/40 focus:border-primary-container/40 focus:ring-2 focus:ring-primary-container/20 focus:outline-none transition-all resize-none"
+            ></textarea>
+            <p v-if="createModal.error" class="text-error text-[11px] font-semibold mt-1">{{ createModal.error }}</p>
+          </div>
+        </div>
+
+        <!-- Modal actions -->
+        <div class="bg-primary-container/[0.03] border-t border-primary-container/10 px-6 py-4 flex justify-end gap-3">
+          <button
+            @click="closeCreateModal"
+            class="px-4 py-2 border border-primary-container/10 hover:bg-primary-container/[0.05] text-primary-container rounded-lg font-semibold text-body-sm transition-all duration-200"
+          >
+            Hủy
+          </button>
+          <button
+            @click="confirmCreate"
+            :disabled="creating"
+            class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg font-semibold text-body-sm shadow transition-all duration-200 disabled:opacity-50"
+          >
+            {{ creating ? 'Đang tạo...' : 'Tạo phòng' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -287,6 +350,55 @@ const modal = ref({
   notes: '',
   error: ''
 })
+
+const creating = ref(false)
+const createModal = ref({
+  show: false,
+  roomNumber: '',
+  notes: '',
+  error: ''
+})
+
+const openCreateModal = () => {
+  createModal.value = {
+    show: true,
+    roomNumber: '',
+    notes: '',
+    error: ''
+  }
+}
+
+const closeCreateModal = () => {
+  createModal.value.show = false
+  createModal.value.roomNumber = ''
+  createModal.value.notes = ''
+  createModal.value.error = ''
+}
+
+const confirmCreate = async () => {
+  if (!createModal.value.roomNumber.trim()) {
+    createModal.value.error = 'Vui lòng nhập số hoặc tên phòng học.'
+    return
+  }
+
+  creating.value = true
+  createModal.value.error = ''
+  try {
+    const response = await api.post('/api/v1/classrooms', {
+      roomNumber: createModal.value.roomNumber.trim(),
+      notes: createModal.value.notes.trim()
+    })
+    
+    classrooms.value.push(response.data)
+    closeCreateModal()
+    await fetchClassrooms()
+  } catch (error) {
+    console.error('Failed to create classroom:', error)
+    createModal.value.error = error.response?.data?.message || 'Có lỗi xảy ra khi tạo phòng học.'
+  } finally {
+    creating.value = false
+  }
+}
 
 // Filter Options
 const filterOptions = [
