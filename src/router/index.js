@@ -51,6 +51,12 @@ const routes = [
     meta: { title: 'Học viên & Học tập lớp học', icon: 'badge', roles: ['Admin', 'GiaoVien'] }
   },
   {
+    path: '/teaching-lessons',
+    name: 'TeachingLessons',
+    component: () => import('../views/schedules/TeachingLessons.vue'),
+    meta: { title: 'Lịch dạy & Bài giảng', icon: 'menu_book', roles: ['Admin', 'GiaoVien'] }
+  },
+  {
     path: '/students',
     name: 'Students',
     component: () => import('../views/students/StudentList.vue'),

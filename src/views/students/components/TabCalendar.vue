@@ -264,7 +264,7 @@
     <!-- Schedule Details Modal -->
     <teleport to="body">
       <div v-if="detailsModalOpen" class="fixed inset-0 glass-backdrop z-[9999] flex items-center justify-center p-4">
-        <div class="bg-white/95 backdrop-blur-[24px] border border-white/50 rounded-2xl shadow-[0_20px_50px_rgba(0,31,63,0.15)] max-w-md w-full overflow-hidden animate-scale-in flex flex-col">
+        <div class="bg-white/95 backdrop-blur-[24px] border border-white/50 rounded-2xl shadow-[0_20px_50px_rgba(0,31,63,0.15)] max-w-lg w-full overflow-hidden animate-scale-in flex flex-col">
           <!-- Banner Image Slider/Header -->
           <div class="h-44 overflow-hidden relative bg-slate-100 flex items-center justify-center shrink-0">
             <template v-if="activeCourseDetails && getCourseImages(activeCourseDetails.imageUrl, activeCourseDetails.category).length > 0">
@@ -287,86 +287,253 @@
             </button>
           </div>
 
+          <!-- Tabs Navigation -->
+          <div class="flex border-b border-slate-100 bg-slate-50/50 shrink-0">
+            <button 
+              v-for="tab in [{ id: 'info', name: 'Thông tin chung', icon: 'info' }, { id: 'content', name: 'Nội dung học tập', icon: 'explore' }, { id: 'quiz', name: 'Làm bài kiểm tra', icon: 'quiz' }]"
+              :key="tab.id"
+              @click="modalActiveTab = tab.id"
+              :class="[
+                modalActiveTab === tab.id 
+                  ? 'border-indigo-600 text-indigo-600 font-bold bg-white' 
+                  : 'border-transparent text-slate-500 hover:text-indigo-600 font-semibold',
+                'flex-1 py-3 border-b-2 text-center text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer'
+              ]"
+            >
+              <span class="material-symbols-outlined text-[16px]">{{ tab.icon }}</span>
+              {{ tab.name }}
+            </button>
+          </div>
+
           <!-- Content Wrapper -->
           <div class="p-6 space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-            <!-- Conflict Warning Banner in Modal -->
-            <div
-              v-if="activeDetailsSchedule && isConflicted(activeDetailsSchedule)"
-              class="bg-error/10 border border-error/20 p-3.5 rounded-xl flex flex-col gap-2.5 shadow-xs text-error animate-fade-in"
-            >
-              <div class="flex items-start gap-2 min-w-0">
-                <span class="material-symbols-outlined text-[20px] text-error shrink-0 mt-0.5 animate-pulse" style="font-variation-settings: 'FILL' 1;">warning</span>
-                <div class="text-[13px] leading-relaxed text-error flex-1">
-                  <span class="font-bold block text-[13.5px]">Lớp bị trùng lịch học!</span>
-                  <span class="text-on-surface-variant font-medium text-[12px] block mt-0.5">
-                    Lớp này đang bị trùng lịch với lớp khác trong tuần. Bạn có thể gửi yêu cầu hỗ trợ đổi lịch để sắp xếp lại lớp học.
-                  </span>
-                </div>
-              </div>
-              <button
-                @click="handleSupportConflictFromCalendar"
-                class="w-full py-2 rounded-lg bg-error hover:bg-error/90 text-white font-bold text-[12px] transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 shadow-sm animate-pulse"
+            <!-- TAB 1: INFO -->
+            <div v-show="modalActiveTab === 'info'" class="space-y-4">
+              <!-- Conflict Warning Banner in Modal -->
+              <div
+                v-if="activeDetailsSchedule && isConflicted(activeDetailsSchedule)"
+                class="bg-error/10 border border-error/20 p-3.5 rounded-xl flex flex-col gap-2.5 shadow-xs text-error animate-fade-in"
               >
-                <span class="material-symbols-outlined text-[16px]">swap_horiz</span>
-                Gửi yêu cầu hỗ trợ đổi lớp
-              </button>
-            </div>
-
-            <!-- Class & Course Title -->
-            <div class="space-y-1">
-              <div class="text-[11px] text-indigo-600 font-extrabold uppercase tracking-wider flex items-center gap-1">
-                <span class="material-symbols-outlined text-[14px]">school</span>
-                Lớp: {{ activeDetailsSchedule?.className }}
+                <div class="flex items-start gap-2 min-w-0">
+                  <span class="material-symbols-outlined text-[20px] text-error shrink-0 mt-0.5 animate-pulse" style="font-variation-settings: 'FILL' 1;">warning</span>
+                  <div class="text-[13px] leading-relaxed text-error flex-1">
+                    <span class="font-bold block text-[13.5px]">Lớp bị trùng lịch học!</span>
+                    <span class="text-on-surface-variant font-medium text-[12px] block mt-0.5">
+                      Lớp này đang bị trùng lịch với lớp khác trong tuần. Bạn có thể gửi yêu cầu hỗ trợ đổi lịch để sắp xếp lại lớp học.
+                    </span>
+                  </div>
+                </div>
+                <button
+                  @click="handleSupportConflictFromCalendar"
+                  class="w-full py-2 rounded-lg bg-error hover:bg-error/90 text-white font-bold text-[12px] transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 shadow-sm animate-pulse"
+                >
+                  <span class="material-symbols-outlined text-[16px]">swap_horiz</span>
+                  Gửi yêu cầu hỗ trợ đổi lớp
+                </button>
               </div>
-              <h3 class="text-base font-black text-slate-800 leading-tight">
-                {{ activeDetailsSchedule?.courseName }}
-              </h3>
+
+              <!-- Class & Course Title -->
+              <div class="space-y-1 text-left">
+                <div class="text-[11px] text-indigo-600 font-extrabold uppercase tracking-wider flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">school</span>
+                  Lớp: {{ activeDetailsSchedule?.className }}
+                </div>
+                <h3 class="text-base font-black text-slate-800 leading-tight">
+                  {{ activeDetailsSchedule?.courseName }}
+                </h3>
+              </div>
+
+              <!-- Course Description if available -->
+              <div v-if="activeCourseDetails?.description" class="bg-indigo-50/30 p-3 rounded-lg border border-indigo-100/30 text-body-xs text-slate-650 text-left leading-relaxed">
+                <span class="font-bold text-slate-700 block mb-0.5 uppercase text-[10px] tracking-wider">Mô tả môn học</span>
+                {{ activeCourseDetails.description }}
+              </div>
+
+              <!-- Details Grid -->
+              <div class="grid grid-cols-1 gap-2.5 text-left">
+                <!-- Giảng viên -->
+                <div class="flex items-center gap-3 bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
+                  <span class="material-symbols-outlined text-indigo-500 text-[20px]">person</span>
+                  <div class="text-xs">
+                    <span class="font-semibold text-slate-400 block text-[9px] uppercase tracking-wider">Giảng viên</span>
+                    <span class="font-bold text-slate-800">{{ activeDetailsSchedule?.teacherName || 'Chưa phân công' }}</span>
+                  </div>
+                </div>
+
+                <!-- Ngày học -->
+                <div class="flex items-center gap-3 bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
+                  <span class="material-symbols-outlined text-indigo-500 text-[20px]">calendar_today</span>
+                  <div class="text-xs">
+                    <span class="font-semibold text-slate-400 block text-[9px] uppercase tracking-wider">Ngày học</span>
+                    <span class="font-bold text-slate-800">Thứ {{ formatDayOfWeek(activeDetailsSchedule?.dayOfWeek) }} ({{ activeDetailsScheduleDate }})</span>
+                  </div>
+                </div>
+
+                <!-- Giờ học -->
+                <div class="flex items-center gap-3 bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
+                  <span class="material-symbols-outlined text-indigo-500 text-[20px]">schedule</span>
+                  <div class="text-xs">
+                    <span class="font-semibold text-slate-400 block text-[9px] uppercase tracking-wider">Giờ học</span>
+                    <span class="font-bold text-slate-800">
+                      {{ activeDetailsSchedule?.startTime.substring(0, 5) }} - {{ activeDetailsSchedule?.endTime.substring(0, 5) }} 
+                      <span class="text-slate-400 font-medium">(Tiết {{ getLessonRange(activeDetailsSchedule?.startTime, activeDetailsSchedule?.endTime) }})</span>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Phòng học -->
+                <div class="flex items-center gap-3 bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
+                  <span class="material-symbols-outlined text-indigo-500 text-[20px]">meeting_room</span>
+                  <div class="text-xs">
+                    <span class="font-semibold text-slate-400 block text-[9px] uppercase tracking-wider">Phòng học</span>
+                    <span class="font-bold text-slate-800">{{ formatRoom(activeDetailsSchedule?.room) }}</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <!-- Course Description if available -->
-            <div v-if="activeCourseDetails?.description" class="bg-indigo-50/30 p-3 rounded-lg border border-indigo-100/30 text-body-xs text-slate-600 leading-relaxed">
-              <span class="font-bold text-slate-700 block mb-0.5 uppercase text-[10px] tracking-wider">Mô tả môn học</span>
-              {{ activeCourseDetails.description }}
+            <!-- TAB 2: STUDY CONTENT -->
+            <div v-show="modalActiveTab === 'content'" class="space-y-4">
+              <div class="text-[11px] text-slate-400 font-bold uppercase tracking-wider text-left">
+                Tài liệu & Bài giảng cho buổi học hôm nay
+              </div>
+              <div class="space-y-2">
+                <div 
+                  v-for="(doc, idx) in getMockClassContents(activeDetailsSchedule?.courseName).documents"
+                  :key="idx"
+                  class="flex items-center justify-between p-3 rounded-xl border border-slate-150 bg-slate-50/50 hover:bg-indigo-50/20 hover:border-indigo-200 transition-all group"
+                >
+                  <div class="flex items-center gap-3 min-w-0">
+                    <span class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" :class="getDocTypeBg(doc.type)">
+                      <span class="material-symbols-outlined text-[18px]" :class="getDocTypeColor(doc.type)">{{ getDocTypeIcon(doc.type) }}</span>
+                    </span>
+                    <div class="text-left min-w-0 flex-1">
+                      <div class="text-xs font-bold text-slate-800 truncate max-w-[200px]" :title="doc.title">{{ doc.title }}</div>
+                      <div class="text-[10px] text-slate-400 font-semibold mt-0.5">
+                        {{ doc.size || doc.duration }} • {{ doc.views }} lượt học
+                      </div>
+                    </div>
+                  </div>
+                  <button 
+                    @click="exploreDocument(doc)"
+                    class="h-8 px-3 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white text-[11px] font-bold transition-all flex items-center gap-1 active:scale-95 cursor-pointer border-0 shrink-0"
+                  >
+                    <span class="material-symbols-outlined text-[14px]">{{ doc.type === 'video' ? 'play_arrow' : 'download' }}</span>
+                    {{ doc.type === 'video' ? 'Xem' : 'Tải' }}
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <!-- Details Grid -->
-            <div class="grid grid-cols-1 gap-2.5">
-              <!-- Giảng viên -->
-              <div class="flex items-center gap-3 bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
-                <span class="material-symbols-outlined text-indigo-500 text-[20px]">person</span>
-                <div class="text-xs">
-                  <span class="font-semibold text-slate-400 block text-[9px] uppercase tracking-wider">Giảng viên</span>
-                  <span class="font-bold text-slate-800">{{ activeDetailsSchedule?.teacherName || 'Chưa phân công' }}</span>
+            <!-- TAB 3: QUIZZES -->
+            <div v-show="modalActiveTab === 'quiz'" class="space-y-4">
+              <!-- Active Quiz Player -->
+              <div v-if="activeQuiz" class="space-y-4 bg-indigo-50/10 border border-indigo-100/50 p-4 rounded-xl animate-fade-in text-left">
+                <div class="flex justify-between items-center border-b border-indigo-100/30 pb-2 mb-2">
+                  <h4 class="text-xs font-black text-indigo-900 truncate pr-4">{{ activeQuiz.title }}</h4>
+                  <button @click="quitQuiz" class="text-[10px] text-slate-450 hover:text-slate-700 font-bold border-0 bg-transparent cursor-pointer">Thoát</button>
+                </div>
+
+                <div v-for="(q, qIdx) in activeQuiz.questions" :key="qIdx" class="space-y-2 border-b border-slate-100 pb-3 last:border-0 last:pb-0">
+                  <div class="text-xs font-bold text-slate-800 leading-relaxed">
+                    Câu {{ qIdx + 1 }}: {{ q.q }}
+                  </div>
+                  <div class="grid grid-cols-1 gap-1.5">
+                    <label 
+                      v-for="(opt, oIdx) in q.options" 
+                      :key="oIdx"
+                      :class="[
+                        quizResult 
+                          ? oIdx === q.correct 
+                            ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-semibold shadow-xs' 
+                            : quizAnswers[`q${qIdx}`] === oIdx 
+                              ? 'bg-red-50 border-red-300 text-red-800 shadow-xs'
+                              : 'bg-slate-50 border-slate-100 opacity-60'
+                          : quizAnswers[`q${qIdx}`] === oIdx
+                            ? 'bg-indigo-50 border-indigo-300 text-indigo-800 font-semibold'
+                            : 'bg-slate-50 hover:bg-slate-100/70 border-slate-200/60 text-slate-700 cursor-pointer',
+                        'p-2.5 rounded-lg border text-xs flex items-center gap-2 transition-all text-left'
+                      ]"
+                    >
+                      <input 
+                        type="radio" 
+                        :name="`q_${qIdx}`" 
+                        :value="oIdx" 
+                        v-model="quizAnswers[`q${qIdx}`]"
+                        :disabled="!!quizResult"
+                        class="accent-indigo-600 shrink-0 cursor-pointer"
+                      />
+                      <span>{{ opt }}</span>
+                      <!-- Correct/Incorrect Marks -->
+                      <span v-if="quizResult && oIdx === q.correct" class="material-symbols-outlined text-[16px] text-emerald-600 ml-auto font-bold shrink-0">check_circle</span>
+                      <span v-else-if="quizResult && quizAnswers[`q${qIdx}`] === oIdx" class="material-symbols-outlined text-[16px] text-red-500 ml-auto font-bold shrink-0">cancel</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Submit / Score Info -->
+                <div class="pt-2 flex items-center justify-between">
+                  <div v-if="quizResult" class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-slate-800">
+                      Kết quả: <span :class="quizResult.score >= 2 ? 'text-emerald-600' : 'text-amber-600'">{{ quizResult.score }}/{{ quizResult.total }}</span> câu đúng
+                    </span>
+                    <span :class="[quizResult.score >= 2 ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600', 'px-2 py-0.5 rounded text-[10px] font-extrabold uppercase']">
+                      {{ quizResult.score >= 2 ? 'Đạt' : 'Chưa Đạt' }}
+                    </span>
+                  </div>
+                  <div v-else class="text-[10px] text-slate-400 font-semibold">Vui lòng chọn đầy đủ các câu hỏi</div>
+                  
+                  <button 
+                    v-if="!quizResult"
+                    @click="submitQuiz"
+                    :disabled="!isQuizFilled"
+                    class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-95 border-0"
+                  >
+                    Nộp bài
+                  </button>
+                  <button 
+                    v-else
+                    @click="restartQuiz"
+                    class="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-xs font-bold transition-all cursor-pointer active:scale-95 border-0"
+                  >
+                    Làm lại
+                  </button>
                 </div>
               </div>
 
-              <!-- Ngày học -->
-              <div class="flex items-center gap-3 bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
-                <span class="material-symbols-outlined text-indigo-500 text-[20px]">calendar_today</span>
-                <div class="text-xs">
-                  <span class="font-semibold text-slate-400 block text-[9px] uppercase tracking-wider">Ngày học</span>
-                  <span class="font-bold text-slate-800">Thứ {{ formatDayOfWeek(activeDetailsSchedule?.dayOfWeek) }} ({{ activeDetailsScheduleDate }})</span>
+              <!-- Quizzes list -->
+              <div v-else class="space-y-3">
+                <div class="text-[11px] text-slate-400 font-bold uppercase tracking-wider text-left">
+                  Danh sách bài kiểm tra nhanh
                 </div>
-              </div>
-
-              <!-- Giờ học -->
-              <div class="flex items-center gap-3 bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
-                <span class="material-symbols-outlined text-indigo-500 text-[20px]">schedule</span>
-                <div class="text-xs">
-                  <span class="font-semibold text-slate-400 block text-[9px] uppercase tracking-wider">Giờ học</span>
-                  <span class="font-bold text-slate-800">
-                    {{ activeDetailsSchedule?.startTime.substring(0, 5) }} - {{ activeDetailsSchedule?.endTime.substring(0, 5) }} 
-                    <span class="text-slate-400 font-medium">(Tiết {{ getLessonRange(activeDetailsSchedule?.startTime, activeDetailsSchedule?.endTime) }})</span>
-                  </span>
-                </div>
-              </div>
-
-              <!-- Phòng học -->
-              <div class="flex items-center gap-3 bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
-                <span class="material-symbols-outlined text-indigo-500 text-[20px]">meeting_room</span>
-                <div class="text-xs">
-                  <span class="font-semibold text-slate-400 block text-[9px] uppercase tracking-wider">Phòng học</span>
-                  <span class="font-bold text-slate-800">{{ formatRoom(activeDetailsSchedule?.room) }}</span>
+                <div 
+                  v-for="(quiz, idx) in getMockClassContents(activeDetailsSchedule?.courseName).quizzes"
+                  :key="idx"
+                  class="flex items-center justify-between p-4 rounded-xl border border-slate-150 bg-slate-50/50 hover:bg-indigo-50/20 hover:border-indigo-200 transition-all group"
+                >
+                  <div class="flex items-center gap-3 min-w-0">
+                    <span class="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-indigo-600 text-[20px]">assignment</span>
+                    </span>
+                    <div class="text-left min-w-0 flex-1">
+                      <div class="text-xs font-bold text-slate-800 truncate max-w-[200px]" :title="quiz.title">{{ quiz.title }}</div>
+                      <div class="text-[10px] mt-0.5 flex items-center gap-1.5">
+                        <span class="text-slate-400 font-semibold">{{ quiz.questions.length }} câu hỏi</span>
+                        <span v-if="completedQuizzes[`${activeDetailsSchedule?.scheduleId}_${idx}`] !== undefined" class="text-emerald-600 font-bold flex items-center gap-0.5">
+                          • Đã làm (Điểm: {{ completedQuizzes[`${activeDetailsSchedule?.scheduleId}_${idx}`] }}/{{ quiz.questions.length }})
+                        </span>
+                        <span v-else class="text-amber-650 font-bold">
+                          • Chưa làm
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <button 
+                    @click="startQuiz(quiz, idx)"
+                    class="h-8 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold transition-all active:scale-95 cursor-pointer border-0 shadow-xs shrink-0"
+                  >
+                    {{ completedQuizzes[`${activeDetailsSchedule?.scheduleId}_${idx}`] !== undefined ? 'Làm lại' : 'Làm bài' }}
+                  </button>
                 </div>
               </div>
             </div>
@@ -388,7 +555,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, inject } from 'vue'
 import { useCourseStore } from '../../../stores'
 import foreignLanguageImg from '../../../assets/course_foreign_language.png'
 import itImg from '../../../assets/course_it.png'
@@ -406,6 +573,171 @@ const props = defineProps({
 const emit = defineEmits(['open-support-conflict'])
 
 const courseStore = useCourseStore()
+const showSnackbar = inject('showSnackbar', null)
+
+const modalActiveTab = ref('info') // 'info', 'content', 'quiz'
+const activeQuiz = ref(null)
+const activeQuizIndex = ref(null)
+const quizAnswers = ref({})
+const quizResult = ref(null)
+const completedQuizzes = ref({})
+
+const isQuizFilled = computed(() => {
+  if (!activeQuiz.value) return false
+  return activeQuiz.value.questions.every((_, idx) => quizAnswers.value[`q${idx}`] !== undefined)
+})
+
+function startQuiz(quiz, index) {
+  activeQuiz.value = quiz
+  activeQuizIndex.value = index
+  quizAnswers.value = {}
+  quizResult.value = null
+}
+
+function quitQuiz() {
+  activeQuiz.value = null
+  activeQuizIndex.value = null
+  quizAnswers.value = {}
+  quizResult.value = null
+}
+
+function submitQuiz() {
+  if (!activeQuiz.value) return
+  let correctCount = 0
+  activeQuiz.value.questions.forEach((q, idx) => {
+    if (quizAnswers.value[`q${idx}`] === q.correct) {
+      correctCount++
+    }
+  })
+  quizResult.value = {
+    score: correctCount,
+    total: activeQuiz.value.questions.length,
+    submitted: true
+  }
+  
+  const key = `${activeDetailsSchedule.value?.scheduleId}_${activeQuizIndex.value}`
+  completedQuizzes.value[key] = correctCount
+  
+  if (showSnackbar) {
+    showSnackbar(`Nộp bài thành công! Điểm của bạn: ${correctCount}/${activeQuiz.value.questions.length}`, 'success')
+  }
+}
+
+function restartQuiz() {
+  quizAnswers.value = {}
+  quizResult.value = null
+}
+
+function exploreDocument(doc) {
+  if (showSnackbar) {
+    if (doc.type === 'video') {
+      showSnackbar(`Đang mở video học tập: "${doc.title}"`, 'success')
+    } else {
+      showSnackbar(`Đã tải xuống tài liệu: "${doc.title}"`, 'success')
+    }
+  } else {
+    alert(doc.type === 'video' ? `Đang mở video: ${doc.title}` : `Đang tải tài liệu: ${doc.title}`)
+  }
+}
+
+function getDocTypeBg(type) {
+  if (type === 'pdf') return 'bg-red-500/10'
+  if (type === 'doc') return 'bg-blue-500/10'
+  if (type === 'video') return 'bg-amber-500/10'
+  if (type === 'audio') return 'bg-emerald-500/10'
+  return 'bg-slate-500/10'
+}
+
+function getDocTypeColor(type) {
+  if (type === 'pdf') return 'text-red-600'
+  if (type === 'doc') return 'text-blue-600'
+  if (type === 'video') return 'text-amber-600'
+  if (type === 'audio') return 'text-emerald-600'
+  return 'text-slate-600'
+}
+
+function getDocTypeIcon(type) {
+  if (type === 'pdf') return 'picture_as_pdf'
+  if (type === 'doc') return 'description'
+  if (type === 'video') return 'play_circle'
+  if (type === 'audio') return 'audio_file'
+  return 'draft'
+}
+
+const getMockClassContents = (courseName) => {
+  const lower = (courseName || '').toLowerCase()
+  if (lower.includes('python')) {
+    return {
+      documents: [
+        { type: 'pdf', title: 'Slide Bài giảng: Hướng dẫn về Lập trình hướng đối tượng (OOP)', size: '2.4 MB', views: 42 },
+        { type: 'doc', title: 'Bài tập thực hành: Thiết kế Class & Inheritance', size: '540 KB', views: 35 },
+        { type: 'video', title: 'Video: Giải thích các khái niệm Tính đóng gói, Kế thừa, Đa hình', duration: '15:24', views: 58 }
+      ],
+      quizzes: [
+        {
+          title: 'Trắc nghiệm: Kiến thức cơ bản về OOP in Python',
+          questions: [
+            { q: 'Khái niệm nào mô tả việc che giấu thông tin bên trong của đối tượng?', options: ['A. Kế thừa (Inheritance)', 'B. Đa hình (Polymorphism)', 'C. Đóng gói (Encapsulation)', 'D. Trừu tượng (Abstraction)'], correct: 2 },
+            { q: 'Từ khóa nào dùng để kế thừa một lớp cha trong Python?', options: ['A. inherits', 'B. Lớp con(Lớp cha)', 'C. extends', 'D. super'], correct: 1 },
+            { q: 'Hàm khởi tạo trong Python được định nghĩa bằng tên nào?', options: ['A. __init__', 'B. constructor', 'C. create', 'D. __new__'], correct: 0 }
+          ]
+        }
+      ]
+    }
+  } else if (lower.includes('react') || lower.includes('node')) {
+    return {
+      documents: [
+        { type: 'pdf', title: 'Slide Bài giảng: React Hooks & State Management nâng cao', size: '3.1 MB', views: 56 },
+        { type: 'doc', title: 'Tài liệu hướng dẫn: Cài đặt và cấu hình Node.js & Express.js', size: '890 KB', views: 44 },
+        { type: 'video', title: 'Video: Xây dựng REST API đơn giản với Express & MongoDB', duration: '22:10', views: 73 }
+      ],
+      quizzes: [
+        {
+          title: 'Trắc nghiệm: React Hooks & Node.js Basics',
+          questions: [
+            { q: 'React Hook nào dùng để quản lý side-effects?', options: ['A. useState', 'B. useEffect', 'C. useContext', 'D. useReducer'], correct: 1 },
+            { q: 'Trong Node.js, lệnh nào dùng để import một module CommonJS?', options: ['A. require', 'B. load', 'C. import', 'D. include'], correct: 1 },
+            { q: 'Làm thế nào để truyền dữ liệu từ component cha xuống component con trong React?', options: ['A. Dùng State', 'B. Dùng Redux', 'C. Dùng Props', 'D. Dùng Context'], correct: 2 }
+          ]
+        }
+      ]
+    }
+  } else if (lower.includes('tiếng anh') || lower.includes('english')) {
+    return {
+      documents: [
+        { type: 'pdf', title: 'Slide Bài giảng: Tiếng Anh giao tiếp công sở - Meeting & Presentation', size: '1.8 MB', views: 39 },
+        { type: 'audio', title: 'Audio: Bài nghe Listening Practice - Business Conversation', size: '5.2 MB', views: 48 },
+        { type: 'doc', title: 'Tài liệu từ vựng & cấu trúc nói thông dụng tại nơi làm việc', size: '620 KB', views: 33 }
+      ],
+      quizzes: [
+        {
+          title: 'Kiểm tra: Từ vựng Tiếng Anh giao tiếp công sở',
+          questions: [
+            { q: 'Cụm từ "schedule a meeting" có nghĩa là gì?', options: ['A. Hủy cuộc họp', 'B. Lên lịch cuộc họp', 'C. Kết thúc cuộc họp', 'D. Dời lịch cuộc họp'], correct: 1 },
+            { q: 'Điền vào chỗ trống: "Could you please ___ the report by tomorrow?"', options: ['A. submit', 'B. take', 'C. talk', 'D. speak'], correct: 0 },
+            { q: 'Từ nào đồng nghĩa với "collaborate"?', options: ['A. Compete', 'B. Work together', 'C. Postpone', 'D. Argue'], correct: 1 }
+          ]
+        }
+      ]
+    }
+  } else {
+    return {
+      documents: [
+        { type: 'pdf', title: 'Tài liệu Slide bài giảng lý thuyết hôm nay', size: '1.5 MB', views: 18 },
+        { type: 'doc', title: 'Tài liệu đọc thêm khám phá và bài tập thực hành', size: '320 KB', views: 12 }
+      ],
+      quizzes: [
+        {
+          title: 'Bài kiểm tra nhanh củng cố kiến thức cuối buổi học',
+          questions: [
+            { q: 'Câu hỏi 1: Lựa chọn đáp án đúng nhất dựa trên nội dung bài học hôm nay.', options: ['A. Đáp án A', 'B. Đáp án B (Đúng)', 'C. Đáp án C', 'D. Đáp án D'], correct: 1 },
+            { q: 'Câu hỏi 2: Bạn đánh giá như thế nào về tầm quan trọng của nội dung học hôm nay?', options: ['A. Rất quan trọng (Đúng)', 'B. Bình thường', 'C. Không quan trọng', 'D. Chưa rõ'], correct: 0 }
+          ]
+        }
+      ]
+    }
+  }
+}
 
 onMounted(async () => {
   try {
@@ -545,6 +877,24 @@ const combinedSchedules = computed(() => {
     if (cls.status !== 'DangHoc') return
     const scheds = props.enrolledSchedulesMap[cls.classId] || []
     scheds.forEach(s => {
+      // Xác định ngày thực tế của buổi học trong tuần được chọn
+      const sessionDate = new Date(currentWeekRange.value.monday)
+      const offset = s.dayOfWeek === 0 ? 6 : s.dayOfWeek - 2
+      sessionDate.setDate(sessionDate.getDate() + offset)
+      sessionDate.setHours(0, 0, 0, 0)
+
+      // Kiểm tra xem ngày học đó có nằm trong khoảng thời gian diễn ra lớp học hay không
+      if (cls.startDate) {
+        const start = new Date(cls.startDate)
+        start.setHours(0, 0, 0, 0)
+        if (sessionDate < start) return
+      }
+      if (cls.endDate) {
+        const end = new Date(cls.endDate)
+        end.setHours(0, 0, 0, 0)
+        if (sessionDate > end) return
+      }
+
       result.push({
         ...s,
         classId: cls.classId,
@@ -650,6 +1000,10 @@ function showDetailsModal(schedule, dayValue) {
   activeDetailsSchedule.value = schedule
   activeDetailsScheduleDate.value = getScheduleDate(dayValue)
   detailsModalOpen.value = true
+  modalActiveTab.value = 'info'
+  activeQuiz.value = null
+  quizAnswers.value = {}
+  quizResult.value = null
 }
 
 function closeDetailsModal() {
@@ -685,14 +1039,14 @@ function handleSupportConflictFromCalendar() {
 
 function getScheduleDate(dayValue) {
   const start = new Date(currentWeekRange.value.monday)
-  const offset = dayValue === 1 ? 6 : dayValue - 2
+  const offset = (dayValue === 0 || dayValue === 1) ? 6 : dayValue - 2
   start.setDate(start.getDate() + offset)
   const formatNum = (num) => String(num).padStart(2, '0')
   return `${formatNum(start.getDate())}/${formatNum(start.getMonth() + 1)}/${start.getFullYear()}`
 }
 
 function formatDayOfWeek(day) {
-  const map = { 1: 'Chủ Nhật', 2: 'Hai', 3: 'Ba', 4: 'Tư', 5: 'Năm', 6: 'Sáu', 7: 'Bảy' }
+  const map = { 0: 'Chủ Nhật', 1: 'Chủ Nhật', 2: 'Hai', 3: 'Ba', 4: 'Tư', 5: 'Năm', 6: 'Sáu', 7: 'Bảy' }
   return map[day] || day
 }
 

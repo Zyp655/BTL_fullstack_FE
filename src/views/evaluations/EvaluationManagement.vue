@@ -965,7 +965,7 @@ async function loadData() {
     const map = {}
     if (teachersRes.data?.items) {
       teachersRes.data.items.forEach(t => {
-        map[t.teacherId] = t.name
+        map[t.userId] = t.fullName
       })
     }
     teachersMap.value = map

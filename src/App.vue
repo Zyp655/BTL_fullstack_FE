@@ -477,6 +477,7 @@ const toggleSidebarPin = () => {
 }
 
 const openMenus = ref({
+  'Tổng quan': true,
   'Cổng học tập': true,
   'Hỗ trợ & Khác': true,
   'Khảo sát & Đánh giá': true
@@ -502,7 +503,9 @@ const isSubItemActive = (subItem) => {
 }
 
 const isItemActive = (item, isActive) => {
-  if (item.children) return isActive
+  if (item.children) {
+    return item.children.some(child => route.path === child.path)
+  }
   if (route.path !== item.path) return false
   if (item.query) {
     let defaultTab = 'classes'
@@ -557,6 +560,7 @@ const navItems = computed(() => {
 
   const items = [
     { title: 'Tổng quan', icon: 'dashboard', path: '/dashboard' },
+    { title: 'Lịch dạy & Bài giảng', icon: 'menu_book', path: '/teaching-lessons' },
     { title: 'Môn học', icon: 'school', path: '/courses' },
     { title: 'Lớp học', icon: 'groups', path: '/classes' },
     { title: 'Học viên', icon: 'person', path: '/students' }
