@@ -195,18 +195,12 @@
           :current-conflicts="currentConflicts"
           :enrolled-classes="enrolledClasses"
           @open-support-conflict="({ targetClass, conflictClass }) => handleOpenSupportConflict(targetClass, conflictClass)"
+          @view-in-calendar="(classId) => handleViewInCalendar(classId)"
         />
 
       </div>
 
-      <!-- Modal: Admin Chuyển lớp học viên -->
-      <ModalTransferClass
-        :show="adminTransferModal"
-        :enrolled-classes="enrolledClasses"
-        :student-profile="studentProfile"
-        @close="adminTransferModal = false"
-        @success="async () => { adminTransferModal = false; await loadPortalDataForStudent(studentProfile.studentId, studentProfile.userId); }"
-      />
+
 
       <!-- Modal: Admin Nhập/Sửa điểm -->
       <ModalGrading
@@ -256,7 +250,6 @@ import TabCredits from './components/TabCredits.vue'
 import TabConflicts from './components/TabConflicts.vue'
 import TabCalendar from './components/TabCalendar.vue'
 import TabRegisterCourse from './components/TabRegisterCourse.vue'
-import ModalTransferClass from './components/ModalTransferClass.vue'
 import ModalGrading from './components/ModalGrading.vue'
 import ModalPaymentRecord from './components/ModalPaymentRecord.vue'
 
@@ -368,8 +361,7 @@ const tabs = computed(() => {
     { label: 'Đăng ký môn học', value: 'register', icon: 'import_contacts' },
     { label: 'Lịch học tuần', value: 'calendar', icon: 'calendar_month' },
     { label: 'Học phí & Thanh toán', value: 'payments', icon: 'receipt_long' },
-    { label: 'Ví bảo lưu', value: 'credits', icon: 'account_balance_wallet' },
-    { label: 'Trùng lịch học', value: 'conflicts', icon: 'warning' }
+    { label: 'Ví bảo lưu', value: 'credits', icon: 'account_balance_wallet' }
   ]
   return list
 })
@@ -377,6 +369,11 @@ const tabs = computed(() => {
 const selectTab = (tabValue) => {
   activeTab.value = tabValue
   router.replace({ path: route.path, query: { tab: tabValue } })
+}
+
+function handleViewInCalendar(classId) {
+  activeTab.value = 'calendar'
+  router.push({ path: route.path, query: { ...route.query, tab: 'calendar', highlight: classId } })
 }
 
 watch(() => route.query.tab, (newTab) => {
@@ -474,7 +471,11 @@ async function loadPortalData(isBackground = false) {
 
       // Load class schedules and scores which depend on enrolled classes
       if (enrolledClasses.value.length > 0) {
-        selectedClass.value = enrolledClasses.value[0]
+        const queryClassId = route.query.openClassId ? parseInt(route.query.openClassId, 10) : null
+        const targetClass = queryClassId 
+          ? enrolledClasses.value.find(c => c.classId === queryClassId) 
+          : null
+        selectedClass.value = targetClass || enrolledClasses.value[0]
         
         if (!isClassUnpaid(selectedClass.value.classId)) {
           fetchClassDetails(selectedClass.value.classId)
@@ -809,6 +810,34 @@ function isScheduleConflict(s1, s2) {
   return start1 < end2 && start2 < end1
 }
 
+function classesConflictOnDay(classA, classB, dayOfWeek) {
+  const startA = new Date(classA.startDate)
+  startA.setHours(0,0,0,0)
+  const endA = classA.endDate ? new Date(classA.endDate) : new Date(2100, 0, 1)
+  endA.setHours(23,59,59,999)
+  
+  const startB = new Date(classB.startDate)
+  startB.setHours(0,0,0,0)
+  const endB = classB.endDate ? new Date(classB.endDate) : new Date(2100, 0, 1)
+  endB.setHours(23,59,59,999)
+  
+  const startIntersect = new Date(Math.max(startA, startB))
+  const endIntersect = new Date(Math.min(endA, endB))
+  
+  if (startIntersect > endIntersect) return false
+  
+  const check = new Date(startIntersect)
+  for (let i = 0; i < 7; i++) {
+    const jsDay = check.getDay()
+    const targetDay = jsDay === 0 ? 0 : jsDay + 1
+    if (targetDay === dayOfWeek) {
+      return check <= endIntersect
+    }
+    check.setDate(check.getDate() + 1)
+  }
+  return false
+}
+
 const currentConflicts = computed(() => {
   const conflicts = []
   const classes = enrolledClasses.value.filter(c => c.status === 'DangHoc')
@@ -816,6 +845,7 @@ const currentConflicts = computed(() => {
     for (let j = i + 1; j < classes.length; j++) {
       const classA = classes[i]
       const classB = classes[j]
+      
       const schedsA = enrolledSchedulesMap.value[classA.classId] || []
       const schedsB = enrolledSchedulesMap.value[classB.classId] || []
       
@@ -824,9 +854,11 @@ const currentConflicts = computed(() => {
       for (const sa of schedsA) {
         for (const sb of schedsB) {
           if (isScheduleConflict(sa, sb)) {
-            hasOverlap = true
-            overlappingSession = { sa, sb }
-            break
+            if (classesConflictOnDay(classA, classB, sa.dayOfWeek)) {
+              hasOverlap = true
+              overlappingSession = { sa, sb }
+              break
+            }
           }
         }
         if (hasOverlap) break
@@ -924,7 +956,6 @@ function setupSignalR() {
 }
 
 // --- ADMIN EDIT & ACTION LOGIC ---
-const adminTransferModal = ref(false)
 const adminGradingModal = ref(false)
 const gradingClass = ref(null)
 const adminPaymentModal = ref(false)
@@ -944,9 +975,7 @@ async function changeEnrollmentStatus(cls, newStatus) {
   }
 }
 
-function openTransferModal() {
-  adminTransferModal.value = true
-}
+
 
 function openGradingDialog(cls) {
   gradingClass.value = cls

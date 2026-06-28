@@ -15,8 +15,50 @@
       </div>
     </section>
 
-    <!-- Filters and Layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+    <!-- Tab Navigation -->
+    <div class="border-b border-outline-variant/30 overflow-x-auto hide-scrollbar">
+      <nav class="flex gap-6 min-w-max px-2 pb-1.5">
+        <button
+          @click="activeTab = 'lessons'"
+          :class="[
+            activeTab === 'lessons'
+              ? 'border-primary-container text-primary-container font-bold'
+              : 'border-transparent text-readable-secondary hover:text-readable-primary hover:border-slate-300 font-semibold',
+            'pb-3 border-b-2 font-title-md text-title-md flex items-center gap-2 transition-colors cursor-pointer'
+          ]"
+        >
+          <span class="material-symbols-outlined">menu_book</span>
+          Lớp học & Bài giảng
+        </button>
+        <button
+          @click="activeTab = 'timetable'"
+          :class="[
+            activeTab === 'timetable'
+              ? 'border-primary-container text-primary-container font-bold'
+              : 'border-transparent text-readable-secondary hover:text-readable-primary hover:border-slate-300 font-semibold',
+            'pb-3 border-b-2 font-title-md text-title-md flex items-center gap-2 transition-colors cursor-pointer'
+          ]"
+        >
+          <span class="material-symbols-outlined">calendar_month</span>
+          Thời khóa biểu tuần
+        </button>
+        <button
+          @click="activeTab = 'support'"
+          :class="[
+            activeTab === 'support'
+              ? 'border-primary-container text-primary-container font-bold'
+              : 'border-transparent text-readable-secondary hover:text-readable-primary hover:border-slate-300 font-semibold',
+            'pb-3 border-b-2 font-title-md text-title-md flex items-center gap-2 transition-colors cursor-pointer'
+          ]"
+        >
+          <span class="material-symbols-outlined">support_agent</span>
+          Yêu cầu hỗ trợ & Đổi lịch
+        </button>
+      </nav>
+    </div>
+
+    <!-- Tab 1: Lớp học & Bài giảng -->
+    <div v-if="activeTab === 'lessons'" class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
       
       <!-- Left column: List of Schedules/Classes (col-span-2) -->
       <div class="lg:col-span-2 space-y-4">
@@ -167,11 +209,16 @@
             <!-- Date Selector -->
             <div class="space-y-1 bg-primary-container/[0.03] p-3 rounded-lg border border-primary-container/10">
               <label class="block text-body-xs font-bold text-slate-700 uppercase">Ngày dạy học:</label>
-              <input
-                v-model="selectedDate"
-                type="date"
-                class="w-full bg-white border border-primary-container/20 rounded-lg px-3 py-1.5 text-body-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary-container/20"
-              />
+              <div class="relative">
+                <input
+                  v-model="selectedDate"
+                  type="date"
+                  @click="$event.target.showPicker?.()"
+                  @focus="$event.target.showPicker?.()"
+                  class="w-full bg-white border border-slate-200 rounded-lg pl-10 pr-3 py-1.5 text-body-sm font-semibold focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container cursor-pointer"
+                />
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">calendar_month</span>
+              </div>
             </div>
 
             <!-- Today's Lesson Content Section -->
@@ -308,7 +355,16 @@
           <div class="space-y-3 text-[14px]">
             <div>
               <label class="block font-semibold text-slate-700 mb-1">Ngày giảng dạy</label>
-              <input v-model="lessonForm.lessonDate" type="date" class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-3 py-2 text-body-sm" />
+              <div class="relative">
+                <input
+                  v-model="lessonForm.lessonDate"
+                  type="date"
+                  @click="$event.target.showPicker?.()"
+                  @focus="$event.target.showPicker?.()"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-3 py-2 text-body-sm focus:outline-none focus:border-primary-container cursor-pointer font-semibold"
+                />
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">calendar_month</span>
+              </div>
             </div>
             <div>
               <label class="block font-semibold text-slate-700 mb-1">Tiêu đề bài học</label>
@@ -386,17 +442,31 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">Hình thức kiểm tra</label>
                 <select v-model="quizForm.quizType" class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-3 py-2 text-body-sm focus:outline-none">
                   <option value="TracNghiem">Trắc nghiệm</option>
                   <option value="TuLuan">Tự luận</option>
+                  <option value="LapTrinh">Bài tập Lập trình (AI chấm)</option>
                 </select>
               </div>
               <div>
+                <label class="block font-semibold text-slate-700 mb-1">Số lần làm lại tối đa *</label>
+                <input v-model.number="quizForm.maxAttempts" type="number" min="1" max="100" class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-3 py-2 text-body-sm focus:outline-none focus:ring-1 focus:ring-primary-container/30" />
+              </div>
+              <div>
                 <label class="block font-semibold text-slate-700 mb-1">Ngày áp dụng kiểm tra</label>
-                <input v-model="quizForm.lessonDate" type="date" class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-3 py-2 text-body-sm focus:outline-none" />
+                <div class="relative">
+                  <input
+                    v-model="quizForm.lessonDate"
+                    type="date"
+                    @click="$event.target.showPicker?.()"
+                    @focus="$event.target.showPicker?.()"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-3 py-2 text-body-sm focus:outline-none focus:border-primary-container cursor-pointer font-semibold"
+                  />
+                  <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">calendar_month</span>
+                </div>
               </div>
             </div>
 
@@ -427,12 +497,13 @@
                   </div>
                   <div>
                     <label class="block font-semibold text-slate-700 mb-1">Số lượng câu hỏi</label>
-                    <select v-model.number="aiQuestionCount" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-body-sm focus:outline-none focus:border-purple-500">
-                      <option :value="5">5 câu hỏi</option>
-                      <option :value="10">10 câu hỏi</option>
-                      <option :value="15">15 câu hỏi</option>
-                      <option :value="20">20 câu hỏi</option>
-                    </select>
+                    <input 
+                      v-model.number="aiQuestionCount" 
+                      type="number" 
+                      min="1" 
+                      max="50" 
+                      class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-body-sm focus:outline-none focus:border-purple-500 font-semibold"
+                    />
                   </div>
                 </div>
 
@@ -462,7 +533,7 @@
             </div>
 
             <!-- Questions Editor -->
-            <div class="space-y-3 pt-3 border-t border-slate-100">
+            <div v-if="quizForm.quizType !== 'LapTrinh'" class="space-y-3 pt-3 border-t border-slate-100">
               <div class="flex justify-between items-center">
                 <h4 class="font-bold text-slate-800 text-body-md">Danh sách câu hỏi ({{ quizForm.questions.length }})</h4>
                 <button
@@ -513,6 +584,29 @@
                       </select>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Coding Editor (LapTrinh) -->
+            <div v-else class="space-y-4 pt-3 border-t border-slate-100">
+              <div class="p-4 bg-purple-50/20 border border-purple-100/50 rounded-xl space-y-3">
+                <div class="font-bold text-purple-800 text-body-xs uppercase">Cấu hình bài tập lập trình AI</div>
+                <div>
+                  <label class="block font-semibold text-slate-700 mb-1">Ngôn ngữ yêu cầu *</label>
+                  <select v-model="quizForm.questions[0].correctAnswer" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-body-sm focus:outline-none font-bold text-slate-700">
+                    <option value="JavaScript">JavaScript</option>
+                    <option value="Python">Python</option>
+                    <option value="C#">C#</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block font-semibold text-slate-700 mb-1">Nội dung đề bài (Markdown) *</label>
+                  <textarea v-model="quizForm.questions[0].questionText" rows="6" placeholder="Nhập đề bài chi tiết, ví dụ, ràng buộc..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-body-sm focus:outline-none"></textarea>
+                </div>
+                <div>
+                  <label class="block font-semibold text-slate-700 mb-1">Mã nguồn khởi đầu (Starter Code) *</label>
+                  <textarea v-model="quizForm.questions[0].options" rows="6" placeholder="function solve() {&#10;  // Viết mã nguồn ban đầu tại đây&#10;}" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-body-sm font-mono focus:outline-none"></textarea>
                 </div>
               </div>
             </div>
@@ -587,42 +681,112 @@
                 <p class="text-body-sm text-on-surface-variant">Đang tải danh sách bài làm...</p>
               </div>
               
-              <table class="w-full text-left border-collapse" v-else-if="submissions.length > 0">
-                <thead>
-                  <tr class="bg-slate-50 text-[11px] font-bold text-on-surface-variant uppercase border-b border-slate-100">
-                    <th class="py-2.5 px-4">Mã học viên</th>
-                    <th class="py-2.5 px-4">Tên học viên</th>
-                    <th class="py-2.5 px-4 text-center">Trạng thái</th>
-                    <th class="py-2.5 px-4 text-center">Điểm số</th>
-                    <th class="py-2.5 px-4">Nhận xét</th>
-                    <th class="py-2.5 px-4 text-right">Chấm điểm</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 text-body-sm">
-                  <tr v-for="sub in submissions" :key="sub.submissionId" class="hover:bg-slate-55/50">
-                    <td class="py-2.5 px-4 font-mono font-bold">HV-{{ String(sub.studentId).padStart(4, '0') }}</td>
-                    <td class="py-2.5 px-4 font-semibold text-primary-container">{{ sub.studentName }}</td>
-                    <td class="py-2.5 px-4 text-center">
-                      <span :class="['px-2 py-0.5 rounded-full text-[10px] font-bold border', sub.isGraded ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-amber-500/10 text-amber-600 border-amber-500/20']">
-                        {{ sub.isGraded ? 'Đã chấm' : 'Chờ chấm' }}
-                      </span>
-                    </td>
-                    <td class="py-2.5 px-4 text-center font-bold text-body-md" :class="sub.score >= 5 ? 'text-primary-container' : 'text-rose-500'">
-                      {{ sub.score !== null ? sub.score.toFixed(1) : '-' }}
-                    </td>
-                    <td class="py-2.5 px-4 text-on-surface-variant italic truncate max-w-[150px]" :title="sub.teacherNote">{{ sub.teacherNote || '-' }}</td>
-                    <td class="py-2.5 px-4 text-right">
-                      <button
-                        @click="openGradingModal(sub)"
-                        class="px-2.5 py-1 bg-primary-container text-white font-bold rounded text-body-xs hover:bg-primary transition-colors flex items-center justify-center gap-0.5 ml-auto cursor-pointer"
-                      >
-                        <span class="material-symbols-outlined text-[13px]">edit_note</span>
-                        Chấm điểm
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              <div v-else-if="studentSubmissionsGrouped.length > 0" class="border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-sm">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase border-b border-slate-200">
+                      <th class="py-2.5 px-4 w-12 text-center"></th>
+                      <th class="py-2.5 px-4">Mã học viên</th>
+                      <th class="py-2.5 px-4">Tên học viên</th>
+                      <th class="py-2.5 px-4 text-center">Số lượt nộp</th>
+                      <th class="py-2.5 px-4 text-center">Điểm cao nhất</th>
+                      <th class="py-2.5 px-4 text-center">Điểm gần nhất</th>
+                      <th class="py-2.5 px-4 text-right">Lưu điểm chính thức</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 text-body-sm">
+                    <template v-for="g in studentSubmissionsGrouped" :key="g.studentId">
+                      <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="py-3 px-4 text-center">
+                          <button 
+                            @click="toggleStudentExpand(g.studentId)" 
+                            class="w-6 h-6 rounded hover:bg-slate-100 flex items-center justify-center text-slate-500 transition-transform cursor-pointer"
+                            :class="{ 'rotate-90': expandedStudentIds.includes(g.studentId) }"
+                          >
+                            <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+                          </button>
+                        </td>
+                        <td class="py-3 px-4 font-mono font-bold text-slate-500">HV-{{ String(g.studentId).padStart(4, '0') }}</td>
+                        <td class="py-3 px-4 font-semibold text-primary-container">
+                          {{ g.studentName }}
+                        </td>
+                        <td class="py-3 px-4 text-center font-bold text-slate-600">
+                          {{ g.attempts.length }} lượt
+                        </td>
+                        <td class="py-3 px-4 text-center font-extrabold text-emerald-600 bg-emerald-500/[0.02]">
+                          {{ g.bestScore.toFixed(1) }}
+                        </td>
+                        <td class="py-3 px-4 text-center font-semibold text-slate-500">
+                          {{ g.attempts[0]?.score !== null ? g.attempts[0]?.score.toFixed(1) : '-' }}
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                          <button
+                            @click="saveOfficialScore(g.studentId, g.bestScore)"
+                            :disabled="savingOfficialScore[g.studentId]"
+                            class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold rounded-lg text-[11px] cursor-pointer inline-flex items-center gap-1 active:scale-95 shadow-sm transition-all"
+                          >
+                            <span class="material-symbols-outlined text-[14px]">save</span>
+                            Lưu điểm cao nhất
+                          </button>
+                        </td>
+                      </tr>
+
+                      <tr v-if="expandedStudentIds.includes(g.studentId)">
+                        <td colspan="7" class="bg-slate-50/50 p-4 border-l-4 border-indigo-500">
+                          <div class="space-y-2">
+                            <div class="text-[11px] font-bold text-slate-500 uppercase flex items-center gap-1">
+                              <span class="material-symbols-outlined text-[14px]">history</span>
+                              Chi tiết các lượt nộp bài
+                            </div>
+                            <table class="w-full text-left border border-slate-200/60 rounded-lg overflow-hidden bg-white shadow-sm">
+                              <thead>
+                                <tr class="bg-slate-100/70 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase">
+                                  <th class="py-2 px-3 text-center w-16">Lần làm</th>
+                                  <th class="py-2 px-3">Thời gian nộp</th>
+                                  <th class="py-2 px-3 text-center w-24">Điểm số</th>
+                                  <th class="py-2 px-3">Gợi ý bài làm</th>
+                                  <th class="py-2 px-3 text-right">Thao tác</th>
+                                </tr>
+                              </thead>
+                              <tbody class="divide-y divide-slate-100 text-[12px]">
+                                <tr v-for="(att, idx) in g.attempts" :key="att.submissionId" class="hover:bg-slate-50/30">
+                                  <td class="py-2 px-3 text-center font-bold text-slate-500">
+                                    Lần {{ g.attempts.length - idx }}
+                                  </td>
+                                  <td class="py-2 px-3 text-slate-500 font-semibold">
+                                    {{ formatDate(att.submittedAt) }} {{ new Date(att.submittedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) }}
+                                  </td>
+                                  <td class="py-2 px-3 text-center font-extrabold" :class="att.score >= 5 ? 'text-indigo-650' : 'text-rose-500'">
+                                    {{ att.score !== null ? att.score.toFixed(1) : '-' }}
+                                  </td>
+                                  <td class="py-2 px-3 text-slate-550 italic truncate max-w-[200px]" :title="att.teacherNote">
+                                    {{ att.teacherNote || '-' }}
+                                  </td>
+                                  <td class="py-2 px-3 text-right space-x-1.5">
+                                    <button
+                                      @click="openGradingModal(att)"
+                                      class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded cursor-pointer transition-colors"
+                                    >
+                                      Sửa nhận xét
+                                    </button>
+                                    <button
+                                      @click="saveOfficialScore(g.studentId, att.score)"
+                                      :disabled="savingOfficialScore[g.studentId]"
+                                      class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded cursor-pointer transition-colors"
+                                    >
+                                      Lưu điểm này
+                                    </button>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
 
               <div v-else class="text-center py-12 text-on-surface-variant/70 font-semibold flex flex-col items-center justify-center">
                 <span class="material-symbols-outlined text-[36px] text-slate-300 mb-1">group</span>
@@ -686,10 +850,19 @@
 
                 <!-- Detailed Question Performance Table -->
                 <div class="space-y-3">
-                  <h4 class="font-bold text-slate-800 text-body-sm flex items-center gap-1.5">
-                    <span class="material-symbols-outlined text-slate-500">list_alt</span>
-                    Phân tích chi tiết từng câu hỏi
-                  </h4>
+                  <div class="flex justify-between items-center">
+                    <h4 class="font-bold text-slate-800 text-body-sm flex items-center gap-1.5">
+                      <span class="material-symbols-outlined text-slate-500">list_alt</span>
+                      Phân tích chi tiết từng câu hỏi
+                    </h4>
+                    <button 
+                      @click="openAddQuestion" 
+                      class="px-3 py-1.5 bg-primary-container hover:bg-primary text-white font-bold text-body-xs rounded-lg flex items-center gap-1 cursor-pointer"
+                    >
+                      <span class="material-symbols-outlined text-[14px]">add</span>
+                      Thêm câu hỏi mới
+                    </button>
+                  </div>
 
                   <div class="border border-slate-200/80 rounded-xl overflow-hidden bg-white">
                     <table class="w-full text-left border-collapse text-body-sm">
@@ -700,6 +873,7 @@
                           <th class="py-2.5 px-4 text-center">Số lượt làm</th>
                           <th class="py-2.5 px-4 text-center" v-if="activeQuiz?.quizType === 'TracNghiem'">Đúng / Sai</th>
                           <th class="py-2.5 px-4 text-center" v-if="activeQuiz?.quizType === 'TracNghiem'">Tỷ lệ đúng</th>
+                          <th class="py-2.5 px-4 text-right w-20">Kiểm soát</th>
                         </tr>
                       </thead>
                       <tbody class="divide-y divide-slate-100">
@@ -711,6 +885,16 @@
                               <span v-for="opt in qStat.options.split('|')" :key="opt" :class="{'text-emerald-600 font-bold': qStat.correctAnswer && opt.startsWith(qStat.correctAnswer)}">
                                 {{ opt }}
                               </span>
+                            </div>
+                            
+                            <!-- Selection breakdown of student answers -->
+                            <div v-if="qStat.optionBreakdown && activeQuiz?.quizType === 'TracNghiem'" class="mt-2 p-2 bg-slate-50 border border-slate-100 rounded-lg text-body-xs font-semibold text-slate-500 space-y-1">
+                              <span class="font-bold text-slate-600 block mb-0.5">Phân tích đáp án học sinh chọn:</span>
+                              <div class="flex gap-4">
+                                <span v-for="(count, key) in qStat.optionBreakdown" :key="key" :class="{'text-emerald-600 font-bold': key === qStat.correctAnswer}">
+                                  Lựa chọn {{ key }}: {{ count }} lượt ({{ qStat.attemptCount > 0 ? Math.round((count / qStat.attemptCount) * 100) : 0 }}%)
+                                </span>
+                              </div>
                             </div>
                           </td>
                           <td class="py-3 px-4 text-center font-semibold text-slate-600">{{ qStat.attemptCount }}</td>
@@ -724,6 +908,24 @@
                               qStat.successRate >= 80 ? 'text-emerald-600' :
                               qStat.successRate >= 50 ? 'text-amber-500' : 'text-rose-500'
                             ]">{{ qStat.successRate }}%</span>
+                          </td>
+                          <td class="py-3 px-4 text-right">
+                            <div class="flex justify-end gap-1">
+                              <button 
+                                @click="openEditQuestion(qStat)"
+                                class="p-1 text-primary-container hover:bg-slate-100 rounded cursor-pointer"
+                                title="Chỉnh sửa câu hỏi"
+                              >
+                                <span class="material-symbols-outlined text-[18px]">edit</span>
+                              </button>
+                              <button 
+                                @click="deleteQuestion(qStat.questionId)"
+                                class="p-1 text-rose-500 hover:bg-rose-50 rounded cursor-pointer"
+                                title="Xóa câu hỏi"
+                              >
+                                <span class="material-symbols-outlined text-[18px]">delete</span>
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       </tbody>
@@ -760,6 +962,60 @@
                   <p class="text-body-sm text-slate-800 bg-white/60 p-3 rounded-lg border border-amber-100/50 leading-relaxed font-semibold">
                     {{ q.questionText }}
                   </p>
+
+                  <!-- Existing Answer Text -->
+                  <div v-if="q.answerText" class="mt-2 p-3 bg-emerald-50 border border-emerald-100 rounded-lg text-body-sm text-emerald-800 leading-normal relative font-semibold">
+                    <span class="absolute top-2 right-2 flex items-center text-[10px] text-emerald-600 font-bold bg-emerald-100 px-1.5 py-0.5 rounded">Đã trả lời</span>
+                    <div class="font-bold text-emerald-950 flex items-center gap-1 mb-1">
+                      <span class="material-symbols-outlined text-[16px]">chat</span> Phản hồi của bạn:
+                    </div>
+                    <p class="italic">"{{ q.answerText }}"</p>
+                    <button 
+                      v-if="activeReplyDoubtId !== q.id"
+                      @click="openReplyDoubt(q)" 
+                      class="mt-2 text-indigo-600 hover:text-indigo-800 text-[11px] font-bold underline cursor-pointer flex items-center gap-0.5 transition-colors"
+                    >
+                      <span class="material-symbols-outlined text-[12px]">edit</span> Sửa phản hồi
+                    </button>
+                  </div>
+
+                  <!-- Reply Button if not answered -->
+                  <div v-if="!q.answerText && activeReplyDoubtId !== q.id" class="mt-2 flex justify-start">
+                    <button 
+                      @click="openReplyDoubt(q)" 
+                      class="px-3 py-1.5 bg-primary-container hover:bg-primary text-white font-bold text-body-xs rounded-lg flex items-center gap-1 cursor-pointer transition-all active:scale-95"
+                    >
+                      <span class="material-symbols-outlined text-[14px]">reply</span> Phản hồi thắc mắc
+                    </button>
+                  </div>
+
+                  <!-- Reply Input Form -->
+                  <div v-if="activeReplyDoubtId === q.id" class="mt-2.5 p-3 bg-white border border-slate-200 rounded-xl space-y-2">
+                    <label class="block font-bold text-slate-700 text-[11px]">Nội dung phản hồi học viên:</label>
+                    <textarea 
+                      v-model="replyTexts[q.id]" 
+                      rows="2" 
+                      class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-body-sm focus:outline-none focus:border-primary-container font-semibold" 
+                      placeholder="Nhập phản hồi câu hỏi thắc mắc này..."
+                    ></textarea>
+                    <div class="flex justify-end gap-2 pt-1 border-t border-slate-100">
+                      <button 
+                        @click="activeReplyDoubtId = null" 
+                        class="px-3 py-1.5 border border-slate-200 hover:bg-slate-50 text-slate-600 font-semibold text-body-xs rounded-lg cursor-pointer"
+                      >
+                        Hủy
+                      </button>
+                      <button 
+                        @click="submitReplyDoubt(q)" 
+                        :disabled="submittingReply[q.id] || !replyTexts[q.id]?.trim()" 
+                        class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-body-xs rounded-lg flex items-center gap-1 cursor-pointer transition-all active:scale-95 disabled:opacity-50"
+                      >
+                        <span v-if="submittingReply[q.id]" class="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full"></span>
+                        <span class="material-symbols-outlined text-[14px]" v-else>send</span>
+                        Gửi phản hồi
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -780,6 +1036,375 @@
             </button>
           </div>
 
+        </div>
+      </div>
+    </teleport>
+
+
+
+    <!-- Tab 2: Thời khóa biểu tuần -->
+    <div v-if="activeTab === 'timetable'" class="space-y-4 animate-fade-in">
+      <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl p-6 shadow-[0_12px_24px_rgba(0,0,0,0.05)]">
+        <!-- Week Switcher Controls -->
+        <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5 flex-wrap gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-primary-container/10 flex items-center justify-center text-primary-container">
+              <span class="material-symbols-outlined text-[24px]">calendar_month</span>
+            </div>
+            <div>
+              <h3 class="font-title-md text-body-lg font-bold text-primary-container">Lịch dạy tuần tổng quát</h3>
+              <p class="text-body-sm text-on-surface-variant">Lịch dạy tổng hợp tất cả các lớp đang phụ trách trong tuần</p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 bg-white/60 border border-outline-variant/30 px-3 py-2 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+            <button @click="prevWeek" class="w-8 h-8 rounded-lg hover:bg-primary-container/5 text-primary-container flex items-center justify-center cursor-pointer transition-colors active:scale-95" title="Tuần trước">
+              <span class="material-symbols-outlined text-[20px]">chevron_left</span>
+            </button>
+            
+            <div class="flex items-center gap-1.5 bg-primary-container/[0.03] border border-outline-variant/20 rounded-lg px-2 py-1 hover:bg-primary-container/[0.07] transition-all cursor-pointer">
+              <span class="material-symbols-outlined text-[16px] text-primary-container">event</span>
+              <input 
+                type="date" 
+                v-model="selectedDatePickerDate" 
+                class="bg-transparent text-[11px] font-bold text-primary-container outline-none border-none cursor-pointer font-mono p-0"
+                style="color-scheme: light;"
+                title="Chọn ngày"
+              />
+            </div>
+
+            <span class="text-[12px] font-bold text-primary-container px-2 min-w-[170px] text-center tracking-wide font-mono">
+              {{ formattedWeekRange }}
+            </span>
+
+            <button @click="nextWeek" class="w-8 h-8 rounded-lg hover:bg-primary-container/5 text-primary-container flex items-center justify-center cursor-pointer transition-colors active:scale-95" title="Tuần sau">
+              <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+            </button>
+
+            <button @click="goToToday" class="ml-1 px-3 py-1.5 rounded-lg bg-primary-container text-white text-[10px] font-extrabold uppercase hover:bg-primary transition-colors cursor-pointer active:scale-95 flex items-center gap-1">
+              <span class="material-symbols-outlined text-[12px] text-white">today</span>
+              {{ todayLabel }}
+            </button>
+          </div>
+
+          <span class="px-3 py-1 bg-primary-container/10 text-primary-container border border-primary-container/20 rounded-full text-body-xs font-semibold">
+            Tổng cộng: {{ combinedSchedules.length }} buổi dạy / tuần
+          </span>
+        </div>
+
+        <!-- Desktop View: Timetable Grid -->
+        <div class="hidden lg:block overflow-x-auto">
+          <table class="calendar-grid-table w-full border-collapse border border-slate-300 text-body-sm bg-white rounded-xl overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.02)]">
+            <thead>
+              <tr class="bg-[#281545] text-white">
+                <th class="border border-slate-300 p-3.5 text-center font-bold w-28 text-[11px] uppercase tracking-wider bg-slate-900/90">BUỔI</th>
+                <th 
+                  v-for="day in weekDays" 
+                  :key="day.value" 
+                  :class="[
+                    isToday(day.value) ? 'bg-indigo-950 text-white font-extrabold border-2 border-indigo-400' : 'border border-slate-300 bg-[#281545]',
+                    'p-3.5 text-center w-40'
+                  ]"
+                >
+                  <div class="font-extrabold text-[12px] uppercase tracking-wider flex items-center justify-center gap-1">
+                    {{ day.label.toUpperCase() }}
+                    <span v-if="isToday(day.value)" class="px-1.5 py-0.5 rounded bg-indigo-500 text-[8px] uppercase tracking-normal font-sans font-bold">Hôm nay</span>
+                  </div>
+                  <div class="text-[10px] text-white/80 font-mono font-bold mt-0.5">({{ getDayDateString(day.value) }})</div>
+                </th>
+                <th class="border border-slate-300 p-3.5 text-center font-bold w-24 text-[11px] uppercase tracking-wider bg-slate-900/90">GHI CHÚ</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-300">
+              <tr v-for="session in ['Sáng', 'Chiều', 'Tối']" :key="session" class="hover:bg-slate-50/20">
+                <td class="border border-slate-300 p-4 font-bold text-center align-middle bg-slate-50/60 text-slate-800 w-28 uppercase">
+                  <div class="font-extrabold text-slate-800 text-[11px] tracking-wider flex items-center justify-center gap-1">
+                    {{ session }}
+                  </div>
+                </td>
+                
+                <td 
+                  v-for="day in weekDays" 
+                  :key="day.value" 
+                  :class="[
+                    isToday(day.value) ? 'bg-indigo-50/10 border-x-2 border-x-indigo-400/30 shadow-inner' : 'bg-white',
+                    'border border-slate-300 p-2.5 align-top min-w-[170px]'
+                  ]"
+                >
+                  <div class="h-full min-h-[120px] flex flex-col justify-start items-stretch gap-2.5">
+                    <div
+                      v-for="s in getSchedulesForDayAndSession(day.value, session)"
+                      :key="s.scheduleId"
+                      @click="showDetailsModal(s, day.value)"
+                      class="bg-indigo-50/40 border-l-4 border-l-indigo-500 border-indigo-400 text-indigo-900 shadow-sm w-full p-3 rounded-lg border-2 text-left space-y-1.5 transition-all duration-200 hover:scale-[1.02] hover:shadow-md hover:-translate-y-0.5 cursor-pointer relative overflow-hidden"
+                    >
+                      <div class="text-[12px] font-extrabold leading-tight text-slate-800">
+                        {{ s.courseName }}
+                      </div>
+                      <div class="text-[10px] opacity-75 font-semibold truncate text-slate-500" :title="s.className">
+                        {{ s.className }}
+                      </div>
+                      <div class="text-[10px] opacity-75 font-semibold flex items-center gap-1 text-slate-600">
+                        <span class="material-symbols-outlined text-[12px] shrink-0">meeting_room</span>
+                        <span>{{ formatRoom(s.room) }}</span>
+                      </div>
+                      <div class="text-[10px] opacity-75 font-semibold flex items-center gap-1 text-slate-600">
+                        <span class="material-symbols-outlined text-[12px] shrink-0">schedule</span>
+                        <span>{{ s.startTime.substring(0, 5) }} - {{ s.endTime.substring(0, 5) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td class="border border-slate-300 p-3 bg-white"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile View -->
+        <div class="lg:hidden space-y-4">
+          <div
+            v-for="day in weekDays"
+            :key="day.value"
+            :class="[
+              isToday(day.value) ? 'border-2 border-indigo-400 bg-indigo-50/10' : 'border border-slate-200 bg-slate-50/40',
+              'rounded-xl p-4 space-y-3'
+            ]"
+          >
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+              <span class="text-body-md font-bold text-blue-600 uppercase flex items-center gap-1">
+                {{ day.label }} ({{ getDayDateString(day.value) }})
+                <span v-if="isToday(day.value)" class="px-1.5 py-0.5 rounded bg-indigo-500 text-[8px] text-white uppercase font-sans">Hôm nay</span>
+              </span>
+              <span v-if="getSchedulesForDay(day.value).length === 0" class="text-body-xs text-on-surface-variant/60 font-medium">Nghỉ dạy</span>
+              <span v-else class="px-2.5 py-0.5 bg-primary-container/10 text-primary-container rounded-full text-body-xs font-bold border border-primary-container/20">
+                {{ getSchedulesForDay(day.value).length }} buổi dạy
+              </span>
+            </div>
+
+            <div v-if="getSchedulesForDay(day.value).length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div
+                v-for="s in getSchedulesForDay(day.value)"
+                :key="s.scheduleId"
+                @click="showDetailsModal(s, day.value)"
+                class="bg-indigo-50/50 border-l-4 border-l-indigo-500 border-indigo-400 text-indigo-900 shadow-sm p-4 rounded-xl border-2 flex flex-col justify-between gap-3 transition-colors cursor-pointer"
+              >
+                <div class="space-y-1 flex-1">
+                  <div class="text-body-sm font-bold text-slate-800">
+                    {{ s.courseName }}
+                  </div>
+                  <div class="text-body-xs font-semibold opacity-85 text-slate-500">{{ s.className }}</div>
+                  <div class="text-body-xs flex items-center gap-1 opacity-75 mt-1 font-semibold text-slate-600">
+                    <span class="material-symbols-outlined text-[14px]">meeting_room</span>
+                    <span>{{ formatRoom(s.room) }}</span>
+                  </div>
+                  <div class="text-body-xs flex items-center gap-1 opacity-75 font-semibold text-slate-600">
+                    <span class="material-symbols-outlined text-[14px]">schedule</span>
+                    <span>{{ s.startTime.substring(0, 5) }} - {{ s.endTime.substring(0, 5) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Tab 3: Yêu cầu hỗ trợ -->
+    <div v-if="activeTab === 'support'" class="space-y-6 animate-fade-in">
+      <div class="glass-panel p-6 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/70 border border-slate-200/50 shadow-sm">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-indigo-600/10 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-indigo-600 text-[26px]">support_agent</span>
+          </div>
+          <div>
+            <h3 class="font-title-md text-body-lg font-bold text-primary-container">Trung tâm hỗ trợ Giảng viên</h3>
+            <p class="text-body-sm text-readable-secondary mt-1">
+              Gửi yêu cầu đổi lịch dạy, báo sự cố phòng học hoặc các yêu cầu kỹ thuật trực tiếp cho Ban quản lý.
+            </p>
+          </div>
+        </div>
+        <button
+          @click="supportDialog = true"
+          class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-body-sm transition-all flex items-center gap-2 cursor-pointer active:scale-95 shadow-md shrink-0"
+        >
+          <span class="material-symbols-outlined text-[18px]">add_comment</span>
+          Gửi yêu cầu hỗ trợ mới
+        </button>
+      </div>
+
+      <!-- Unified History -->
+      <div class="bg-white/70 border border-slate-200/50 shadow-sm rounded-xl overflow-hidden p-6 space-y-4">
+        <h3 class="font-bold text-primary-container text-body-lg flex items-center gap-2 border-b pb-3 border-slate-100">
+          <span class="material-symbols-outlined text-[20px]">history</span>
+          Lịch sử gửi yêu cầu
+        </h3>
+
+        <div v-if="loadingSupport" class="text-center py-12">
+          <span class="animate-spin inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full mb-2"></span>
+          <p class="text-body-sm text-on-surface-variant">Đang tải lịch sử yêu cầu...</p>
+        </div>
+
+        <div v-else-if="supportMessages.length === 0" class="text-center py-12 text-on-surface-variant font-medium">
+          Chưa có yêu cầu hỗ trợ nào được tạo.
+        </div>
+
+        <div v-else class="space-y-4 divide-y divide-slate-100">
+          <div v-for="item in supportMessages" :key="item.id" class="pt-4 first:pt-0 space-y-2">
+            <div class="flex items-center justify-between text-body-xs font-bold">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border" :class="[
+                item.status === 'Resolved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                item.status === 'Rejected' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                'bg-amber-50 text-amber-700 border-amber-200'
+              ]">{{ item.status === 'Resolved' ? 'Đã duyệt' : item.status === 'Rejected' ? 'Từ chối' : 'Chờ duyệt' }}</span>
+              <span class="text-slate-400 font-semibold">{{ formatDate(item.createdAt) }}</span>
+            </div>
+
+            <p class="text-body-sm text-slate-800 bg-slate-50 p-4 rounded-xl leading-relaxed font-semibold">
+              {{ item.message }}
+            </p>
+
+            <div v-if="item.adminResponse" class="p-4 bg-indigo-50/50 border border-indigo-100/50 rounded-xl text-body-sm text-indigo-950 font-semibold leading-relaxed">
+              <div class="font-bold flex items-center gap-1 mb-1 text-indigo-900">
+                <span class="material-symbols-outlined text-[16px]">reply</span>
+                Phản hồi từ Admin:
+              </div>
+              <p class="italic">"{{ item.adminResponse }}"</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Details Modal -->
+    <teleport to="body">
+      <div v-if="detailsModalOpen" class="fixed inset-0 glass-backdrop z-[99999] flex items-center justify-center p-4">
+        <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 animate-scale-in">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+            <h3 class="font-bold text-primary-container text-[16px] flex items-center gap-1.5">
+              <span class="material-symbols-outlined">info</span>
+              Chi tiết buổi học
+            </h3>
+            <button @click="closeDetailsModal" class="text-on-surface-variant hover:text-primary-container cursor-pointer flex items-center justify-center">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <div class="space-y-3 text-[14px]">
+            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-100 space-y-2">
+              <div class="font-bold text-slate-800">{{ activeDetailsSchedule?.courseName }}</div>
+              <div class="text-body-xs font-semibold text-slate-500">{{ activeDetailsSchedule?.className }}</div>
+            </div>
+
+            <div class="space-y-2">
+              <div class="flex items-center gap-2 text-slate-650">
+                <span class="material-symbols-outlined text-[18px]">meeting_room</span>
+                <span><strong>Phòng học:</strong> {{ formatRoom(activeDetailsSchedule?.room) }}</span>
+              </div>
+              <div class="flex items-center gap-2 text-slate-650">
+                <span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                <span><strong>Ngày dạy:</strong> {{ activeDetailsScheduleDate }}</span>
+              </div>
+              <div class="flex items-center gap-2 text-slate-650">
+                <span class="material-symbols-outlined text-[18px]">schedule</span>
+                <span><strong>Khung giờ:</strong> {{ activeDetailsSchedule?.startTime.substring(0, 5) }} - {{ activeDetailsSchedule?.endTime.substring(0, 5) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
+            <button
+              @click="goToClassLessons(activeDetailsSchedule)"
+              class="px-4 py-2 bg-primary-container text-white rounded-lg font-semibold text-body-sm hover:bg-primary transition-all flex items-center gap-1 cursor-pointer active:scale-95"
+            >
+              Xem nội dung bài dạy
+            </button>
+            <button
+              @click="requestSupportForSession(activeDetailsSchedule, activeDetailsScheduleDate)"
+              class="px-4 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-lg font-semibold text-body-sm hover:bg-indigo-100 transition-all flex items-center gap-1 cursor-pointer active:scale-95"
+            >
+              <span class="material-symbols-outlined text-[16px]">chat</span>
+              Yêu cầu hỗ trợ
+            </button>
+            <button
+              @click="closeDetailsModal"
+              class="px-4 py-2 border border-outline-variant rounded-lg font-semibold text-body-sm text-on-surface-variant hover:bg-slate-50 transition-colors"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
+
+    <!-- Dialog: Support Request Modal -->
+    <teleport to="body">
+      <div v-if="supportDialog" class="fixed inset-0 glass-backdrop z-[99999] flex items-center justify-center p-4">
+        <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-xl shadow-[0_20px_40px_rgba(0,31,63,0.12)] max-w-md w-full p-6 space-y-4 animate-scale-in flex flex-col">
+          <div class="flex items-center gap-3 text-primary-container border-b border-white/40 pb-3 justify-between">
+            <h3 class="font-title-md text-[18px] font-bold flex items-center gap-2">
+              <span class="material-symbols-outlined text-[24px] text-indigo-600">chat</span>
+              Gửi yêu cầu hỗ trợ mới
+            </h3>
+            <button @click="supportDialog = false" class="text-on-surface-variant hover:text-primary-container cursor-pointer">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          
+          <div class="space-y-4">
+            <div class="space-y-1">
+              <label class="text-body-sm font-semibold text-primary-container block">Chọn lớp học cần hỗ trợ *</label>
+              <select
+                v-model="supportForm.classId"
+                class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container transition-all cursor-pointer font-semibold text-slate-700"
+              >
+                <option :value="null" disabled>-- Chọn lớp học --</option>
+                <option v-for="cls in classes" :key="cls.classId" :value="cls.classId">
+                  {{ cls.courseName }} ({{ cls.className }})
+                </option>
+              </select>
+            </div>
+
+            <div class="space-y-1">
+              <label class="text-body-sm font-semibold text-primary-container block">Loại yêu cầu hỗ trợ *</label>
+              <select
+                v-model="supportForm.supportType"
+                class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container transition-all cursor-pointer font-semibold text-slate-700"
+              >
+                <option value="Reschedule">🔄 Yêu cầu đổi lịch dạy</option>
+                <option value="Technical">💻 Hỗ trợ kỹ thuật / Phòng học</option>
+                <option value="Other">📝 Ý kiến đóng góp / Khác</option>
+              </select>
+            </div>
+
+            <div class="space-y-1">
+              <label class="text-body-sm font-semibold text-primary-container block">Nội dung yêu cầu hỗ trợ *</label>
+              <textarea
+                v-model="supportForm.message"
+                rows="3"
+                class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-3 py-2 text-body-sm text-primary placeholder-on-surface-variant/50 focus:outline-none focus:border-on-tertiary-container transition-all resize-none font-semibold text-slate-700"
+                placeholder="Nhập lý do đổi lịch hoặc mô tả sự cố kỹ thuật..."
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-3 pt-3 border-t border-white/40">
+            <button
+              @click="supportDialog = false"
+              class="px-4 py-2 rounded-lg border border-slate-200 text-on-surface-variant font-semibold text-[13px] hover:bg-slate-50 transition-colors cursor-pointer"
+            >
+              Hủy
+            </button>
+            <button
+              @click="submitSupportMessage"
+              :disabled="submittingSupport || !supportForm.message.trim() || !supportForm.classId"
+              class="px-4 py-2 rounded-lg bg-primary-container text-white font-semibold text-[13px] hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer active:scale-95"
+            >
+              <span v-if="submittingSupport" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
+              Gửi yêu cầu
+            </button>
+          </div>
         </div>
       </div>
     </teleport>
@@ -827,14 +1452,132 @@
       </div>
     </teleport>
 
+    <!-- DIALOG: CHỈNH SỬA CÂU HỎI -->
+    <teleport to="body">
+      <div v-if="showEditQuestionModal" class="fixed inset-0 glass-backdrop z-[999999] flex items-center justify-center p-4">
+        <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 animate-scale-in">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+            <h3 class="font-bold text-primary-container text-[16px] flex items-center gap-1">
+              <span class="material-symbols-outlined text-primary-container">edit</span>
+              Chỉnh sửa câu hỏi
+            </h3>
+            <button @click="showEditQuestionModal = false" class="text-on-surface-variant hover:text-primary-container cursor-pointer flex items-center justify-center">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <div class="space-y-4 text-[14px]">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Nội dung câu hỏi *</label>
+              <textarea v-model="editingQuestion.questionText" rows="3" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-body-sm focus:outline-none focus:border-primary-container font-semibold" placeholder="Nhập câu hỏi..."></textarea>
+            </div>
+            
+            <div v-if="activeQuiz?.quizType === 'TracNghiem'">
+              <label class="block font-semibold text-slate-700 mb-1">Các lựa chọn đáp án (Mỗi dòng một lựa chọn) *</label>
+              <textarea v-model="editingQuestion.options" rows="4" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-body-sm focus:outline-none focus:border-primary-container font-mono" placeholder="Ví dụ:&#13;A. Lựa chọn 1&#13;B. Lựa chọn 2&#13;C. Lựa chọn 3&#13;D. Lựa chọn 4"></textarea>
+              <p class="text-[10px] text-slate-400 mt-1 italic font-semibold">Định dạng khuyên dùng: Bắt đầu mỗi dòng bằng kí tự chữ cái (A., B., C., D.) để hệ thống hiển thị chính xác.</p>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">
+                {{ activeQuiz?.quizType === 'TracNghiem' ? 'Đáp án đúng *' : 'Đáp án gợi ý / Từ khóa *' }}
+              </label>
+              <select v-if="activeQuiz?.quizType === 'TracNghiem'" v-model="editingQuestion.correctAnswer" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-body-sm focus:outline-none focus:border-primary-container font-bold text-slate-700">
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+              </select>
+              <textarea v-else v-model="editingQuestion.correctAnswer" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-body-sm focus:outline-none focus:border-primary-container font-semibold" placeholder="Nhập đáp án mẫu gợi ý..."></textarea>
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
+            <button
+              @click="showEditQuestionModal = false"
+              class="px-4 py-2 border border-outline-variant rounded-lg font-semibold text-body-sm text-on-surface-variant hover:bg-slate-50 transition-colors"
+            >
+              Hủy
+            </button>
+            <button
+              @click="saveQuestion"
+              class="px-4 py-2 bg-primary-container text-white rounded-lg font-semibold text-body-sm hover:bg-primary transition-all flex items-center gap-1 cursor-pointer active:scale-95"
+            >
+              Cập nhật
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
+
+    <!-- DIALOG: THÊM CÂU HỎI MỚI -->
+    <teleport to="body">
+      <div v-if="showAddQuestionModal" class="fixed inset-0 glass-backdrop z-[999999] flex items-center justify-center p-4">
+        <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 animate-scale-in">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+            <h3 class="font-bold text-primary-container text-[16px] flex items-center gap-1">
+              <span class="material-symbols-outlined text-primary-container">add_box</span>
+              Thêm câu hỏi mới
+            </h3>
+            <button @click="showAddQuestionModal = false" class="text-on-surface-variant hover:text-primary-container cursor-pointer flex items-center justify-center">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <div class="space-y-4 text-[14px]">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Nội dung câu hỏi *</label>
+              <textarea v-model="newQuestionForm.questionText" rows="3" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-body-sm focus:outline-none focus:border-primary-container font-semibold" placeholder="Nhập câu hỏi..."></textarea>
+            </div>
+            
+            <div v-if="activeQuiz?.quizType === 'TracNghiem'">
+              <label class="block font-semibold text-slate-700 mb-1">Các lựa chọn đáp án (Mỗi dòng một lựa chọn) *</label>
+              <textarea v-model="newQuestionForm.options" rows="4" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-body-sm focus:outline-none focus:border-primary-container font-mono" placeholder="Ví dụ:&#13;A. Lựa chọn 1&#13;B. Lựa chọn 2&#13;C. Lựa chọn 3&#13;D. Lựa chọn 4"></textarea>
+              <p class="text-[10px] text-slate-400 mt-1 italic font-semibold">Định dạng khuyên dùng: Bắt đầu mỗi dòng bằng kí tự chữ cái (A., B., C., D.) để hệ thống hiển thị chính xác.</p>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">
+                {{ activeQuiz?.quizType === 'TracNghiem' ? 'Đáp án đúng *' : 'Đáp án gợi ý / Từ khóa *' }}
+              </label>
+              <select v-if="activeQuiz?.quizType === 'TracNghiem'" v-model="newQuestionForm.correctAnswer" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-body-sm focus:outline-none focus:border-primary-container font-bold text-slate-700">
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+              </select>
+              <textarea v-else v-model="newQuestionForm.correctAnswer" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-body-sm focus:outline-none focus:border-primary-container font-semibold" placeholder="Nhập đáp án mẫu gợi ý..."></textarea>
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
+            <button
+              @click="showAddQuestionModal = false"
+              class="px-4 py-2 border border-outline-variant rounded-lg font-semibold text-body-sm text-on-surface-variant hover:bg-slate-50 transition-colors"
+            >
+              Hủy
+            </button>
+            <button
+              @click="saveNewQuestion"
+              class="px-4 py-2 bg-primary-container text-white rounded-lg font-semibold text-body-sm hover:bg-primary transition-all flex items-center gap-1 cursor-pointer active:scale-95"
+            >
+              Lưu lại
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
+
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, inject, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAuthStore, useCourseStore } from '../../stores'
 import api from '../../services/api'
 
+const route = useRoute()
 const authStore = useAuthStore()
 const courseStore = useCourseStore()
 const showSnackbar = inject('showSnackbar')
@@ -877,7 +1620,6 @@ const lessonForm = ref({
   fileName: '',
   lessonDate: ''
 })
-
 const quizModal = ref(false)
 const quizForm = ref({
   title: '',
@@ -887,6 +1629,22 @@ const quizForm = ref({
   questions: [
     { questionText: '', options: '', correctAnswer: 'A' }
   ]
+})
+
+watch(() => quizForm.value.quizType, (newType) => {
+  if (newType === 'LapTrinh') {
+    quizForm.value.questions = [
+      { 
+        questionText: '# Bài toán cộng hai số\n\nViết hàm sum(a, b) nhận vào hai số nguyên a và b. Trả về tổng của chúng.', 
+        options: 'function sum(a, b) {\n  // Viết mã nguồn tại đây\n  \n}', 
+        correctAnswer: 'JavaScript' 
+      }
+    ]
+  } else {
+    quizForm.value.questions = [
+      { questionText: '', options: '', correctAnswer: 'A' }
+    ]
+  }
 })
 
 // AI Quiz generation state
@@ -900,6 +1658,61 @@ const submissionsModal = ref(false)
 const activeQuiz = ref(null)
 const submissions = ref([])
 const loadingSubmissions = ref(false)
+
+const expandedStudentIds = ref([])
+function toggleStudentExpand(studentId) {
+  const index = expandedStudentIds.value.indexOf(studentId)
+  if (index > -1) {
+    expandedStudentIds.value.splice(index, 1)
+  } else {
+    expandedStudentIds.value.push(studentId)
+  }
+}
+
+const studentSubmissionsGrouped = computed(() => {
+  const groups = {}
+  submissions.value.forEach(sub => {
+    if (!groups[sub.studentId]) {
+      groups[sub.studentId] = {
+        studentId: sub.studentId,
+        studentName: sub.studentName,
+        attempts: []
+      }
+    }
+    groups[sub.studentId].attempts.push(sub)
+  })
+  
+  // Sort attempts by SubmittedAt descending
+  Object.values(groups).forEach(g => {
+    g.attempts.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt))
+    
+    // Calculate best score
+    const scores = g.attempts.map(a => a.score).filter(s => s !== null && s !== undefined)
+    g.bestScore = scores.length > 0 ? Math.max(...scores) : 0
+  })
+  
+  return Object.values(groups)
+})
+
+const savingOfficialScore = ref({})
+async function saveOfficialScore(studentId, score) {
+  savingOfficialScore.value[studentId] = true
+  try {
+    await api.post(`/api/v1/quizzes/${activeQuiz.value.quizId}/save-official-score`, {
+      studentId,
+      score
+    })
+    showSnackbar('Lưu điểm chính thức thành công!', 'success')
+    // Refresh submissions
+    const res = await api.get(`/api/v1/quizzes/${activeQuiz.value.quizId}/submissions`)
+    submissions.value = res.data || []
+  } catch (e) {
+    console.error('Error saving official score:', e)
+    showSnackbar(e.response?.data?.message || 'Lỗi khi lưu điểm chính thức', 'error')
+  } finally {
+    savingOfficialScore.value[studentId] = false
+  }
+}
 
 const submissionsActiveTab = ref('list')
 const statsData = ref(null)
@@ -915,6 +1728,19 @@ const gradeForm = ref({
   score: '',
   teacherNote: ''
 })
+
+const showEditQuestionModal = ref(false)
+const editingQuestion = ref(null)
+const showAddQuestionModal = ref(false)
+const newQuestionForm = ref({
+  questionText: '',
+  options: '',
+  correctAnswer: 'A'
+})
+
+const activeReplyDoubtId = ref(null)
+const replyTexts = ref({})
+const submittingReply = ref({})
 
 // Debounce timer for search input
 let searchTimeout = null
@@ -1150,6 +1976,7 @@ function openAddQuizModal() {
     title: '',
     durationMinutes: 15,
     quizType: 'TracNghiem',
+    maxAttempts: 1,
     lessonDate: selectedDate.value,
     questions: [
       { questionText: '', options: '', correctAnswer: 'A' }
@@ -1250,6 +2077,7 @@ async function saveQuiz() {
       title: quizForm.value.title,
       durationMinutes: quizForm.value.durationMinutes,
       quizType: quizForm.value.quizType,
+      maxAttempts: quizForm.value.maxAttempts || 1,
       lessonDate: quizForm.value.lessonDate || null,
       questions: formattedQuestions
     })
@@ -1336,6 +2164,142 @@ async function generateAiSummary() {
   }
 }
 
+function openEditQuestion(qStat) {
+  editingQuestion.value = {
+    questionId: qStat.questionId,
+    questionText: qStat.questionText,
+    options: qStat.options ? qStat.options.replace(/\|/g, '\n') : '',
+    correctAnswer: qStat.correctAnswer || 'A'
+  }
+  showEditQuestionModal.value = true
+}
+
+async function saveQuestion() {
+  if (!editingQuestion.value.questionText.trim()) {
+    showSnackbar('Vui lòng nhập nội dung câu hỏi', 'error')
+    return
+  }
+  const optStr = activeQuiz.value.quizType === 'TracNghiem' 
+    ? (editingQuestion.value.options || '').replace(/\r?\n/g, '|')
+    : null
+  try {
+    await api.put(`/api/v1/quizzes/questions/${editingQuestion.value.questionId}`, {
+      questionText: editingQuestion.value.questionText,
+      options: optStr,
+      correctAnswer: editingQuestion.value.correctAnswer
+    })
+    showSnackbar('Cập nhật câu hỏi thành công', 'success')
+    showEditQuestionModal.value = false
+    fetchQuizStatistics(activeQuiz.value.quizId)
+  } catch (e) {
+    console.error('Error updating question:', e)
+    showSnackbar('Lỗi cập nhật câu hỏi', 'error')
+  }
+}
+
+async function deleteQuestion(qId) {
+  if (!confirm('Bạn có chắc muốn xóa câu hỏi này khỏi đề thi? Kết quả điểm các bài thi cũ sẽ không tự động tính lại.')) return
+  try {
+    await api.delete(`/api/v1/quizzes/questions/${qId}`)
+    showSnackbar('Xóa câu hỏi thành công', 'success')
+    fetchQuizStatistics(activeQuiz.value.quizId)
+  } catch (e) {
+    console.error('Error deleting question:', e)
+    showSnackbar('Lỗi xóa câu hỏi', 'error')
+  }
+}
+
+function openAddQuestion() {
+  newQuestionForm.value = {
+    questionText: '',
+    options: '',
+    correctAnswer: 'A'
+  }
+  showAddQuestionModal.value = true
+}
+
+async function saveNewQuestion() {
+  if (!newQuestionForm.value.questionText.trim()) {
+    showSnackbar('Vui lòng nhập nội dung câu hỏi', 'error')
+    return
+  }
+  const optStr = activeQuiz.value.quizType === 'TracNghiem' 
+    ? (newQuestionForm.value.options || '').replace(/\r?\n/g, '|')
+    : null
+  try {
+    await api.post(`/api/v1/quizzes/${activeQuiz.value.quizId}/questions-admin`, {
+      questionText: newQuestionForm.value.questionText,
+      options: optStr,
+      correctAnswer: newQuestionForm.value.correctAnswer
+    })
+    showSnackbar('Thêm câu hỏi mới thành công', 'success')
+    showAddQuestionModal.value = false
+    fetchQuizStatistics(activeQuiz.value.quizId)
+  } catch (e) {
+    console.error('Error adding question:', e)
+    showSnackbar('Lỗi thêm câu hỏi mới', 'error')
+  }
+}
+
+
+function openReplyDoubt(q) {
+  activeReplyDoubtId.value = q.id
+  replyTexts.value[q.id] = q.answerText || ''
+}
+
+async function submitReplyDoubt(q) {
+  const text = replyTexts.value[q.id]?.trim()
+  if (!text) return
+  submittingReply.value[q.id] = true
+  try {
+    await api.put(`/api/v1/quizzes/questions/${q.id}/answer`, {
+      answerText: text
+    })
+    showSnackbar('Gửi phản hồi thắc mắc thành công!', 'success')
+    activeReplyDoubtId.value = null
+    fetchStudentQuestions(activeQuiz.value.quizId)
+  } catch (e) {
+    console.error('Error answering student question:', e)
+    showSnackbar('Lỗi gửi phản hồi thắc mắc', 'error')
+  } finally {
+    submittingReply.value[q.id] = false
+  }
+}
+
+async function checkQueryOpenQuiz() {
+  const quizId = route.query.openQuizId
+  const classId = route.query.openClassId
+  if (quizId && classId && classes.value.length > 0) {
+    const clsIdInt = parseInt(classId)
+    const quizIdInt = parseInt(quizId)
+    const foundClass = classes.value.find(c => c.classId === clsIdInt)
+    if (foundClass) {
+      selectedClass.value = foundClass
+      await fetchTodayLessonAndQuizzes()
+      const foundQuiz = classQuizzes.value.find(q => q.quizId === quizIdInt)
+      if (foundQuiz) {
+        await openSubmissionsModal(foundQuiz)
+        submissionsActiveTab.value = route.query.openTab || 'questions'
+        
+        // Clean URL queries
+        const url = new URL(window.location)
+        url.searchParams.delete('openQuizId')
+        url.searchParams.delete('openClassId')
+        url.searchParams.delete('openTab')
+        window.history.replaceState({}, '', url)
+      }
+    }
+  }
+}
+
+watch(() => route.query, () => {
+  checkQueryOpenQuiz()
+}, { deep: true })
+
+watch(classes, () => {
+  checkQueryOpenQuiz()
+})
+
 
 function openGradingModal(sub) {
   activeSubmission.value = sub
@@ -1389,10 +2353,323 @@ function getStatusBadgeClass(status) {
   return map[status] || 'bg-slate-50 text-slate-700 border-slate-200/50'
 }
 
+// --- TAB TIMETABLE & SUPPORT REQUESTS STATE & ACTIONS ---
+const activeTab = ref('lessons')
+
+// 1. Weekly calendar state & navigation
+const currentDate = ref(new Date())
+const weekDays = [
+  { label: 'Thứ 2', value: 2 },
+  { label: 'Thứ 3', value: 3 },
+  { label: 'Thứ 4', value: 4 },
+  { label: 'Thứ 5', value: 5 },
+  { label: 'Thứ 6', value: 6 },
+  { label: 'Thứ 7', value: 7 },
+  { label: 'Chủ nhật', value: 0 }
+]
+
+function prevWeek() {
+  const d = new Date(currentDate.value)
+  d.setDate(d.getDate() - 7)
+  currentDate.value = d
+}
+
+function nextWeek() {
+  const d = new Date(currentDate.value)
+  d.setDate(d.getDate() + 7)
+  currentDate.value = d
+}
+
+function goToToday() {
+  currentDate.value = new Date()
+}
+
+function isToday(dayValue) {
+  const today = new Date()
+  const currentMon = new Date(currentWeekRange.value.monday)
+  const offset = dayValue === 0 ? 6 : dayValue - 2
+  currentMon.setDate(currentMon.getDate() + offset)
+  
+  return today.getDate() === currentMon.getDate() &&
+         today.getMonth() === currentMon.getMonth() &&
+         today.getFullYear() === currentMon.getFullYear()
+}
+
+const selectedDatePickerDate = computed({
+  get() {
+    const d = currentDate.value
+    const formatNum = (num) => String(num).padStart(2, '0')
+    return `${d.getFullYear()}-${formatNum(d.getMonth() + 1)}-${formatNum(d.getDate())}`
+  },
+  set(val) {
+    if (val) {
+      currentDate.value = new Date(val)
+    }
+  }
+})
+
+const todayLabel = computed(() => {
+  const today = new Date()
+  const formatNum = (num) => String(num).padStart(2, '0')
+  return `Hôm nay: ${formatNum(today.getDate())}/${formatNum(today.getMonth() + 1)}/${today.getFullYear()}`
+})
+
+const currentWeekRange = computed(() => {
+  const today = new Date(currentDate.value)
+  const day = today.getDay()
+  const diffToMonday = day === 0 ? -6 : 1 - day
+  const monday = new Date(today)
+  monday.setDate(today.getDate() + diffToMonday)
+  
+  const sunday = new Date(monday)
+  sunday.setDate(monday.getDate() + 6)
+  
+  return { monday, sunday }
+})
+
+const formattedWeekRange = computed(() => {
+  const mon = currentWeekRange.value.monday
+  const sun = currentWeekRange.value.sunday
+  const formatNum = (num) => String(num).padStart(2, '0')
+  return `Tuần: ${formatNum(mon.getDate())}/${formatNum(mon.getMonth() + 1)} - ${formatNum(sun.getDate())}/${formatNum(sun.getMonth() + 1)}/${sun.getFullYear()}`
+})
+
+function getDayDateString(dayValue) {
+  const start = new Date(currentWeekRange.value.monday)
+  const offset = (dayValue === 0 || dayValue === 1) ? 6 : dayValue - 2
+  start.setDate(start.getDate() + offset)
+  const formatNum = (num) => String(num).padStart(2, '0')
+  return `${formatNum(start.getDate())}/${formatNum(start.getMonth() + 1)}`
+}
+
+// 2. Timetable combined schedules computed
+const combinedSchedules = computed(() => {
+  const result = []
+  const currentFullName = authStore.currentUser?.fullName
+  
+  classes.value.forEach(cls => {
+    if (cls.status !== 'InProgress' && cls.status !== 'Opened') return
+    
+    // Nếu là giáo viên, lọc thêm họ tên giảng viên để loại bỏ các lớp trùng ID mẫu của người khác
+    if (isTeacher.value && currentFullName) {
+      if (cls.teacherName !== currentFullName && cls.teacherName2 !== currentFullName) return
+    }
+    
+    const scheds = cls.schedules || []
+    scheds.forEach(s => {
+      const sessionDate = new Date(currentWeekRange.value.monday)
+      const offset = s.dayOfWeek === 0 ? 6 : s.dayOfWeek - 2
+      sessionDate.setDate(sessionDate.getDate() + offset)
+      sessionDate.setHours(0, 0, 0, 0)
+
+      if (cls.startDate) {
+        const start = new Date(cls.startDate)
+        start.setHours(0, 0, 0, 0)
+        if (sessionDate < start) return
+      }
+      if (cls.endDate) {
+        const end = new Date(cls.endDate)
+        end.setHours(0, 0, 0, 0)
+        if (sessionDate > end) return
+      }
+
+      result.push({
+        ...s,
+        classId: cls.classId,
+        className: cls.className,
+        courseName: cls.courseName,
+        courseId: cls.courseId,
+        room: cls.room || s.classroom || 'N/A',
+        startDate: cls.startDate,
+        endDate: cls.endDate
+      })
+    })
+  })
+  return result.sort((a, b) => a.startTime.localeCompare(b.startTime))
+})
+
+function getSchedulesForDayAndSession(dayValue, session) {
+  return combinedSchedules.value.filter(s => {
+    if (s.dayOfWeek !== dayValue) return false
+    const hour = parseInt(s.startTime.split(':')[0], 10)
+    let sLabel = 'Tối'
+    if (hour < 12) sLabel = 'Sáng'
+    else if (hour < 18) sLabel = 'Chiều'
+    return sLabel === session
+  })
+}
+
+function getSchedulesForDay(dayValue) {
+  return combinedSchedules.value.filter(s => s.dayOfWeek === dayValue)
+}
+
+// Details Modal state
+const detailsModalOpen = ref(false)
+const activeDetailsSchedule = ref(null)
+const activeDetailsScheduleDate = ref('')
+
+function showDetailsModal(schedule, dayValue) {
+  activeDetailsSchedule.value = schedule
+  activeDetailsScheduleDate.value = getScheduleDate(dayValue)
+  detailsModalOpen.value = true
+}
+
+function closeDetailsModal() {
+  detailsModalOpen.value = false
+  activeDetailsSchedule.value = null
+  activeDetailsScheduleDate.value = ''
+}
+
+function getScheduleDate(dayValue) {
+  const start = new Date(currentWeekRange.value.monday)
+  const offset = (dayValue === 0 || dayValue === 1) ? 6 : dayValue - 2
+  start.setDate(start.getDate() + offset)
+  const formatNum = (num) => String(num).padStart(2, '0')
+  return `${formatNum(start.getDate())}/${formatNum(start.getMonth() + 1)}/${start.getFullYear()}`
+}
+
+function formatRoom(roomStr) {
+  if (!roomStr || roomStr === 'N/A') return 'Chưa xếp phòng'
+  const trimmed = roomStr.trim()
+  if (trimmed.startsWith('Phòng') || trimmed.startsWith('P.') || trimmed.startsWith('R.')) {
+    return trimmed
+  }
+  return 'Phòng ' + trimmed
+}
+
+function goToClassLessons(sched) {
+  if (!sched) return
+  const targetClass = classes.value.find(c => c.classId === sched.classId)
+  if (targetClass) {
+    selectClass(targetClass)
+    activeTab.value = 'lessons'
+    closeDetailsModal()
+  }
+}
+
+function requestSupportForSession(sched, dateStr) {
+  if (!sched) return
+  closeDetailsModal()
+  
+  supportForm.value.classId = sched.classId
+  supportForm.value.supportType = 'Reschedule'
+  supportForm.value.message = `Yêu cầu hỗ trợ cho buổi học ngày ${dateStr} (${sched.startTime.substring(0, 5)} - ${sched.endTime.substring(0, 5)}) tại phòng ${formatRoom(sched.room)}: `
+  
+  supportDialog.value = true
+}
+
+// 3. Teacher support messages state & actions
+const supportMessages = ref([])
+const loadingSupport = ref(false)
+const supportDialog = ref(false)
+const supportForm = ref({
+  classId: null,
+  supportType: 'Reschedule',
+  message: ''
+})
+const submittingSupport = ref(false)
+
+async function fetchSupportMessages() {
+  loadingSupport.value = true
+  try {
+    const allMsgs = []
+    await Promise.all(classes.value.map(async (cls) => {
+      try {
+        const res = await api.get(`/api/v1/support-messages/class/${cls.classId}`)
+        if (res.data) {
+          allMsgs.push(...res.data)
+        }
+      } catch (err) {
+        console.error('Error fetching support messages:', err)
+      }
+    }))
+    supportMessages.value = allMsgs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+  } catch (err) {
+    console.error('Error fetching support messages:', err)
+  } finally {
+    loadingSupport.value = false
+  }
+}
+
+async function submitSupportMessage() {
+  if (!supportForm.value.message.trim() || !supportForm.value.classId) return
+  submittingSupport.value = true
+  try {
+    const classId = supportForm.value.classId
+    const selectedClassObj = classes.value.find(c => c.classId === classId)
+    
+    let studentId = null
+    try {
+      const enrollRes = await api.get('/api/v1/enrollments', {
+        params: { classId, page: 1, pageSize: 1 }
+      })
+      const firstItem = enrollRes.data?.items?.[0]
+      if (firstItem) {
+        studentId = firstItem.studentId
+      }
+    } catch (e) {
+      console.error('Error fetching student for support:', e)
+    }
+    
+    if (!studentId) {
+      try {
+        const studentsRes = await api.get('/api/v1/students', { params: { pageSize: 1 } })
+        const firstStudent = studentsRes.data?.items?.[0]
+        if (firstStudent) {
+          studentId = firstStudent.studentId
+        }
+      } catch (e) {
+        console.error('Error fetching fallback student:', e)
+      }
+    }
+    
+    if (!studentId) {
+      showSnackbar('Không thể gửi yêu cầu hỗ trợ: Lớp học chưa có học viên nào và hệ thống không có học viên để liên kết.', 'error')
+      submittingSupport.value = false
+      return
+    }
+
+    const senderType = `Giảng viên (${authStore.currentUser?.fullName || 'Giảng viên'})`
+    const prefixMap = {
+      Reschedule: `[Yêu cầu đổi lịch học từ ${senderType}]`,
+      Technical: `[Yêu cầu hỗ trợ kỹ thuật từ ${senderType}]`,
+      Other: `[Yêu cầu ý kiến đóng góp từ ${senderType}]`
+    }
+    const prefix = prefixMap[supportForm.value.supportType] || `[Yêu cầu hỗ trợ từ ${senderType}]`
+    const finalMessage = `${prefix} - ${supportForm.value.message.trim()}`
+
+    await api.post('/api/v1/support-messages', {
+      studentId: studentId,
+      message: finalMessage,
+      fromClassId: classId,
+      fromClassName: selectedClassObj?.className || null,
+      toClassId: null,
+      toClassName: null
+    })
+
+    showSnackbar('Đã gửi yêu cầu hỗ trợ tới Admin thành công!', 'success')
+    supportForm.value.message = ''
+    supportDialog.value = false
+    await fetchSupportMessages()
+  } catch (err) {
+    console.error('Error sending support request:', err)
+    showSnackbar(err.response?.data?.message || 'Gửi yêu cầu hỗ trợ thất bại', 'error')
+  } finally {
+    submittingSupport.value = false
+  }
+}
+
+watch(activeTab, (newTab) => {
+  if (newTab === 'support') {
+    fetchSupportMessages()
+  }
+})
+
 onMounted(async () => {
   await courseStore.fetchCourses({ pageSize: 150 })
   await fetchTeachers()
   await fetchClasses()
+  await checkQueryOpenQuiz()
 })
 </script>
 
@@ -1414,5 +2691,25 @@ onMounted(async () => {
 .glass-backdrop {
   background-color: rgba(15, 23, 42, 0.3);
   backdrop-filter: blur(8px);
+}
+th, td {
+  transition: all 0.2s ease;
+}
+</style>
+
+<style>
+.calendar-grid-table {
+  border-collapse: collapse !important;
+  border: 2px solid #94a3b8 !important;
+  width: 100% !important;
+  empty-cells: show !important;
+}
+.calendar-grid-table th,
+.calendar-grid-table td {
+  border: 1.5px solid #cbd5e1 !important;
+  border-style: solid !important;
+}
+.calendar-grid-table th {
+  border-bottom: 2.5px solid #94a3b8 !important;
 }
 </style>

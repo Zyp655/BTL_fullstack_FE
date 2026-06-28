@@ -94,7 +94,7 @@
               <div>
                 <h3 class="font-title-md text-body-lg font-bold text-primary-container">Trung tâm hỗ trợ</h3>
                 <p class="text-body-sm text-readable-secondary mt-1">
-                  Bạn cần chuyển lớp, đổi lịch học hoặc yêu cầu hỗ trợ khác? Hãy gửi yêu cầu trực tiếp cho Ban quản lý đào tạo.
+                  Bạn cần hỏi đáp học phí, hỗ trợ kỹ thuật hoặc góp ý kiến? Hãy gửi yêu cầu trực tiếp cho Ban quản lý đào tạo.
                 </p>
               </div>
             </div>
@@ -107,147 +107,202 @@
             </button>
           </div>
 
-          <!-- Main: Support Requests History (Full Width) -->
+          <!-- Main: Unified History (Full Width) -->
           <div class="glass-panel p-6 rounded-xl space-y-4">
             <h4 class="font-title-md text-body-lg font-bold text-primary-container border-b border-slate-100 pb-3 flex items-center gap-2">
-              <span class="material-symbols-outlined text-on-tertiary-container">forum</span>
-              Lịch sử yêu cầu hỗ trợ đã gửi
+              <span class="material-symbols-outlined text-on-tertiary-container">history</span>
+              Lịch sử yêu cầu &amp; thắc mắc
             </h4>
 
-            <!-- Search & Filter for Support -->
-            <div v-if="mySupportMessages.length > 0" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <!-- Unified Search & Filter -->
+            <div v-if="unifiedHistoryItems.length > 0" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <div class="relative flex-1">
                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] pointer-events-none">search</span>
                 <input
-                  v-model="supportSearchQuery"
+                  v-model="unifiedSearchQuery"
                   class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg pl-9 pr-9 py-2 text-body-sm text-primary placeholder-on-surface-variant/50 focus:outline-none focus:border-on-tertiary-container/30 transition-colors"
-                  placeholder="Tìm nội dung yêu cầu, tên lớp..."
+                  placeholder="Tìm nội dung yêu cầu, thắc mắc, bài thi..."
                   type="text"
                 />
                 <button
-                  v-if="supportSearchQuery"
-                  @click="supportSearchQuery = ''"
+                  v-if="unifiedSearchQuery"
+                  @click="unifiedSearchQuery = ''"
                   class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer flex items-center justify-center w-5 h-5 rounded-full hover:bg-primary-container/10"
                 >
                   <span class="material-symbols-outlined text-[14px]">close</span>
                 </button>
               </div>
-              <div class="relative min-w-[150px]">
+              <div class="relative min-w-[170px]">
                 <select
-                  v-model="supportStatusFilter"
+                  v-model="unifiedTypeFilter"
+                  class="w-full bg-primary-container/[0.03] border border-outline-variant/30 rounded-lg appearance-none pl-3 pr-8 py-2 text-body-sm text-primary-container bg-transparent cursor-pointer focus:outline-none focus:border-on-tertiary-container/30 transition-colors font-semibold"
+                >
+                  <option value="all">Tất cả loại</option>
+                  <option value="support">Yêu cầu hỗ trợ</option>
+                  <option value="doubt">Thắc mắc bài thi</option>
+                </select>
+                <span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[16px]">expand_more</span>
+              </div>
+              <div class="relative min-w-[155px]">
+                <select
+                  v-model="unifiedStatusFilter"
                   class="w-full bg-primary-container/[0.03] border border-outline-variant/30 rounded-lg appearance-none pl-3 pr-8 py-2 text-body-sm text-primary-container bg-transparent cursor-pointer focus:outline-none focus:border-on-tertiary-container/30 transition-colors font-semibold"
                 >
                   <option value="all">Tất cả trạng thái</option>
-                  <option value="Pending">Chờ duyệt</option>
-                  <option value="Resolved">Đã duyệt</option>
-                  <option value="Rejected">Từ chối</option>
+                  <option value="pending">Chờ xử lý</option>
+                  <option value="resolved">Đã xử lý / Giải đáp</option>
+                  <option value="rejected">Từ chối</option>
                 </select>
                 <span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[16px]">expand_more</span>
               </div>
             </div>
 
-            <!-- Empty and Search Results States -->
-            <div v-if="mySupportMessages.length === 0" class="text-center py-12 text-on-surface-variant flex flex-col items-center justify-center">
+            <!-- Empty States -->
+            <div v-if="unifiedHistoryItems.length === 0" class="text-center py-12 text-on-surface-variant flex flex-col items-center justify-center">
               <span class="material-symbols-outlined text-[48px] text-primary-container/20 mb-2">chat_bubble_outline</span>
-              <p class="font-medium text-body-sm text-readable-muted">Bạn chưa gửi yêu cầu hỗ trợ nào.</p>
+              <p class="font-medium text-body-sm text-readable-muted">Bạn chưa gửi yêu cầu hỗ trợ hoặc thắc mắc nào.</p>
             </div>
 
-            <div v-else-if="filteredSupportMessages.length === 0" class="text-center py-8 text-on-surface-variant flex flex-col items-center justify-center">
+            <div v-else-if="filteredUnifiedHistory.length === 0" class="text-center py-8 text-on-surface-variant flex flex-col items-center justify-center">
               <span class="material-symbols-outlined text-[40px] text-primary-container/20 mb-2">search_off</span>
-              <p class="font-medium text-body-sm text-readable-muted">Không tìm thấy yêu cầu nào khớp với bộ lọc.</p>
+              <p class="font-medium text-body-sm text-readable-muted">Không tìm thấy mục nào khớp với bộ lọc.</p>
             </div>
 
-            <!-- Expandable Table Format -->
+            <!-- Unified Table -->
             <div v-else class="overflow-x-auto">
               <table class="w-full border-collapse text-left">
                 <thead>
                   <tr class="bg-primary-container/[0.05] border-b border-primary-container/10 text-primary-container font-semibold text-body-xs uppercase tracking-wider">
-                    <th class="py-4 px-6">Thời gian gửi</th>
-                    <th class="py-4 px-4">Loại yêu cầu</th>
-                    <th class="py-4 px-4">Nội dung tóm tắt</th>
+                    <th class="py-4 px-6">Thời gian</th>
+                    <th class="py-4 px-4">Loại</th>
+                    <th class="py-4 px-4">Nội dung</th>
                     <th class="py-4 px-4 text-center">Trạng thái</th>
                     <th class="py-4 px-6 text-center w-[80px]">Chi tiết</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
-                  <template v-for="msg in filteredSupportMessages" :key="msg.id">
+                  <template v-for="item in filteredUnifiedHistory" :key="item._uid">
                     <!-- Main Row -->
                     <tr 
-                      @click="toggleMessageExpansion(msg.id)" 
+                      @click="toggleUnifiedExpansion(item._uid)" 
                       class="hover:bg-slate-50/50 transition-colors cursor-pointer group"
                       :class="[
-                        expandedMessageId === msg.id ? 'bg-slate-50/70' : '',
-                        msg.status === 'Pending' ? 'border-l-2 border-l-amber-500' : 
-                        msg.status === 'Resolved' ? 'border-l-2 border-l-emerald-500' : 'border-l-2 border-l-rose-500'
+                        expandedUnifiedId === item._uid ? 'bg-slate-50/70' : '',
+                        item._itemType === 'support' 
+                          ? (item.status === 'Pending' ? 'border-l-2 border-l-amber-500' : item.status === 'Resolved' ? 'border-l-2 border-l-emerald-500' : 'border-l-2 border-l-rose-500')
+                          : (item.answerText ? 'border-l-2 border-l-emerald-500' : 'border-l-2 border-l-amber-500')
                       ]"
                     >
                       <td class="py-4 px-6">
                         <div class="flex items-center gap-1 text-body-xs text-readable-secondary font-medium">
                           <span class="material-symbols-outlined text-[14px]">schedule</span>
-                          <span>{{ formatDateTime(msg.createdAt) }}</span>
+                          <span>{{ formatDateTime(item.createdAt) }}</span>
                         </div>
                       </td>
                       <td class="py-4 px-4">
-                        <span class="bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-full px-2.5 py-0.5 text-[11px] font-semibold flex items-center gap-1 w-fit">
+                        <span v-if="item._itemType === 'support'" class="bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-full px-2.5 py-0.5 text-[11px] font-semibold flex items-center gap-1 w-fit">
                           <span class="material-symbols-outlined text-[13px]">
-                            {{ msg.fromClassId ? 'swap_horiz' : 'help_center' }}
+                            {{ item.fromClassId ? 'swap_horiz' : 'help_center' }}
                           </span>
-                          {{ msg.fromClassId ? 'Chuyển lớp' : 'Hỗ trợ khác' }}
+                          {{ item.fromClassId ? 'Chuyển lớp' : 'Hỗ trợ khác' }}
+                        </span>
+                        <span v-else class="bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-0.5 text-[11px] font-semibold flex items-center gap-1 w-fit">
+                          <span class="material-symbols-outlined text-[13px]">quiz</span>
+                          Thắc mắc bài thi
                         </span>
                       </td>
                       <td class="py-4 px-4 max-w-[320px]">
-                        <div class="text-body-xs text-primary font-medium truncate" :title="msg.message">
-                          {{ msg.message }}
+                        <div class="text-body-xs text-primary font-medium truncate" :title="item._itemType === 'support' ? item.message : item.questionText">
+                          {{ item._itemType === 'support' ? item.message : item.questionText }}
+                        </div>
+                        <div v-if="item._itemType === 'doubt' && item.quizTitle" class="text-[10px] text-slate-400 font-semibold mt-0.5 truncate">
+                          Bài: {{ item.quizTitle }}
                         </div>
                       </td>
                       <td class="py-4 px-4 text-center">
-                        <span :class="[getStatusClass(msg.status), 'status-badge text-[10px] font-bold']">
-                          {{ getStatusLabel(msg.status) }}
+                        <span v-if="item._itemType === 'support'" :class="[getStatusClass(item.status), 'status-badge text-[10px] font-bold']">
+                          {{ getStatusLabel(item.status) }}
+                        </span>
+                        <span v-else :class="[item.answerText ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-600 border border-amber-500/20', 'px-2.5 py-0.5 rounded text-[10px] font-bold']">
+                          {{ item.answerText ? 'Đã giải đáp' : 'Chờ phản hồi' }}
                         </span>
                       </td>
                       <td class="py-4 px-6 text-center">
-                        <span class="material-symbols-outlined text-primary-container/60 group-hover:text-primary transition-transform duration-300" :class="{'rotate-180': expandedMessageId === msg.id}">
+                        <span class="material-symbols-outlined text-primary-container/60 group-hover:text-primary transition-transform duration-300" :class="{'rotate-180': expandedUnifiedId === item._uid}">
                           keyboard_arrow_down
                         </span>
                       </td>
                     </tr>
 
-                    <!-- Expanded Detail Row -->
-                    <tr v-if="expandedMessageId === msg.id" class="bg-slate-50/40">
+                    <!-- Expanded Detail Row (Support) -->
+                    <tr v-if="expandedUnifiedId === item._uid && item._itemType === 'support'" class="bg-slate-50/40">
                       <td colspan="5" class="p-6 border-t border-slate-100">
                         <div class="space-y-4 max-w-3xl mx-auto">
                           <!-- Message Body -->
                           <div class="space-y-1">
                             <div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Chi tiết nội dung yêu cầu</div>
                             <div class="bg-white p-4 rounded-xl border border-slate-150 text-body-sm text-readable-primary font-medium italic shadow-xs">
-                              "{{ msg.message }}"
+                              "{{ item.message }}"
                             </div>
                           </div>
 
                           <!-- Transfer Info -->
-                          <div v-if="msg.fromClassId" class="text-body-sm bg-indigo-50/50 p-4 rounded-xl border border-indigo-100/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                          <div v-if="item.fromClassId" class="text-body-sm bg-indigo-50/50 p-4 rounded-xl border border-indigo-100/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
                             <div class="flex-1 min-w-0">
                               <div class="text-[10px] font-bold text-indigo-700 uppercase tracking-wider mb-1">Lớp hiện tại</div>
-                              <div class="font-bold text-indigo-950 truncate">{{ msg.fromClassName }}</div>
+                              <div class="font-bold text-indigo-950 truncate">{{ item.fromClassName }}</div>
                             </div>
-                            <div v-if="msg.toClassId" class="flex items-center justify-center text-slate-400 shrink-0">
+                            <div v-if="item.toClassId" class="flex items-center justify-center text-slate-400 shrink-0">
                               <span class="material-symbols-outlined text-[24px] rotate-90 sm:rotate-0">double_arrow</span>
                             </div>
-                            <div v-if="msg.toClassId" class="flex-1 min-w-0">
+                            <div v-if="item.toClassId" class="flex-1 min-w-0">
                               <div class="text-[10px] font-bold text-indigo-700 uppercase tracking-wider mb-1">Lớp chuyển đến</div>
-                              <div class="font-bold text-indigo-950 truncate">{{ msg.toClassName }}</div>
+                              <div class="font-bold text-indigo-950 truncate">{{ item.toClassName }}</div>
                             </div>
                           </div>
 
                           <!-- Admin Response -->
-                          <div v-if="msg.adminResponse" class="bg-white p-4 rounded-xl border border-slate-150 text-body-sm text-readable-secondary flex items-start gap-2.5 shadow-xs">
+                          <div v-if="item.adminResponse" class="bg-white p-4 rounded-xl border border-slate-150 text-body-sm text-readable-secondary flex items-start gap-2.5 shadow-xs">
                             <span class="material-symbols-outlined text-[18px] text-indigo-600 mt-0.5 shrink-0">chat</span>
                             <div>
                               <div class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1">Phản hồi từ Admin</div>
                               <div class="font-semibold text-readable-primary leading-relaxed">
-                                {{ msg.adminResponse }}
+                                {{ item.adminResponse }}
                               </div>
                             </div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <!-- Expanded Detail Row (Quiz Doubt) -->
+                    <tr v-if="expandedUnifiedId === item._uid && item._itemType === 'doubt'" class="bg-slate-50/40">
+                      <td colspan="5" class="p-6 border-t border-slate-100">
+                        <div class="space-y-4 max-w-3xl mx-auto">
+                          <!-- Question Content -->
+                          <div class="space-y-1">
+                            <div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Nội dung câu hỏi thắc mắc</div>
+                            <div class="bg-white p-4 rounded-xl border border-slate-150 text-body-sm text-readable-primary font-medium italic shadow-xs">
+                              "{{ item.questionText }}"
+                            </div>
+                          </div>
+
+                          <!-- Teacher Response -->
+                          <div v-if="item.answerText" class="bg-emerald-50/50 p-4 rounded-xl border border-emerald-200/40 text-body-sm flex items-start gap-2.5 shadow-xs">
+                            <span class="material-symbols-outlined text-[18px] text-emerald-600 mt-0.5 shrink-0">chat</span>
+                            <div>
+                              <div class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-1">Giải đáp của giảng viên</div>
+                              <div class="font-semibold text-emerald-900 leading-relaxed">
+                                {{ item.answerText }}
+                              </div>
+                              <div class="text-[10px] text-slate-400 font-medium mt-1">
+                                {{ formatDateTime(item.answeredAt) }}
+                              </div>
+                            </div>
+                          </div>
+                          <div v-else class="bg-amber-50/30 p-3 rounded-xl border border-amber-100/30 text-body-xs text-amber-700 font-semibold flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">hourglass_top</span>
+                            Giảng viên chưa phản hồi thắc mắc này.
                           </div>
                         </div>
                       </td>
@@ -255,9 +310,9 @@
                   </template>
                 </tbody>
               </table>
-            </div>
           </div>
         </div>
+      </div>
 
         <!-- 2. TAB: Đánh giá & Khảo sát -->
         <div v-if="activeTab === 'evaluation'" class="space-y-6">
@@ -482,52 +537,13 @@
                 v-model="supportType"
                 class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container transition-all cursor-pointer"
               >
-                <option value="Transfer">🔄 Chuyển lớp học</option>
                 <option value="Tuition">💰 Hỏi đáp học phí</option>
                 <option value="Technical">💻 Hỗ trợ kỹ thuật</option>
                 <option value="Other">📝 Ý kiến đóng góp / Khác</option>
               </select>
             </div>
 
-            <div v-if="supportType === 'Transfer'" class="space-y-1">
-              <label class="text-body-sm font-semibold text-primary-container block">Chọn lớp hiện tại cần đổi *</label>
-              <select
-                v-model="supportFromClassId"
-                class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container transition-all cursor-pointer"
-              >
-                <option :value="null" disabled>-- Chọn lớp học hiện tại --</option>
-                <option v-for="cls in enrolledClasses.filter(c => c.status === 'DangHoc')" :key="cls.classId" :value="cls.classId">
-                  {{ cls.courseName }} ({{ cls.className }})
-                </option>
-              </select>
-              
-              <!-- Current Class Schedules Display -->
-              <div v-if="supportFromClassId && supportFromClassSchedules.length > 0" class="text-[11px] font-semibold text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-100 mt-1.5 flex flex-wrap items-center gap-1.5">
-                <span class="font-bold text-slate-700">Lịch lớp hiện tại:</span>
-                <span v-for="s in supportFromClassSchedules" :key="s.scheduleId" class="bg-indigo-50 text-indigo-700 border border-indigo-100/60 rounded px-2 py-0.5 font-mono text-[10px]">
-                  Thứ {{ formatDayOfWeek(s.dayOfWeek) }} ({{ s.startTime.substring(0, 5) }} - {{ s.endTime.substring(0, 5) }})
-                </span>
-              </div>
-            </div>
 
-            <div v-if="supportType === 'Transfer' && supportFromClassId" class="space-y-1">
-              <label class="text-body-sm font-semibold text-primary-container block">Chọn lớp muốn chuyển đến (Không bắt buộc)</label>
-              <div v-if="loadingSupportAlternativeClasses" class="flex items-center justify-center py-2 gap-2">
-                <span class="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full"></span>
-                <span class="text-body-xs text-on-surface-variant">Đang tìm lớp học...</span>
-              </div>
-              <div v-else class="relative">
-                <select
-                  v-model="supportToClassId"
-                  class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container transition-all cursor-pointer"
-                >
-                  <option :value="null">-- Chọn lớp học mới (Nếu có) --</option>
-                  <option v-for="c in supportAlternativeClasses" :key="c.classId" :value="c.classId">
-                    {{ c.className }} (Sĩ số: {{ c.currentStudents }}/{{ c.maxStudents }} - Lịch: {{ formatSchedulesBrief(c.schedules) }})
-                  </option>
-                </select>
-              </div>
-            </div>
 
             <div class="space-y-1">
               <label class="text-body-sm font-semibold text-primary-container block">Nội dung yêu cầu hỗ trợ *</label>
@@ -549,7 +565,7 @@
             </button>
             <button
               @click="submitSupportMessage"
-              :disabled="submittingSupport || !supportMessageText.trim() || (supportType === 'Transfer' && !supportFromClassId)"
+              :disabled="submittingSupport || !supportMessageText.trim()"
               class="px-4 py-2 rounded-lg bg-primary-container text-white font-semibold text-[13px] hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer active:scale-95"
             >
               <span v-if="submittingSupport" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
@@ -666,6 +682,7 @@ const studentProfile = ref(null)
 const enrolledClasses = ref([])
 const mySupportMessages = ref([])
 const myEvaluations = ref([])
+const myQuizQuestions = ref([])
 
 const expandedMessageId = ref(null)
 function toggleMessageExpansion(id) {
@@ -700,12 +717,7 @@ watch(() => route.query.tab, (newTab) => {
 
 // Dialog: Support Request State
 const supportDialog = ref(false)
-const supportType = ref('Transfer')
-const supportFromClassId = ref(null)
-const supportToClassId = ref(null)
-const supportAlternativeClasses = ref([])
-const supportFromClassSchedules = ref([])
-const loadingSupportAlternativeClasses = ref(false)
+const supportType = ref('Tuition')
 const supportMessageText = ref('')
 const submittingSupport = ref(false)
 
@@ -722,9 +734,19 @@ function formatSchedulesBrief(schedules) {
   }).join(', ')
 }
 
-// Search & Filter state for Support tab
-const supportSearchQuery = ref('')
-const supportStatusFilter = ref('all')
+// Unified History Search & Filters
+const unifiedSearchQuery = ref('')
+const unifiedTypeFilter = ref('all')
+const unifiedStatusFilter = ref('all')
+const expandedUnifiedId = ref(null)
+
+function toggleUnifiedExpansion(uid) {
+  if (expandedUnifiedId.value === uid) {
+    expandedUnifiedId.value = null
+  } else {
+    expandedUnifiedId.value = uid
+  }
+}
 
 // Search & Filter state for Evaluation tab
 const evalSearchQuery = ref('')
@@ -739,22 +761,75 @@ function toggleEvaluationExpansion(classId) {
   }
 }
 
-// Computed: filtered support messages
-const filteredSupportMessages = computed(() => {
-  let list = mySupportMessages.value
-  if (supportStatusFilter.value !== 'all') {
-    list = list.filter(m => m.status === supportStatusFilter.value)
+// Computed: unified history items
+const unifiedHistoryItems = computed(() => {
+  const items = []
+  // 1. Add support messages
+  mySupportMessages.value.forEach(msg => {
+    items.push({
+      ...msg,
+      _uid: 'support_' + msg.id,
+      _itemType: 'support',
+      _time: msg.createdAt ? new Date(msg.createdAt) : new Date(0)
+    })
+  })
+  // 2. Add quiz doubts
+  myQuizQuestions.value.forEach(d => {
+    items.push({
+      ...d,
+      _uid: 'doubt_' + d.id,
+      _itemType: 'doubt',
+      _time: d.createdAt ? new Date(d.createdAt) : new Date(0)
+    })
+  })
+  // Sort by time descending
+  return items.sort((a, b) => b._time - a._time)
+})
+
+// Computed: filtered unified history
+const filteredUnifiedHistory = computed(() => {
+  let list = unifiedHistoryItems.value
+
+  // Type filter
+  if (unifiedTypeFilter.value !== 'all') {
+    list = list.filter(item => item._itemType === unifiedTypeFilter.value)
   }
-  if (supportSearchQuery.value.trim()) {
-    const q = supportSearchQuery.value.toLowerCase()
-    list = list.filter(m => {
-      const msgMatch = m.message?.toLowerCase().includes(q)
-      const fromMatch = m.fromClassName?.toLowerCase().includes(q)
-      const toMatch = m.toClassName?.toLowerCase().includes(q)
-      const responseMatch = m.adminResponse?.toLowerCase().includes(q)
-      return msgMatch || fromMatch || toMatch || responseMatch
+
+  // Status filter
+  if (unifiedStatusFilter.value !== 'all') {
+    list = list.filter(item => {
+      if (item._itemType === 'support') {
+        const statusLower = item.status?.toLowerCase()
+        if (unifiedStatusFilter.value === 'pending') return statusLower === 'pending'
+        if (unifiedStatusFilter.value === 'resolved') return statusLower === 'resolved'
+        if (unifiedStatusFilter.value === 'rejected') return statusLower === 'rejected'
+      } else {
+        const hasAnswer = !!item.answerText
+        if (unifiedStatusFilter.value === 'pending') return !hasAnswer
+        if (unifiedStatusFilter.value === 'resolved') return hasAnswer
+        if (unifiedStatusFilter.value === 'rejected') return false // doubts cannot be rejected
+      }
+      return true
     })
   }
+
+  // Search text
+  if (unifiedSearchQuery.value.trim()) {
+    const q = unifiedSearchQuery.value.toLowerCase()
+    list = list.filter(item => {
+      if (item._itemType === 'support') {
+        return (item.message?.toLowerCase().includes(q) ||
+                item.fromClassName?.toLowerCase().includes(q) ||
+                item.toClassName?.toLowerCase().includes(q) ||
+                item.adminResponse?.toLowerCase().includes(q))
+      } else {
+        return (item.questionText?.toLowerCase().includes(q) ||
+                item.quizTitle?.toLowerCase().includes(q) ||
+                item.answerText?.toLowerCase().includes(q))
+      }
+    })
+  }
+
   return list
 })
 
@@ -829,6 +904,7 @@ watch(selectedStudentId, async (newVal) => {
     enrolledClasses.value = []
     mySupportMessages.value = []
     myEvaluations.value = []
+    myQuizQuestions.value = []
     const newQuery = { ...route.query }
     delete newQuery.studentId
     router.replace({ path: route.path, query: newQuery })
@@ -901,7 +977,6 @@ async function loadServicesDataForStudent(studentId, userId, isBg = false) {
     loading.value = true
   }
   try {
-    // Parallel fetch: enrollments, support messages, evaluations system settings
     const classPromise = api.get(`/api/v1/students/${studentId}/enrollments`)
     
     const msgPromise = (authStore.isAdmin 
@@ -912,14 +987,23 @@ async function loadServicesDataForStudent(studentId, userId, isBg = false) {
       return { data: [] }
     })
 
+    const doubtsPromise = (authStore.isAdmin
+      ? api.get('/api/v1/quizzes/student-questions/all')
+      : api.get('/api/v1/quizzes/student-questions/my-all')
+    ).catch(e => {
+      console.error('Error fetching student doubts:', e)
+      return { data: [] }
+    })
+
     const statusPromise = api.get('/api/v1/teacher-evaluations/status').catch(() => ({ data: { isEvaluationEnabled: true } }))
     const enabledClassesPromise = api.get('/api/v1/teacher-evaluations/enabled-classes').catch(() => ({ data: { classIds: [] } }))
 
-    const [classRes, msgRes, statusRes, enabledRes] = await Promise.all([
+    const [classRes, msgRes, statusRes, enabledRes, doubtsRes] = await Promise.all([
       classPromise, 
       msgPromise,
       statusPromise,
-      enabledClassesPromise
+      enabledClassesPromise,
+      doubtsPromise
     ])
 
     enrolledClasses.value = classRes.data || []
@@ -928,8 +1012,10 @@ async function loadServicesDataForStudent(studentId, userId, isBg = false) {
     
     if (authStore.isAdmin) {
       mySupportMessages.value = (msgRes.data || []).filter(m => m.studentId === studentId)
+      myQuizQuestions.value = (doubtsRes.data || []).filter(d => d.studentId === studentId)
     } else {
       mySupportMessages.value = msgRes.data || []
+      myQuizQuestions.value = doubtsRes.data || []
     }
 
     // Fetch Evaluations
@@ -969,123 +1055,49 @@ async function loadEvaluations(isBg = false) {
   }
 }
 
-// Check and handle URL query pre-fills
 function handleQueryPreFills() {
-  const fromClassIdQuery = route.query.fromClassId
-  const conflictClassNameQuery = route.query.conflictClassName
-  
-  if (fromClassIdQuery) {
-    supportType.value = 'Transfer'
-    supportFromClassId.value = parseInt(fromClassIdQuery, 10)
-    if (conflictClassNameQuery) {
-      supportMessageText.value = `Em bị trùng lịch học, nhờ Admin đổi lớp giúp em (trùng với lịch lớp ${conflictClassNameQuery}).`
-    } else {
-      supportMessageText.value = 'Em muốn xin đổi lớp học. Nhờ Admin hỗ trợ giúp em.'
-    }
-    // Switch to support tab and open dialog
+  const openDoubtId = route.query.openDoubtId
+
+  if (openDoubtId) {
     activeTab.value = 'support'
-    supportDialog.value = true
+    expandedUnifiedId.value = 'doubt_' + openDoubtId
+    
+    // Clean URL queries without reloading page
+    const url = new URL(window.location)
+    url.searchParams.delete('openDoubtId')
+    window.history.replaceState({}, '', url)
   }
 }
 
-// Watch supportFromClassId to load alternative classes
-watch(supportFromClassId, async (newClassId) => {
-  if (!newClassId) {
-    supportAlternativeClasses.value = []
-    supportToClassId.value = null
-    supportFromClassSchedules.value = []
-    return
-  }
-  loadingSupportAlternativeClasses.value = true
-  try {
-    const currentEnrollment = enrolledClasses.value.find(c => c.classId === newClassId)
-    if (!currentEnrollment) return
-    
-    // Auto fill support message text
-    if (!supportMessageText.value || supportMessageText.value.startsWith('Em muốn đổi lớp')) {
-      supportMessageText.value = `Em muốn đổi lớp ${currentEnrollment.className}. Nhờ Admin chuyển lớp giúp em.`
-    }
-    
-    // Fetch current class schedule
-    try {
-      const schedRes = await api.get(`/api/v1/classes/${newClassId}/schedules`)
-      supportFromClassSchedules.value = schedRes.data || []
-    } catch (e) {
-      console.error('Error fetching current class schedules:', e)
-      supportFromClassSchedules.value = []
-    }
-    
-    const res = await api.get('/api/v1/classes', {
-      params: { courseId: currentEnrollment.courseId, pageSize: 100 }
-    })
-    const rawClasses = (res.data?.items || []).filter(
-      c => c.classId !== newClassId && (c.status === 'Opened' || c.status === 'InProgress')
-    )
-    
-    // Fetch alternative classes schedules in parallel
-    const classesWithSchedules = await Promise.all(
-      rawClasses.map(async (c) => {
-        try {
-          const schedRes = await api.get(`/api/v1/classes/${c.classId}/schedules`)
-          return { ...c, schedules: schedRes.data || [] }
-        } catch (e) {
-          console.error(`Error fetching schedules for class ${c.classId}:`, e)
-          return { ...c, schedules: [] }
-        }
-      })
-    )
-    
-    supportAlternativeClasses.value = classesWithSchedules
-  } catch (e) {
-    console.error('Error fetching alternative classes:', e)
-  } finally {
-    loadingSupportAlternativeClasses.value = false
-  }
-})
+
 
 function openSupportDialog() {
-  supportType.value = 'Transfer'
-  supportFromClassId.value = null
-  supportToClassId.value = null
-  supportFromClassSchedules.value = []
+  supportType.value = 'Tuition'
   supportMessageText.value = ''
   supportDialog.value = true
 }
 
 async function submitSupportMessage() {
   if (!supportMessageText.value.trim() || !studentProfile.value) return
-  if (supportType.value === 'Transfer' && !supportFromClassId.value) return
   submittingSupport.value = true
   try {
     let finalMessage = supportMessageText.value.trim()
-    let fromClass = null
-    let toClassId = null
-    let toClassName = null
 
-    if (supportType.value === 'Transfer') {
-      fromClass = enrolledClasses.value.find(c => c.classId === supportFromClassId.value)
-      toClassId = supportToClassId.value
-      if (toClassId) {
-        const found = supportAlternativeClasses.value.find(c => c.classId === toClassId)
-        if (found) toClassName = found.className
-      }
-    } else {
-      const prefixMap = {
-        Tuition: '[Hỏi đáp học phí]',
-        Technical: '[Hỗ trợ kỹ thuật]',
-        Other: '[Ý kiến khác]'
-      }
-      const prefix = prefixMap[supportType.value] || '[Ý kiến khác]'
-      finalMessage = `${prefix} ${finalMessage}`
+    const prefixMap = {
+      Tuition: '[Hỏi đáp học phí]',
+      Technical: '[Hỗ trợ kỹ thuật]',
+      Other: '[Ý kiến khác]'
     }
+    const prefix = prefixMap[supportType.value] || '[Ý kiến khác]'
+    finalMessage = `${prefix} ${finalMessage}`
 
     await api.post('/api/v1/support-messages', {
       studentId: studentProfile.value.studentId,
       message: finalMessage,
-      fromClassId: fromClass?.classId || null,
-      fromClassName: fromClass?.className || null,
-      toClassId: toClassId,
-      toClassName: toClassName
+      fromClassId: null,
+      fromClassName: null,
+      toClassId: null,
+      toClassName: null
     })
 
     showSnackbar('Đã gửi tin nhắn yêu cầu hỗ trợ tới Admin!', 'success')

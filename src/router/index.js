@@ -54,7 +54,7 @@ const routes = [
     path: '/teaching-lessons',
     name: 'TeachingLessons',
     component: () => import('../views/schedules/TeachingLessons.vue'),
-    meta: { title: 'Lịch dạy & Bài giảng', icon: 'menu_book', roles: ['Admin', 'GiaoVien'] }
+    meta: { title: 'Lịch dạy & Bài giảng', icon: 'menu_book', roles: ['GiaoVien'] }
   },
   {
     path: '/students',

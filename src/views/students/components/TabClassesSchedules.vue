@@ -152,13 +152,6 @@
               <span class="text-on-surface-variant font-medium block mt-0.5" v-html="conflictMessage"></span>
             </div>
           </div>
-          <button
-            @click="$emit('open-support-conflict', { targetClass: selectedClass, conflictClass: conflictTargetForSupport || { className: 'Chưa xác định' } })"
-            class="px-4 py-2 rounded-lg bg-error hover:bg-error/90 text-white font-bold text-[13px] transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shrink-0 self-end sm:self-auto shadow-sm animate-pulse"
-          >
-            <span class="material-symbols-outlined text-[16px]">swap_horiz</span>
-            Gửi yêu cầu hỗ trợ đổi lớp
-          </button>
         </div>
 
         <!-- 0. Class & Course Info Section -->
@@ -471,7 +464,7 @@
                           Thời lượng: {{ quiz.durationMinutes }} phút | {{ quiz.quizType === 'TracNghiem' ? 'Trắc nghiệm' : 'Tự luận' }}
                         </div>
                       </div>
-                      <div class="shrink-0">
+                      <div class="shrink-0 flex items-center gap-1.5">
                         <div v-if="quiz.hasSubmitted" class="flex items-center gap-1.5 text-right">
                           <span :class="['px-2.5 py-1 rounded text-[11px] font-bold border mr-1', quiz.isGraded ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-amber-500/10 text-amber-600 border-amber-500/20']">
                             {{ quiz.isGraded ? `Điểm: ${quiz.submissionScore.toFixed(1)}` : 'Đang chờ chấm' }}
@@ -485,13 +478,21 @@
                           </button>
                         </div>
                         <button 
-                          v-else-if="quiz.isActive"
+                          v-if="quiz.hasSubmitted && quiz.attemptsCount < quiz.maxAttempts && quiz.isActive"
+                          @click="startQuizTaking(quiz)"
+                          class="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-750 text-white rounded-lg font-bold text-[10px] transition-colors cursor-pointer active:scale-95 shadow-sm"
+                          :title="`Đã làm ${quiz.attemptsCount}/${quiz.maxAttempts} lần. Click để làm lại.`"
+                        >
+                          Làm lại ({{ quiz.attemptsCount }}/{{ quiz.maxAttempts }})
+                        </button>
+                        <button 
+                          v-else-if="!quiz.hasSubmitted && quiz.isActive"
                           @click="startQuizTaking(quiz)"
                           class="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold text-body-xs transition-colors cursor-pointer active:scale-95 shadow-sm"
                         >
                           Làm bài
                         </button>
-                        <span v-else class="text-body-xs text-slate-400 italic font-semibold">Đã đóng</span>
+                        <span v-else-if="!quiz.hasSubmitted" class="text-body-xs text-slate-400 italic font-semibold">Đã đóng</span>
                       </div>
                     </div>
                   </div>
@@ -515,7 +516,7 @@
     <!-- DIALOG: LÀM BÀI THI TRỰC TUYẾN -->
     <teleport to="body">
       <div v-if="showQuizTakingModal" class="fixed inset-0 glass-backdrop z-[10000] flex items-center justify-center p-4">
-        <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-2xl shadow-2xl max-w-xl w-full p-6 space-y-4 animate-scale-in flex flex-col max-h-[85vh]">
+        <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-2xl shadow-2xl w-[95vw] max-w-none h-[95vh] max-h-[95vh] p-6 space-y-4 animate-scale-in flex flex-col">
           <div class="flex items-center justify-between border-b border-slate-200 pb-3 shrink-0">
             <div class="min-w-0">
               <h3 class="font-title-md text-[18px] font-bold text-primary-container truncate">{{ takingQuiz?.title }}</h3>
@@ -528,7 +529,7 @@
           </div>
 
           <!-- Progress Bar & Stats -->
-          <div class="px-1 shrink-0" v-if="!loadingQuizQuestions && quizQuestions.length > 0">
+          <div class="px-1 shrink-0" v-if="!loadingQuizQuestions && quizQuestions.length > 0 && takingQuiz?.quizType !== 'LapTrinh'">
             <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
               <div class="bg-purple-600 h-2 rounded-full transition-all duration-300" :style="{ width: quizProgressPercentage + '%' }"></div>
             </div>
@@ -547,6 +548,46 @@
               <span class="material-symbols-outlined text-[48px] mb-2 text-slate-300">warning</span>
               <p>Đề thi này chưa có câu hỏi nào được cấu hình.</p>
             </div>
+            
+            <!-- Programming Quiz Editor Split Screen Layout (LapTrinh) -->
+            <div v-else-if="takingQuiz?.quizType === 'LapTrinh'" class="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[450px] bg-slate-900 rounded-xl p-4 text-slate-100">
+              <!-- Left Column: Markdown Details -->
+              <div class="bg-slate-800 border border-slate-700/50 rounded-xl p-4 overflow-y-auto max-h-[450px]">
+                <h4 class="text-indigo-400 font-bold border-b border-slate-700 pb-2 mb-3 flex items-center gap-1.5 shrink-0">
+                  <span class="material-symbols-outlined">description</span>
+                  Yêu cầu bài tập (Ngôn ngữ: {{ quizQuestions[0]?.correctAnswer }})
+                </h4>
+                <div class="markdown-body prose prose-invert text-slate-300 leading-relaxed text-body-sm" v-html="renderMarkdown(quizQuestions[0]?.questionText)"></div>
+              </div>
+
+              <!-- Right Column: Interactive Editor Box -->
+              <div class="flex flex-col gap-3 min-h-[450px]">
+                <div class="bg-slate-950 border border-slate-800 rounded-xl flex-1 flex flex-col overflow-hidden relative">
+                  <div class="bg-slate-900 px-4 py-2 border-b border-slate-800 flex justify-between items-center shrink-0">
+                    <span class="text-[11px] font-mono text-slate-400">solution.{{ getFileExtension(quizQuestions[0]?.correctAnswer) }}</span>
+                    <button 
+                      @click="quizAnswers[quizQuestions[0]?.questionId] = quizQuestions[0]?.options || ''"
+                      class="text-[10px] text-slate-400 hover:text-white cursor-pointer bg-transparent border-0 flex items-center gap-0.5"
+                    >
+                      <span class="material-symbols-outlined text-[12px]">restart_alt</span> Reset mẫu code
+                    </button>
+                  </div>
+                  <div class="flex-1 flex min-h-0">
+                    <div class="w-10 bg-slate-950 border-r border-slate-900 text-right pr-2 py-3 text-[11px] font-mono text-slate-600 select-none leading-normal">
+                      <div v-for="n in (quizAnswers[quizQuestions[0]?.questionId]?.split('\n').length || 1)" :key="n">{{ n }}</div>
+                    </div>
+                    <textarea
+                      v-model="quizAnswers[quizQuestions[0]?.questionId]"
+                      class="flex-1 bg-transparent text-emerald-400 font-mono text-body-xs p-3 focus:outline-none resize-none leading-normal placeholder-slate-700"
+                      spellcheck="false"
+                      @keydown.tab.prevent="insertTab($event, quizQuestions[0]?.questionId)"
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Standard Quiz View (TracNghiem / TuLuan) -->
             <div v-else class="space-y-4">
               <div v-for="(question, index) in quizQuestions" :key="question.questionId" class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
                 <div class="font-bold text-slate-700">Câu {{ index + 1 }}: {{ question.questionText }}</div>
@@ -595,13 +636,13 @@
     <!-- DIALOG: XEM KẾT QUẢ & GỬI THẮC MẮC -->
     <teleport to="body">
       <div v-if="showQuizResultModal" class="fixed inset-0 glass-backdrop z-[10000] flex items-center justify-center p-4">
-        <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-2xl shadow-2xl max-w-xl w-full p-6 space-y-4 animate-scale-in flex flex-col max-h-[80vh]">
+        <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-2xl shadow-2xl w-[95vw] max-w-none h-[95vh] max-h-[95vh] p-6 space-y-4 animate-scale-in flex flex-col">
           
           <div class="flex items-center justify-between border-b border-slate-200 pb-3 shrink-0">
             <h3 class="font-title-md text-[18px] font-bold text-primary-container">
               Kết quả & Thắc mắc: {{ resultQuiz?.title }}
             </h3>
-            <button @click="showQuizResultModal = false" class="text-on-surface-variant hover:text-primary-container cursor-pointer">
+            <button @click="showQuizResultModal = false" class="text-on-surface-variant hover:text-primary-container cursor-pointer flex items-center justify-center">
               <span class="material-symbols-outlined">close</span>
             </button>
           </div>
@@ -623,37 +664,128 @@
               </div>
 
               <div class="border-t border-purple-100/55 pt-2 space-y-1" v-if="resultQuiz?.teacherNote">
-                <span class="font-bold text-slate-700">Lời nhận xét của giáo viên:</span>
-                <p class="text-body-sm text-slate-600 italic bg-white/60 p-2.5 rounded-lg border border-purple-100/30">
+                <span class="font-bold text-slate-700">
+                  {{ resultQuiz?.quizType === 'LapTrinh' ? 'Gợi ý bài làm & Hướng dẫn tối ưu:' : 'Lời nhận xét của giáo viên:' }}
+                </span>
+                <div v-if="resultQuiz?.quizType === 'LapTrinh'" class="markdown-body prose prose-invert bg-slate-900/60 p-3 rounded-lg border border-purple-100/30 text-body-sm text-slate-100" v-html="renderMarkdown(resultQuiz.teacherNote)"></div>
+                <p v-else class="text-body-sm text-slate-600 italic bg-white/60 p-2.5 rounded-lg border border-purple-100/30">
                   "{{ resultQuiz?.teacherNote }}"
                 </p>
               </div>
             </div>
 
-            <!-- doubt submission form -->
-            <div class="space-y-3 pt-2 border-t border-slate-200/60">
-              <h4 class="font-bold text-slate-800 text-body-sm flex items-center gap-1">
-                <span class="material-symbols-outlined text-[18px]">rate_review</span>
-                Gửi câu hỏi / thắc mắc cho giáo viên
+            <!-- detailed questions & answers & inline doubts -->
+            <div class="space-y-4 pt-2 border-t border-slate-200/60">
+              <h4 class="font-bold text-slate-800 text-body-sm flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-slate-500">list_alt</span>
+                Chi tiết câu hỏi & Đáp án
               </h4>
-              
-              <textarea 
-                v-model="doubtText" 
-                rows="3" 
-                placeholder="Ví dụ: Thưa thầy/cô, câu hỏi số 3 em chưa hiểu rõ đáp án, nhờ thầy cô giải thích lại..." 
-                class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-body-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-semibold"
-              ></textarea>
-              
-              <div class="flex justify-end">
-                <button
-                  @click="submitDoubt"
-                  :disabled="submittingDoubt || !doubtText.trim()"
-                  class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-body-xs rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-[0_4px_12px_rgba(79,70,229,0.15)] active:scale-95 cursor-pointer"
-                >
-                  <span v-if="submittingDoubt" class="animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full"></span>
-                  <span class="material-symbols-outlined text-[16px]" v-else>send</span>
-                  Gửi thắc mắc
-                </button>
+
+              <div v-if="loadingSubmissionDetailData" class="text-center py-6">
+                <span class="animate-spin inline-block w-6 h-6 border-2 border-primary border-t-transparent rounded-full mb-1"></span>
+                <p class="text-body-xs text-slate-400">Đang tải chi tiết câu hỏi...</p>
+              </div>
+
+              <div v-else-if="mySubmissionDetail && mySubmissionDetail.questions" class="space-y-4">
+                <div v-for="(q, idx) in mySubmissionDetail.questions" :key="q.questionId" class="p-3 border border-slate-100 rounded-xl bg-slate-50/30 space-y-2.5">
+                  <div class="flex justify-between items-start gap-2">
+                    <div class="font-semibold text-slate-800 leading-tight">
+                      Câu {{ idx + 1 }}: {{ q.questionText }}
+                    </div>
+                    
+                    <!-- Correct / Incorrect Badge -->
+                    <div v-if="resultQuiz?.quizType === 'TracNghiem' && mySubmissionDetail.answers[q.questionId.toString()]" class="shrink-0">
+                      <span v-if="mySubmissionDetail.answers[q.questionId.toString()].trim().toUpperCase() === q.correctAnswer?.trim().toUpperCase()" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 flex items-center gap-0.5">
+                        <span class="material-symbols-outlined text-[12px] font-extrabold">check</span> Đúng
+                      </span>
+                      <span v-else class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-500 border border-rose-500/20 flex items-center gap-0.5">
+                        <span class="material-symbols-outlined text-[12px] font-extrabold">close</span> Sai
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Multiple Choice Options -->
+                  <div v-if="q.options" class="grid grid-cols-1 gap-2 pl-2">
+                    <div 
+                      v-for="opt in q.options.split('|')" 
+                      :key="opt"
+                      :class="[
+                        'p-2.5 rounded-lg border text-body-sm font-semibold flex items-center gap-2 transition-all',
+                        isCorrectOption(opt, q.correctAnswer) 
+                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 font-bold' 
+                          : isSelectedOption(opt, mySubmissionDetail.answers[q.questionId.toString()])
+                            ? 'bg-rose-500/10 border-rose-500/30 text-rose-700 font-bold'
+                            : 'bg-white border-slate-200 text-slate-600'
+                      ]"
+                    >
+                      <!-- Icons -->
+                      <span 
+                        v-if="isCorrectOption(opt, q.correctAnswer)" 
+                        class="material-symbols-outlined text-emerald-600 text-[18px]"
+                      >check_circle</span>
+                      <span 
+                        v-else-if="isSelectedOption(opt, mySubmissionDetail.answers[q.questionId.toString()])" 
+                        class="material-symbols-outlined text-rose-500 text-[18px]"
+                      >cancel</span>
+                      <span v-else class="w-4 h-4 rounded-full border border-slate-350 shrink-0"></span>
+
+                      <span>{{ opt }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Essay / written answers -->
+                  <div v-else class="space-y-1.5 pl-2">
+                    <div class="text-[12px] text-slate-500 font-bold">Bài làm của bạn:</div>
+                    <pre v-if="resultQuiz?.quizType === 'LapTrinh'" class="p-3 bg-slate-900 border border-slate-800 rounded-lg text-emerald-400 font-mono text-body-xs overflow-x-auto whitespace-pre-wrap leading-normal select-text"><code>{{ mySubmissionDetail.answers[q.questionId.toString()] || '// Chưa làm' }}</code></pre>
+                    <div v-else class="p-2.5 bg-white border border-slate-200 rounded-lg text-body-sm text-slate-700 italic font-semibold leading-relaxed">
+                      {{ mySubmissionDetail.answers[q.questionId.toString()] || '(Chưa làm)' }}
+                    </div>
+                    <div v-if="q.correctAnswer && resultQuiz?.quizType !== 'LapTrinh'" class="pt-1">
+                      <div class="text-[12px] text-emerald-600 font-bold">Hướng dẫn đáp án:</div>
+                      <div class="p-2.5 bg-emerald-50/50 border border-emerald-100 rounded-lg text-body-sm text-emerald-800 leading-relaxed">
+                        {{ q.correctAnswer }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Inline Doubt Form -->
+                  <div class="pt-2 border-t border-slate-100 flex flex-col gap-2">
+                    <div class="flex justify-between items-center">
+                      <button 
+                        @click="activeDoubtQuestionId = activeDoubtQuestionId === q.questionId ? null : q.questionId"
+                        class="text-indigo-600 hover:text-indigo-800 font-bold text-body-xs flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <span class="material-symbols-outlined text-[16px]">help</span>
+                        Thắc mắc câu hỏi này
+                      </button>
+                    </div>
+
+                    <div v-if="activeDoubtQuestionId === q.questionId" class="space-y-2 mt-1 animate-scale-in">
+                      <textarea 
+                        v-model="inlineDoubtTexts[q.questionId]"
+                        rows="2" 
+                        placeholder="Nhập thắc mắc hoặc câu hỏi của bạn cho câu hỏi này..." 
+                        class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-body-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-semibold"
+                      ></textarea>
+                      <div class="flex justify-end gap-2">
+                        <button 
+                          @click="activeDoubtQuestionId = null"
+                          class="px-3 py-1.5 border border-slate-200 hover:bg-slate-50 text-slate-600 font-semibold text-[12px] rounded-lg cursor-pointer"
+                        >
+                          Hủy bỏ
+                        </button>
+                        <button 
+                          @click="submitInlineDoubt(q, idx)"
+                          :disabled="submittingInlineDoubt[q.questionId] || !inlineDoubtTexts[q.questionId]?.trim()"
+                          class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-[12px] rounded-lg flex items-center gap-1 cursor-pointer"
+                        >
+                          <span v-if="submittingInlineDoubt[q.questionId]" class="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full"></span>
+                          Gửi thắc mắc
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -701,11 +833,32 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onUnmounted } from 'vue'
+import { ref, computed, watch, onUnmounted, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from '../../../stores'
 import api from '../../../services/api'
+import { marked } from 'marked'
 
+const route = useRoute()
 const authStore = useAuthStore()
+
+function renderMarkdown(text) {
+  if (!text) return ''
+  return marked(text)
+}
+
+function getFileExtension(lang) {
+  const map = { JavaScript: 'js', Python: 'py', 'C#': 'cs' }
+  return map[lang] || 'txt'
+}
+
+function insertTab(e, qId) {
+  const start = e.target.selectionStart
+  const end = e.target.selectionEnd
+  const currentVal = quizAnswers.value[qId] || ''
+  quizAnswers.value[qId] = currentVal.substring(0, start) + '  ' + currentVal.substring(end)
+  e.target.selectionStart = e.target.selectionEnd = start + 2
+}
 
 const searchText = ref('')
 const currentPage = ref(1)
@@ -1080,6 +1233,11 @@ const doubtText = ref('')
 const submittingDoubt = ref(false)
 const quizStudentQuestions = ref([])
 const loadingQuizStudentQuestions = ref(false)
+const mySubmissionDetail = ref(null)
+const loadingSubmissionDetailData = ref(false)
+const activeDoubtQuestionId = ref(null)
+const inlineDoubtTexts = ref({})
+const submittingInlineDoubt = ref({})
 
 // Timer
 let timerInterval = null
@@ -1157,7 +1315,11 @@ async function startQuizTaking(quiz) {
     
     // Initialize answers
     quizQuestions.value.forEach(q => {
-      quizAnswers.value[q.questionId] = ''
+      if (takingQuiz.value?.quizType === 'LapTrinh') {
+        quizAnswers.value[q.questionId] = q.options || ''
+      } else {
+        quizAnswers.value[q.questionId] = ''
+      }
     })
     
     // Start countdown
@@ -1230,6 +1392,20 @@ async function viewQuizResult(quiz) {
   resultQuiz.value = quiz
   showQuizResultModal.value = true
   doubtText.value = ''
+  mySubmissionDetail.value = null
+  activeDoubtQuestionId.value = null
+  inlineDoubtTexts.value = {}
+  
+  loadingSubmissionDetailData.value = true
+  try {
+    const res = await api.get(`/api/v1/quizzes/${quiz.quizId}/my-submission`)
+    mySubmissionDetail.value = res.data
+  } catch (e) {
+    console.error('Error fetching my submission detail:', e)
+  } finally {
+    loadingSubmissionDetailData.value = false
+  }
+  
   fetchQuizStudentQuestions(quiz.quizId)
 }
 
@@ -1243,6 +1419,29 @@ async function fetchQuizStudentQuestions(quizId) {
     console.error('Error fetching student doubts:', e)
   } finally {
     loadingQuizStudentQuestions.value = false
+  }
+}
+
+async function submitInlineDoubt(question, index) {
+  const text = inlineDoubtTexts.value[question.questionId]?.trim()
+  if (!text) return
+  
+  submittingInlineDoubt.value[question.questionId] = true
+  const formattedText = `Thắc mắc Câu ${index + 1}: '${question.questionText.substring(0, 60)}${question.questionText.length > 60 ? '...' : ''}' -> Nội dung: ${text}`
+  
+  try {
+    await api.post(`/api/v1/quizzes/${resultQuiz.value.quizId}/questions`, {
+      questionText: formattedText
+    })
+    inlineDoubtTexts.value[question.questionId] = ''
+    activeDoubtQuestionId.value = null
+    alert('Gửi thắc mắc câu hỏi thành công!')
+    fetchQuizStudentQuestions(resultQuiz.value.quizId)
+  } catch (e) {
+    console.error('Error submitting inline doubt:', e)
+    alert('Không thể gửi thắc mắc. Vui lòng thử lại.')
+  } finally {
+    submittingInlineDoubt.value[question.questionId] = false
   }
 }
 
@@ -1276,4 +1475,50 @@ function getStatusLabel(status) {
   }
   return map[status] || status
 }
+
+function isSelectedOption(opt, selectedKey) {
+  if (!selectedKey) return false
+  const key = selectedKey.trim().toUpperCase()
+  return opt.trim().toUpperCase().startsWith(key + '.') || 
+         opt.trim().toUpperCase().startsWith(key + ' ') || 
+         opt.trim().toUpperCase() === key
+}
+
+function isCorrectOption(opt, correctKey) {
+  if (!correctKey) return false
+  const key = correctKey.trim().toUpperCase()
+  return opt.trim().toUpperCase().startsWith(key + '.') || 
+         opt.trim().toUpperCase().startsWith(key + ' ') || 
+         opt.trim().toUpperCase() === key
+}
+
+async function checkQueryOpenQuiz() {
+  const quizId = route.query.openQuizId
+  if (quizId) {
+    try {
+      const res = await api.get(`/api/v1/quizzes/${quizId}`)
+      const quiz = res.data
+      if (quiz) {
+        // Automatically fetch submission details and open modal
+        await viewQuizResult(quiz)
+        
+        // Clean URL query parameters
+        const url = new URL(window.location)
+        url.searchParams.delete('openQuizId')
+        url.searchParams.delete('openClassId')
+        window.history.replaceState({}, '', url)
+      }
+    } catch (err) {
+      console.error('Error auto-opening quiz result:', err)
+    }
+  }
+}
+
+watch(() => route.query, () => {
+  checkQueryOpenQuiz()
+}, { deep: true })
+
+onMounted(() => {
+  checkQueryOpenQuiz()
+})
 </script>

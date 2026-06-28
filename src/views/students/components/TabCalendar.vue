@@ -130,6 +130,7 @@
                           : isTransferred(s)
                             ? 'bg-emerald-50/90 border-l-4 border-l-emerald-500 border-emerald-500 text-emerald-900 shadow-sm shadow-emerald-100/50'
                             : 'bg-indigo-50/40 border-l-4 border-l-indigo-500 border-indigo-400 text-indigo-900 shadow-sm',
+                      isHighlighted(s) ? 'ring-4 ring-violet-600 shadow-xl scale-[1.02] z-50 border-violet-600 animate-[pulse_2s_ease-in-out_infinite]' : '',
                       'w-full p-3 rounded-lg border-2 text-left space-y-1.5 transition-all duration-200 hover:scale-[1.02] hover:shadow-md hover:-translate-y-0.5 cursor-pointer relative overflow-hidden'
                     ]"
                   >
@@ -139,9 +140,9 @@
                         <span class="material-symbols-outlined text-[12px] font-variation-settings-fill text-amber-500">pending_actions</span>
                         Đang chuyển lớp
                       </span>
-                      <span v-else-if="isConflicted(s)" class="text-red-600 flex items-center gap-0.5">
+                      <span v-else-if="isConflicted(s)" class="text-red-600 flex items-center gap-0.5 font-bold" style="font-weight: 800;">
                         <span class="material-symbols-outlined text-[12px] font-variation-settings-fill text-red-500">warning</span>
-                        Trùng lịch!
+                        Trùng: {{ getConflictNames(s) }}
                       </span>
                       <span v-else-if="isTransferred(s)" class="text-emerald-600 flex items-center gap-0.5">
                         <span class="material-symbols-outlined text-[12px] font-variation-settings-fill text-emerald-500">check_circle</span>
@@ -217,6 +218,7 @@
                     : isTransferred(s)
                       ? 'bg-emerald-50 border-l-4 border-l-emerald-500 border-emerald-500 text-emerald-900 shadow-sm'
                       : 'bg-indigo-50/50 border-l-4 border-l-indigo-500 border-indigo-400 text-indigo-900 shadow-sm',
+                isHighlighted(s) ? 'ring-4 ring-violet-600 shadow-xl scale-[1.02] z-50 border-violet-600 animate-[pulse_2s_ease-in-out_infinite]' : '',
                 'p-4 rounded-xl border-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors relative overflow-hidden cursor-pointer'
               ]"
             >
@@ -309,28 +311,7 @@
           <div class="p-6 space-y-4 max-h-[60vh] overflow-y-auto pr-2">
             <!-- TAB 1: INFO -->
             <div v-show="modalActiveTab === 'info'" class="space-y-4">
-              <!-- Conflict Warning Banner in Modal -->
-              <div
-                v-if="activeDetailsSchedule && isConflicted(activeDetailsSchedule)"
-                class="bg-error/10 border border-error/20 p-3.5 rounded-xl flex flex-col gap-2.5 shadow-xs text-error animate-fade-in"
-              >
-                <div class="flex items-start gap-2 min-w-0">
-                  <span class="material-symbols-outlined text-[20px] text-error shrink-0 mt-0.5 animate-pulse" style="font-variation-settings: 'FILL' 1;">warning</span>
-                  <div class="text-[13px] leading-relaxed text-error flex-1">
-                    <span class="font-bold block text-[13.5px]">Lớp bị trùng lịch học!</span>
-                    <span class="text-on-surface-variant font-medium text-[12px] block mt-0.5">
-                      Lớp này đang bị trùng lịch với lớp khác trong tuần. Bạn có thể gửi yêu cầu hỗ trợ đổi lịch để sắp xếp lại lớp học.
-                    </span>
-                  </div>
-                </div>
-                <button
-                  @click="handleSupportConflictFromCalendar"
-                  class="w-full py-2 rounded-lg bg-error hover:bg-error/90 text-white font-bold text-[12px] transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 shadow-sm animate-pulse"
-                >
-                  <span class="material-symbols-outlined text-[16px]">swap_horiz</span>
-                  Gửi yêu cầu hỗ trợ đổi lớp
-                </button>
-              </div>
+
 
               <!-- Class & Course Title -->
               <div class="space-y-1 text-left">
@@ -397,118 +378,44 @@
               <div class="text-[11px] text-slate-400 font-bold uppercase tracking-wider text-left">
                 Tài liệu & Bài giảng cho buổi học hôm nay
               </div>
-              <div class="space-y-2">
-                <div 
-                  v-for="(doc, idx) in getMockClassContents(activeDetailsSchedule?.courseName).documents"
-                  :key="idx"
-                  class="flex items-center justify-between p-3 rounded-xl border border-slate-150 bg-slate-50/50 hover:bg-indigo-50/20 hover:border-indigo-200 transition-all group"
-                >
-                  <div class="flex items-center gap-3 min-w-0">
-                    <span class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" :class="getDocTypeBg(doc.type)">
-                      <span class="material-symbols-outlined text-[18px]" :class="getDocTypeColor(doc.type)">{{ getDocTypeIcon(doc.type) }}</span>
-                    </span>
-                    <div class="text-left min-w-0 flex-1">
-                      <div class="text-xs font-bold text-slate-800 truncate max-w-[200px]" :title="doc.title">{{ doc.title }}</div>
-                      <div class="text-[10px] text-slate-400 font-semibold mt-0.5">
-                        {{ doc.size || doc.duration }} • {{ doc.views }} lượt học
-                      </div>
-                    </div>
+              <div v-if="loadingDetails" class="flex flex-col items-center justify-center py-8">
+                <div class="w-6 h-6 border-2 border-primary-container/30 border-t-primary-container rounded-full animate-spin mb-2"></div>
+                <span class="text-xs text-slate-505">Đang tải tài liệu...</span>
+              </div>
+              <div v-else-if="realLesson" class="space-y-2 text-left">
+                <div class="p-4 bg-indigo-50/50 border border-indigo-100 rounded-xl">
+                  <div class="font-bold text-slate-850 mb-1.5">{{ realLesson.title }}</div>
+                  <div v-if="realLesson.fileName" class="mt-2">
+                    <a :href="realLesson.content" :download="realLesson.fileName" class="inline-flex items-center gap-2 px-3 py-2 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-700 rounded-lg text-body-sm font-semibold transition-all">
+                      <span class="material-symbols-outlined text-[20px]">download</span>
+                      Tải file: {{ realLesson.fileName }}
+                    </a>
                   </div>
-                  <button 
-                    @click="exploreDocument(doc)"
-                    class="h-8 px-3 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white text-[11px] font-bold transition-all flex items-center gap-1 active:scale-95 cursor-pointer border-0 shrink-0"
-                  >
-                    <span class="material-symbols-outlined text-[14px]">{{ doc.type === 'video' ? 'play_arrow' : 'download' }}</span>
-                    {{ doc.type === 'video' ? 'Xem' : 'Tải' }}
-                  </button>
+                  <p v-else class="text-body-sm text-slate-600 whitespace-pre-line">{{ realLesson.content }}</p>
                 </div>
+              </div>
+              <div v-else class="text-slate-400 italic text-body-sm py-8 text-center">
+                Giảng viên chưa cập nhật nội dung cho buổi học này.
               </div>
             </div>
 
             <!-- TAB 3: QUIZZES -->
             <div v-show="modalActiveTab === 'quiz'" class="space-y-4">
-              <!-- Active Quiz Player -->
-              <div v-if="activeQuiz" class="space-y-4 bg-indigo-50/10 border border-indigo-100/50 p-4 rounded-xl animate-fade-in text-left">
-                <div class="flex justify-between items-center border-b border-indigo-100/30 pb-2 mb-2">
-                  <h4 class="text-xs font-black text-indigo-900 truncate pr-4">{{ activeQuiz.title }}</h4>
-                  <button @click="quitQuiz" class="text-[10px] text-slate-450 hover:text-slate-700 font-bold border-0 bg-transparent cursor-pointer">Thoát</button>
-                </div>
-
-                <div v-for="(q, qIdx) in activeQuiz.questions" :key="qIdx" class="space-y-2 border-b border-slate-100 pb-3 last:border-0 last:pb-0">
-                  <div class="text-xs font-bold text-slate-800 leading-relaxed">
-                    Câu {{ qIdx + 1 }}: {{ q.q }}
-                  </div>
-                  <div class="grid grid-cols-1 gap-1.5">
-                    <label 
-                      v-for="(opt, oIdx) in q.options" 
-                      :key="oIdx"
-                      :class="[
-                        quizResult 
-                          ? oIdx === q.correct 
-                            ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-semibold shadow-xs' 
-                            : quizAnswers[`q${qIdx}`] === oIdx 
-                              ? 'bg-red-50 border-red-300 text-red-800 shadow-xs'
-                              : 'bg-slate-50 border-slate-100 opacity-60'
-                          : quizAnswers[`q${qIdx}`] === oIdx
-                            ? 'bg-indigo-50 border-indigo-300 text-indigo-800 font-semibold'
-                            : 'bg-slate-50 hover:bg-slate-100/70 border-slate-200/60 text-slate-700 cursor-pointer',
-                        'p-2.5 rounded-lg border text-xs flex items-center gap-2 transition-all text-left'
-                      ]"
-                    >
-                      <input 
-                        type="radio" 
-                        :name="`q_${qIdx}`" 
-                        :value="oIdx" 
-                        v-model="quizAnswers[`q${qIdx}`]"
-                        :disabled="!!quizResult"
-                        class="accent-indigo-600 shrink-0 cursor-pointer"
-                      />
-                      <span>{{ opt }}</span>
-                      <!-- Correct/Incorrect Marks -->
-                      <span v-if="quizResult && oIdx === q.correct" class="material-symbols-outlined text-[16px] text-emerald-600 ml-auto font-bold shrink-0">check_circle</span>
-                      <span v-else-if="quizResult && quizAnswers[`q${qIdx}`] === oIdx" class="material-symbols-outlined text-[16px] text-red-500 ml-auto font-bold shrink-0">cancel</span>
-                    </label>
-                  </div>
-                </div>
-
-                <!-- Submit / Score Info -->
-                <div class="pt-2 flex items-center justify-between">
-                  <div v-if="quizResult" class="flex items-center gap-2">
-                    <span class="text-xs font-bold text-slate-800">
-                      Kết quả: <span :class="quizResult.score >= 2 ? 'text-emerald-600' : 'text-amber-600'">{{ quizResult.score }}/{{ quizResult.total }}</span> câu đúng
-                    </span>
-                    <span :class="[quizResult.score >= 2 ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600', 'px-2 py-0.5 rounded text-[10px] font-extrabold uppercase']">
-                      {{ quizResult.score >= 2 ? 'Đạt' : 'Chưa Đạt' }}
-                    </span>
-                  </div>
-                  <div v-else class="text-[10px] text-slate-400 font-semibold">Vui lòng chọn đầy đủ các câu hỏi</div>
-                  
-                  <button 
-                    v-if="!quizResult"
-                    @click="submitQuiz"
-                    :disabled="!isQuizFilled"
-                    class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-95 border-0"
-                  >
-                    Nộp bài
-                  </button>
-                  <button 
-                    v-else
-                    @click="restartQuiz"
-                    class="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-xs font-bold transition-all cursor-pointer active:scale-95 border-0"
-                  >
-                    Làm lại
-                  </button>
-                </div>
+              <div v-if="loadingDetails" class="flex flex-col items-center justify-center py-8">
+                <div class="w-6 h-6 border-2 border-primary-container/30 border-t-primary-container rounded-full animate-spin mb-2"></div>
+                <span class="text-xs text-slate-505">Đang tải bài kiểm tra...</span>
               </div>
-
+              <div v-else-if="realQuizzes.length === 0" class="text-slate-400 italic text-body-sm py-8 text-center">
+                Không có bài kiểm tra nào trong buổi học này.
+              </div>
               <!-- Quizzes list -->
               <div v-else class="space-y-3">
                 <div class="text-[11px] text-slate-400 font-bold uppercase tracking-wider text-left">
                   Danh sách bài kiểm tra nhanh
                 </div>
                 <div 
-                  v-for="(quiz, idx) in getMockClassContents(activeDetailsSchedule?.courseName).quizzes"
-                  :key="idx"
+                  v-for="quiz in realQuizzes"
+                  :key="quiz.quizId"
                   class="flex items-center justify-between p-4 rounded-xl border border-slate-150 bg-slate-50/50 hover:bg-indigo-50/20 hover:border-indigo-200 transition-all group"
                 >
                   <div class="flex items-center gap-3 min-w-0">
@@ -517,33 +424,25 @@
                     </span>
                     <div class="text-left min-w-0 flex-1">
                       <div class="text-xs font-bold text-slate-800 truncate max-w-[200px]" :title="quiz.title">{{ quiz.title }}</div>
-                      <div class="text-[10px] mt-0.5 flex items-center gap-1.5">
-                        <span class="text-slate-400 font-semibold">{{ quiz.questions.length }} câu hỏi</span>
-                        <span v-if="completedQuizzes[`${activeDetailsSchedule?.scheduleId}_${idx}`] !== undefined" class="text-emerald-600 font-bold flex items-center gap-0.5">
-                          • Đã làm (Điểm: {{ completedQuizzes[`${activeDetailsSchedule?.scheduleId}_${idx}`] }}/{{ quiz.questions.length }})
-                        </span>
-                        <span v-else class="text-amber-650 font-bold">
-                          • Chưa làm
-                        </span>
+                      <div class="text-[10px] mt-0.5 flex items-center gap-1.5 text-slate-400">
+                        <span>Thời lượng: {{ quiz.durationMinutes }} phút</span>
+                        <span>• {{ quiz.quizType === 'TracNghiem' ? 'Trắc nghiệm' : 'Tự luận' }}</span>
                       </div>
                     </div>
                   </div>
-                  <button 
-                    @click="startQuiz(quiz, idx)"
-                    class="h-8 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold transition-all active:scale-95 cursor-pointer border-0 shadow-xs shrink-0"
-                  >
-                    {{ completedQuizzes[`${activeDetailsSchedule?.scheduleId}_${idx}`] !== undefined ? 'Làm lại' : 'Làm bài' }}
-                  </button>
+                  <div class="shrink-0">
+                    <span class="text-indigo-600 text-[11px] font-bold">Làm ở tab Lớp học</span>
+                  </div>
                 </div>
-              </div>
-            </div>
           </div>
+        </div>
+      </div>
 
           <!-- Actions -->
-          <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2 shrink-0">
+          <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end items-center shrink-0">
             <button 
               @click="closeDetailsModal"
-              class="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs hover:shadow-md transition-all cursor-pointer active:scale-95 border-0"
+              class="px-5 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs transition-all cursor-pointer active:scale-95 border-0"
             >
               Đóng
             </button>
@@ -555,8 +454,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject } from 'vue'
+import { ref, computed, onMounted, inject, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useCourseStore } from '../../../stores'
+import api from '../../../services/api'
 import foreignLanguageImg from '../../../assets/course_foreign_language.png'
 import itImg from '../../../assets/course_it.png'
 import skillsImg from '../../../assets/course_skills.png'
@@ -574,12 +475,22 @@ const emit = defineEmits(['open-support-conflict'])
 
 const courseStore = useCourseStore()
 const showSnackbar = inject('showSnackbar', null)
+const route = useRoute()
+
+const highlightedClassId = computed(() => route.query.highlight ? parseInt(route.query.highlight, 10) : null)
+function isHighlighted(s) {
+  return highlightedClassId.value && s.classId === highlightedClassId.value
+}
 
 const modalActiveTab = ref('info') // 'info', 'content', 'quiz'
 const activeQuiz = ref(null)
 const activeQuizIndex = ref(null)
 const quizAnswers = ref({})
 const quizResult = ref(null)
+
+const loadingDetails = ref(false)
+const realLesson = ref(null)
+const realQuizzes = ref([])
 const completedQuizzes = ref({})
 
 const isQuizFilled = computed(() => {
@@ -669,9 +580,7 @@ const getMockClassContents = (courseName) => {
   if (lower.includes('python')) {
     return {
       documents: [
-        { type: 'pdf', title: 'Slide Bài giảng: Hướng dẫn về Lập trình hướng đối tượng (OOP)', size: '2.4 MB', views: 42 },
-        { type: 'doc', title: 'Bài tập thực hành: Thiết kế Class & Inheritance', size: '540 KB', views: 35 },
-        { type: 'video', title: 'Video: Giải thích các khái niệm Tính đóng gói, Kế thừa, Đa hình', duration: '15:24', views: 58 }
+        { type: 'pdf', title: 'Slide Bài giảng: Hướng dẫn về Lập trình hướng đối tượng (OOP)', size: '2.4 MB', views: 42 }
       ],
       quizzes: [
         {
@@ -687,9 +596,7 @@ const getMockClassContents = (courseName) => {
   } else if (lower.includes('react') || lower.includes('node')) {
     return {
       documents: [
-        { type: 'pdf', title: 'Slide Bài giảng: React Hooks & State Management nâng cao', size: '3.1 MB', views: 56 },
-        { type: 'doc', title: 'Tài liệu hướng dẫn: Cài đặt và cấu hình Node.js & Express.js', size: '890 KB', views: 44 },
-        { type: 'video', title: 'Video: Xây dựng REST API đơn giản với Express & MongoDB', duration: '22:10', views: 73 }
+        { type: 'pdf', title: 'Slide Bài giảng: React Hooks & State Management nâng cao', size: '3.1 MB', views: 56 }
       ],
       quizzes: [
         {
@@ -705,9 +612,7 @@ const getMockClassContents = (courseName) => {
   } else if (lower.includes('tiếng anh') || lower.includes('english')) {
     return {
       documents: [
-        { type: 'pdf', title: 'Slide Bài giảng: Tiếng Anh giao tiếp công sở - Meeting & Presentation', size: '1.8 MB', views: 39 },
-        { type: 'audio', title: 'Audio: Bài nghe Listening Practice - Business Conversation', size: '5.2 MB', views: 48 },
-        { type: 'doc', title: 'Tài liệu từ vựng & cấu trúc nói thông dụng tại nơi làm việc', size: '620 KB', views: 33 }
+        { type: 'pdf', title: 'Slide Bài giảng: Tiếng Anh giao tiếp công sở - Meeting & Presentation', size: '1.8 MB', views: 39 }
       ],
       quizzes: [
         {
@@ -723,8 +628,7 @@ const getMockClassContents = (courseName) => {
   } else {
     return {
       documents: [
-        { type: 'pdf', title: 'Tài liệu Slide bài giảng lý thuyết hôm nay', size: '1.5 MB', views: 18 },
-        { type: 'doc', title: 'Tài liệu đọc thêm khám phá và bài tập thực hành', size: '320 KB', views: 12 }
+        { type: 'pdf', title: 'Tài liệu Slide bài giảng lý thuyết hôm nay', size: '1.5 MB', views: 18 }
       ],
       quizzes: [
         {
@@ -784,6 +688,43 @@ const weekDays = [
 ]
 
 const currentDate = ref(new Date())
+
+watch([highlightedClassId, () => props.enrolledClasses, () => props.enrolledSchedulesMap], ([newId, classes, schedulesMap]) => {
+  if (newId && classes && classes.length > 0) {
+    const cls = classes.find(c => c.classId === newId)
+    if (cls && cls.startDate) {
+      const start = new Date(cls.startDate)
+      start.setHours(0, 0, 0, 0)
+      
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      
+      const end = cls.endDate ? new Date(cls.endDate) : new Date(today.getFullYear() + 1, 0, 1)
+      
+      let searchStart = start
+      if (today > start && today <= end) {
+        searchStart = today
+      }
+      
+      const scheds = schedulesMap[cls.classId] || []
+      let targetDate = searchStart
+      if (scheds.length > 0) {
+        for (let i = 0; i < 7; i++) {
+          const testDate = new Date(searchStart)
+          testDate.setDate(searchStart.getDate() + i)
+          const testJsDay = testDate.getDay() // 0 = Sun, 1 = Mon ...
+          const targetDayOfWeek = testJsDay === 0 ? 0 : testJsDay + 1
+          
+          if (scheds.some(s => s.dayOfWeek === targetDayOfWeek)) {
+            targetDate = testDate
+            break
+          }
+        }
+      }
+      currentDate.value = targetDate
+    }
+  }
+}, { immediate: true })
 
 // Navigation controls
 function prevWeek() {
@@ -874,7 +815,7 @@ function getSessionClass(startTime) {
 const combinedSchedules = computed(() => {
   const result = []
   props.enrolledClasses.forEach(cls => {
-    if (cls.status !== 'DangHoc') return
+    if (cls.status !== 'DangHoc' && cls.status !== 'ChoMo') return
     const scheds = props.enrolledSchedulesMap[cls.classId] || []
     scheds.forEach(s => {
       // Xác định ngày thực tế của buổi học trong tuần được chọn
@@ -915,19 +856,37 @@ function getSchedulesForDay(dayValue) {
   return combinedSchedules.value.filter(s => s.dayOfWeek === dayValue)
 }
 
-function isConflicted(schedule) {
+function parseTimeToMinutes(timeStr) {
+  if (!timeStr || typeof timeStr !== 'string') return 0
+  const clean = timeStr.trim().replace(/[^0-9:]/g, '')
+  const parts = clean.split(':')
+  if (parts.length === 0) return 0
+  const hours = parseInt(parts[0]) || 0
+  const minutes = parts.length > 1 ? (parseInt(parts[1]) || 0) : 0
+  return hours * 60 + minutes
+}
+
+function getConflictsForSchedule(schedule) {
   const sameDaySchedules = combinedSchedules.value.filter(s => 
     s.dayOfWeek === schedule.dayOfWeek && 
-    s !== schedule && 
-    s.scheduleId !== schedule.scheduleId
+    Number(s.classId) !== Number(schedule.classId)
   )
-  return sameDaySchedules.some(s => {
-    const startA = schedule.startTime
-    const endA = schedule.endTime
-    const startB = s.startTime
-    const endB = s.endTime
+  return sameDaySchedules.filter(s => {
+    const startA = parseTimeToMinutes(schedule.startTime)
+    const endA = parseTimeToMinutes(schedule.endTime)
+    const startB = parseTimeToMinutes(s.startTime)
+    const endB = parseTimeToMinutes(s.endTime)
     return startA < endB && startB < endA
   })
+}
+
+function isConflicted(schedule) {
+  return getConflictsForSchedule(schedule).length > 0
+}
+
+function getConflictNames(schedule) {
+  const conflicts = getConflictsForSchedule(schedule)
+  return conflicts.map(c => c.className).join(', ')
 }
 
 function isPendingTransfer(schedule) {
@@ -996,7 +955,7 @@ const detailsModalOpen = ref(false)
 const activeDetailsSchedule = ref(null)
 const activeDetailsScheduleDate = ref('')
 
-function showDetailsModal(schedule, dayValue) {
+async function showDetailsModal(schedule, dayValue) {
   activeDetailsSchedule.value = schedule
   activeDetailsScheduleDate.value = getScheduleDate(dayValue)
   detailsModalOpen.value = true
@@ -1004,6 +963,42 @@ function showDetailsModal(schedule, dayValue) {
   activeQuiz.value = null
   quizAnswers.value = {}
   quizResult.value = null
+
+  loadingDetails.value = true
+  realLesson.value = null
+  realQuizzes.value = []
+
+  try {
+    // Format date as YYYY-MM-DD
+    const dateObj = new Date(currentWeekRange.value.monday)
+    const offset = dayValue === 0 ? 6 : dayValue - 2
+    dateObj.setDate(dateObj.getDate() + offset)
+    const yyyy = dateObj.getFullYear()
+    const mm = String(dateObj.getMonth() + 1).padStart(2, '0')
+    const dd = String(dateObj.getDate()).padStart(2, '0')
+    const dateStr = `${yyyy}-${mm}-${dd}`
+
+    const [lessonRes, quizzesRes] = await Promise.all([
+      api.get(`/api/v1/lessons/class/${schedule.classId}/date/${dateStr}`).catch(() => null),
+      api.get(`/api/v1/quizzes/class/${schedule.classId}`).catch(() => null)
+    ])
+
+    if (lessonRes && lessonRes.data) {
+      realLesson.value = lessonRes.data
+    }
+    if (quizzesRes && quizzesRes.data) {
+      const allQuizzes = quizzesRes.data || []
+      realQuizzes.value = allQuizzes.filter(q => {
+        if (!q.lessonDate) return false
+        const qDate = new Date(q.lessonDate).toLocaleDateString('en-CA')
+        return qDate === dateStr
+      })
+    }
+  } catch (err) {
+    console.error('Error loading lesson or quizzes:', err)
+  } finally {
+    loadingDetails.value = false
+  }
 }
 
 function closeDetailsModal() {

@@ -560,7 +560,6 @@ const navItems = computed(() => {
 
   const items = [
     { title: 'Tổng quan', icon: 'dashboard', path: '/dashboard' },
-    { title: 'Lịch dạy & Bài giảng', icon: 'menu_book', path: '/teaching-lessons' },
     { title: 'Môn học', icon: 'school', path: '/courses' },
     { title: 'Lớp học', icon: 'groups', path: '/classes' },
     { title: 'Học viên', icon: 'person', path: '/students' }
@@ -588,10 +587,7 @@ const navItems = computed(() => {
   }
 
   if (authStore.isTeacher) {
-    items.push({ title: 'Phiếu lương của tôi', icon: 'receipt_long', path: '/teachers/salary' })
-  }
-
-  if (authStore.isTeacher) {
+    items.splice(1, 0, { title: 'Lịch dạy & Bài giảng', icon: 'menu_book', path: '/teaching-lessons' })
     const hasSalarySlip = items.some(item => item.path === '/teachers/salary' && item.title === 'Phiếu lương của tôi');
     if (!hasSalarySlip) {
       items.push({ title: 'Phiếu lương của tôi', icon: 'receipt_long', path: '/teachers/salary' });
@@ -767,180 +763,227 @@ function formatTimeAgo(dateVal) {
 }
 
 async function fetchNotifications() {
-  if (!authStore.isAuthenticated || !authStore.currentUser?.userId || authStore.currentUser?.role !== 'HocVien') {
+  if (!authStore.isAuthenticated || !authStore.currentUser?.userId) {
+    notifications.value = []
+    return
+  }
+  const role = authStore.currentUser.role || (authStore.isTeacher ? 'GiaoVien' : authStore.isAdmin ? 'Admin' : 'HocVien')
+  if (role !== 'HocVien' && role !== 'GiaoVien' && role !== 'Admin') {
     notifications.value = []
     return
   }
   try {
-    const summaryRes = await api.get(`/api/v1/portal/student-summary/${authStore.currentUser.userId}`)
-    const summary = summaryRes.data
-    const enrollments = summary.enrollments || []
-    const payments = summary.payments || []
-    const credit = summary.creditSummary || null
-    
     const items = []
     
-    // 1. Paid / unpaid tuition notifications
-    payments.forEach(p => {
-      if (p.status === 'Completed' || p.status === 'Paid') {
-        items.push({
-          id: `pay_success_${p.paymentId}`,
-          title: 'Thanh toán học phí thành công',
-          message: `Đã đóng học phí lớp ${p.className || ''} số tiền ${formatCurrency(p.amount)}.`,
-          time: p.paymentDate ? new Date(p.paymentDate) : new Date(Date.now() - 3600000 * 2),
-          type: 'payment',
-          icon: 'payments',
-          color: 'text-emerald-600 bg-emerald-50'
+    if (role === 'GiaoVien' || role === 'Admin') {
+      try {
+        const res = await api.get('/api/v1/quizzes/student-questions/all')
+        const questions = res.data || []
+        questions.forEach(q => {
+          items.push({
+            id: `student_doubt_${q.id}`,
+            title: 'Học viên thắc mắc bài thi',
+            message: `Học viên ${q.studentName} đã thắc mắc trong bài "${q.quizTitle}": "${q.questionText}"`,
+            time: q.createdAt ? new Date(q.createdAt) : new Date(),
+            type: 'doubt',
+            icon: 'help_outline',
+            color: 'text-amber-600 bg-amber-50',
+            quizId: q.quizId,
+            classId: q.classId
+          })
         })
-      } else if (p.status === 'Pending' || p.status === 'Unpaid') {
+      } catch (err) {
+        console.error('Error fetching teacher questions notifications:', err)
+      }
+    } else if (role === 'HocVien') {
+      const summaryRes = await api.get(`/api/v1/portal/student-summary/${authStore.currentUser.userId}`)
+      const summary = summaryRes.data
+      const enrollments = summary.enrollments || []
+      const payments = summary.payments || []
+      const credit = summary.creditSummary || null
+      
+      // 1. Paid / unpaid tuition notifications
+      payments.forEach(p => {
+        if (p.status === 'Completed' || p.status === 'Paid') {
+          items.push({
+            id: `pay_success_${p.paymentId}`,
+            title: 'Thanh toán học phí thành công',
+            message: `Đã đóng học phí lớp ${p.className || ''} số tiền ${formatCurrency(p.amount)}.`,
+            time: p.paymentDate ? new Date(p.paymentDate) : new Date(Date.now() - 3600000 * 2),
+            type: 'payment',
+            icon: 'payments',
+            color: 'text-emerald-600 bg-emerald-50'
+          })
+        } else if (p.status === 'Pending' || p.status === 'Unpaid') {
+          items.push({
+            id: `pay_pending_${p.paymentId}`,
+            title: 'Thông báo học phí chưa đóng',
+            message: `Lớp ${p.className || ''} đang có học phí chưa hoàn thành (${formatCurrency(p.amount)}).`,
+            time: new Date(Date.now() - 3600000 * 24),
+            type: 'payment',
+            icon: 'credit_card',
+            color: 'text-amber-600 bg-amber-50'
+          })
+        }
+      })
+      
+      // 2. Credit balance / bảo lưu notifications
+      if (credit && credit.totalAvailable > 0) {
         items.push({
-          id: `pay_pending_${p.paymentId}`,
-          title: 'Thông báo học phí chưa đóng',
-          message: `Lớp ${p.className || ''} đang có học phí chưa hoàn thành (${formatCurrency(p.amount)}).`,
-          time: new Date(Date.now() - 3600000 * 24),
-          type: 'payment',
-          icon: 'credit_card',
-          color: 'text-amber-600 bg-amber-50'
+          id: `credit_avail_${credit.studentId}`,
+          title: 'Ví bảo lưu học phí',
+          message: `Tài khoản của bạn đang có ${formatCurrency(credit.totalAvailable)} bảo lưu khả dụng.`,
+          time: new Date(),
+          type: 'credit',
+          icon: 'account_balance_wallet',
+          color: 'text-blue-600 bg-blue-50'
         })
       }
-    })
-    
-    // 2. Credit balance / bảo lưu notifications
-    if (credit && credit.totalAvailable > 0) {
-      items.push({
-        id: `credit_avail_${credit.studentId}`,
-        title: 'Ví bảo lưu học phí',
-        message: `Tài khoản của bạn đang có ${formatCurrency(credit.totalAvailable)} bảo lưu khả dụng.`,
-        time: new Date(),
-        type: 'credit',
-        icon: 'account_balance_wallet',
-        color: 'text-blue-600 bg-blue-50'
-      })
-    }
-    
-    // 3. Dynamic grades update notification
-    for (const e of enrollments) {
-      if (e.status === 'DangHoc' || e.status === 'HoanThanh') {
+      
+      // 3. Dynamic grades update notification
+      for (const e of enrollments) {
+        if (e.status === 'DangHoc' || e.status === 'HoanThanh') {
+          try {
+            const scoreRes = await api.get(`/api/v1/results/enrollment/${e.enrollmentId}`)
+            const scores = scoreRes.data || []
+            scores.forEach(sc => {
+              const labelMap = { ChuyenCan: 'Chuyên cần', GiuaKy: 'Giữa kỳ', CuoiKy: 'Cuối kỳ' }
+              items.push({
+                id: `grade_${e.enrollmentId}_${sc.examType}`,
+                title: 'Cập nhật điểm số mới',
+                message: `Môn ${e.courseName || ''} đã có điểm ${labelMap[sc.examType] || sc.examType}: ${sc.score}/10.`,
+                time: sc.createdAt ? new Date(sc.createdAt) : new Date(Date.now() - 3600000 * 4),
+                type: 'grade',
+                icon: 'workspace_premium',
+                color: 'text-indigo-600 bg-indigo-50'
+              })
+            })
+          } catch (err) {
+            // ignore
+          }
+        }
+      }
+      
+      // 4. Conflicts & schedule warnings
+      const schedulesMap = {}
+      const activeEnrollments = enrollments.filter(e => e.status === 'DangHoc')
+      await Promise.all(activeEnrollments.map(async (e) => {
         try {
-          const scoreRes = await api.get(`/api/v1/results/enrollment/${e.enrollmentId}`)
-          const scores = scoreRes.data || []
-          scores.forEach(sc => {
-            const labelMap = { ChuyenCan: 'Chuyên cần', GiuaKy: 'Giữa kỳ', CuoiKy: 'Cuối kỳ' }
-            items.push({
-              id: `grade_${e.enrollmentId}_${sc.examType}`,
-              title: 'Cập nhật điểm số mới',
-              message: `Môn ${e.courseName || ''} đã có điểm ${labelMap[sc.examType] || sc.examType}: ${sc.score}/10.`,
-              time: sc.createdAt ? new Date(sc.createdAt) : new Date(Date.now() - 3600000 * 4),
-              type: 'grade',
-              icon: 'workspace_premium',
-              color: 'text-indigo-600 bg-indigo-50'
+          const schedRes = await api.get(`/api/v1/classes/${e.classId}/schedules`)
+          schedulesMap[e.classId] = schedRes.data || []
+        } catch (err) {}
+      }))
+      
+      const conflictPairs = []
+      for (let i = 0; i < activeEnrollments.length; i++) {
+        for (let j = i + 1; j < activeEnrollments.length; j++) {
+          const clsA = activeEnrollments[i]
+          const clsB = activeEnrollments[j]
+          const schedsA = schedulesMap[clsA.classId] || []
+          const schedsB = schedulesMap[clsB.classId] || []
+          
+          schedsA.forEach(sa => {
+            schedsB.forEach(sb => {
+              if (sa.dayOfWeek === sb.dayOfWeek) {
+                const startA = sa.startTime
+                const endA = sa.endTime
+                const startB = sb.startTime
+                const endB = sb.endTime
+                if (startA < endB && startB < endA) {
+                  conflictPairs.push({ clsA, clsB, day: sa.dayOfWeek })
+                }
+              }
             })
           })
-        } catch (err) {
-          // ignore
         }
       }
-    }
-    
-    // 4. Conflicts & schedule warnings
-    const schedulesMap = {}
-    const activeEnrollments = enrollments.filter(e => e.status === 'DangHoc')
-    await Promise.all(activeEnrollments.map(async (e) => {
+      
+      conflictPairs.forEach(c => {
+        const map = { 1: 'Chủ Nhật', 2: 'Thứ 2', 3: 'Thứ 3', 4: 'Thứ 4', 5: 'Thứ 5', 6: 'Thứ 6', 7: 'Thứ 7' }
+        items.push({
+          id: `conflict_${c.clsA.classId}_${c.clsB.classId}_${c.day}`,
+          title: 'Cảnh báo trùng lịch học!',
+          message: `Lớp ${c.clsA.className || ''} và ${c.clsB.className || ''} đang trùng lịch vào ${map[c.day] || c.day}.`,
+          time: new Date(),
+          type: 'conflict',
+          icon: 'warning',
+          color: 'text-red-600 bg-red-50'
+        })
+      })
+  
+      // 5. Support request notifications & Admin replies
       try {
-        const schedRes = await api.get(`/api/v1/classes/${e.classId}/schedules`)
-        schedulesMap[e.classId] = schedRes.data || []
-      } catch (err) {}
-    }))
-    
-    const conflictPairs = []
-    for (let i = 0; i < activeEnrollments.length; i++) {
-      for (let j = i + 1; j < activeEnrollments.length; j++) {
-        const clsA = activeEnrollments[i]
-        const clsB = activeEnrollments[j]
-        const schedsA = schedulesMap[clsA.classId] || []
-        const schedsB = schedulesMap[clsB.classId] || []
-        
-        schedsA.forEach(sa => {
-          schedsB.forEach(sb => {
-            if (sa.dayOfWeek === sb.dayOfWeek) {
-              const startA = sa.startTime
-              const endA = sa.endTime
-              const startB = sb.startTime
-              const endB = sb.endTime
-              if (startA < endB && startB < endA) {
-                conflictPairs.push({ clsA, clsB, day: sa.dayOfWeek })
-              }
-            }
-          })
-        })
-      }
-    }
-    
-    conflictPairs.forEach(c => {
-      const map = { 1: 'Chủ Nhật', 2: 'Thứ 2', 3: 'Thứ 3', 4: 'Thứ 4', 5: 'Thứ 5', 6: 'Thứ 6', 7: 'Thứ 7' }
-      items.push({
-        id: `conflict_${c.clsA.classId}_${c.clsB.classId}_${c.day}`,
-        title: 'Cảnh báo trùng lịch học!',
-        message: `Lớp ${c.clsA.className || ''} và ${c.clsB.className || ''} đang trùng lịch vào ${map[c.day] || c.day}.`,
-        time: new Date(),
-        type: 'conflict',
-        icon: 'warning',
-        color: 'text-red-600 bg-red-50'
-      })
-    })
-
-    // 5. Support request notifications & Admin replies
-    try {
-      const msgRes = await api.get('/api/v1/support-messages/my-messages')
-      const myMessages = msgRes.data || []
-      myMessages.forEach(msg => {
-        // A. Thank you for sending support request
-        items.push({
-          id: `support_sent_${msg.id}`,
-          title: 'Yêu cầu hỗ trợ đã gửi',
-          message: `Cảm ơn bạn đã gửi yêu cầu. Chúng tôi sẽ phản hồi trong thời gian sớm nhất.`,
-          time: msg.createdAt ? new Date(msg.createdAt) : new Date(),
-          type: 'support',
-          icon: 'chat',
-          color: 'text-indigo-600 bg-indigo-50'
-        })
-        
-        // B. Admin response reply notification if Resolved or Rejected
-        if (msg.status === 'Resolved' || msg.status === 'Rejected') {
-          const statusText = msg.status === 'Resolved' ? 'phê duyệt' : 'từ chối'
-          const detailText = msg.adminResponse ? `Phản hồi: "${msg.adminResponse}"` : `Yêu cầu của bạn đã được ${statusText}.`
+        const msgRes = await api.get('/api/v1/support-messages/my-messages')
+        const myMessages = msgRes.data || []
+        myMessages.forEach(msg => {
           items.push({
-            id: `support_reply_${msg.id}`,
-            title: msg.status === 'Resolved' ? 'Yêu cầu hỗ trợ đã được duyệt' : 'Yêu cầu hỗ trợ bị từ chối',
-            message: detailText,
-            time: msg.createdAt ? new Date(new Date(msg.createdAt).getTime() + 1000) : new Date(), // slight offset to order after thank you
+            id: `support_sent_${msg.id}`,
+            title: 'Yêu cầu hỗ trợ đã gửi',
+            message: `Cảm ơn bạn đã gửi yêu cầu. Chúng tôi sẽ phản hồi trong thời gian sớm nhất.`,
+            time: msg.createdAt ? new Date(msg.createdAt) : new Date(),
             type: 'support',
-            icon: msg.status === 'Resolved' ? 'task_alt' : 'cancel',
-            color: msg.status === 'Resolved' ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'
+            icon: 'chat',
+            color: 'text-indigo-600 bg-indigo-50'
           })
-        }
-      })
-    } catch (err) {
-      console.error('Error fetching support messages for notifications:', err)
-    }
-
-    // 6. Teacher evaluation feedback thank you
-    try {
-      const evalRes = await api.get('/api/v1/teacher-evaluations/my-evaluations')
-      const myEvals = evalRes.data || []
-      myEvals.forEach(ev => {
-        items.push({
-          id: `eval_thank_${ev.id}`,
-          title: 'Cảm ơn bạn đã gửi đánh giá',
-          message: `Cảm ơn ý kiến đóng góp của bạn cho lớp ${ev.className || 'học'}.`,
-          time: ev.createdAt ? new Date(ev.createdAt) : new Date(),
-          type: 'evaluation',
-          icon: 'rate_review',
-          color: 'text-emerald-600 bg-emerald-50'
+          
+          if (msg.status === 'Resolved' || msg.status === 'Rejected') {
+            const statusText = msg.status === 'Resolved' ? 'phê duyệt' : 'từ chối'
+            const detailText = msg.adminResponse ? `Phản hồi: "${msg.adminResponse}"` : `Yêu cầu của bạn đã được ${statusText}.`
+            items.push({
+              id: `support_reply_${msg.id}`,
+              title: msg.status === 'Resolved' ? 'Yêu cầu hỗ trợ đã được duyệt' : 'Yêu cầu hỗ trợ bị từ chối',
+              message: detailText,
+              time: msg.createdAt ? new Date(new Date(msg.createdAt).getTime() + 1000) : new Date(),
+              type: 'support',
+              icon: msg.status === 'Resolved' ? 'task_alt' : 'cancel',
+              color: msg.status === 'Resolved' ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'
+            })
+          }
         })
-      })
-    } catch (err) {
-      console.error('Error fetching evaluations for notifications:', err)
+      } catch (err) {
+        console.error('Error fetching support messages for notifications:', err)
+      }
+  
+      // 6. Teacher evaluation feedback thank you
+      try {
+        const evalRes = await api.get('/api/v1/teacher-evaluations/my-evaluations')
+        const myEvals = evalRes.data || []
+        myEvals.forEach(ev => {
+          items.push({
+            id: `eval_thank_${ev.id}`,
+            title: 'Cảm ơn bạn đã gửi đánh giá',
+            message: `Cảm ơn ý kiến đóng góp của bạn cho lớp ${ev.className || 'học'}.`,
+            time: ev.createdAt ? new Date(ev.createdAt) : new Date(),
+            type: 'evaluation',
+            icon: 'rate_review',
+            color: 'text-emerald-600 bg-emerald-50'
+          })
+        })
+      } catch (err) {
+        console.error('Error fetching evaluations for notifications:', err)
+      }
+
+      // 7. Student answered doubts notifications
+      try {
+        const doubtRes = await api.get('/api/v1/quizzes/student-questions/my-answered')
+        const answeredDoubts = doubtRes.data || []
+        answeredDoubts.forEach(d => {
+          items.push({
+            id: `doubt_answer_${d.id}`,
+            title: 'Giải đáp thắc mắc bài thi',
+            message: `Câu hỏi "${d.questionText}" trong bài "${d.quizTitle}" đã được giảng viên phản hồi: "${d.answerText}"`,
+            time: d.answeredAt ? new Date(d.answeredAt) : new Date(),
+            type: 'doubt_reply',
+            icon: 'quick_reference_all',
+            color: 'text-emerald-600 bg-emerald-50',
+            quizId: d.quizId,
+            classId: d.classId,
+            doubtId: d.id
+          })
+        })
+      } catch (err) {
+        console.error('Error fetching student answered doubts notifications:', err)
+      }
     }
 
     // Filter based on 24h click expiry for visibility, but keep read status in memory for 30 days
@@ -1017,6 +1060,10 @@ function clickNotification(item) {
     router.push({ path: '/other-services', query: { tab: 'support' } })
   } else if (item.type === 'evaluation') {
     router.push({ path: '/other-services', query: { tab: 'evaluation' } })
+  } else if (item.type === 'doubt') {
+    router.push({ path: '/teaching-lessons', query: { openQuizId: item.quizId, openClassId: item.classId, openTab: 'questions' } })
+  } else if (item.type === 'doubt_reply') {
+    router.push({ path: '/other-services', query: { tab: 'support', openDoubtId: item.doubtId } })
   }
 }
 

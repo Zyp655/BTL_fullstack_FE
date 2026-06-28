@@ -491,6 +491,10 @@
                   Giảng viên
                 </span>
               </div>
+              <div v-if="rescheduleClassObj" class="flex items-center flex-wrap gap-2 text-xs text-slate-600 mt-1" style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 4px;">
+                <span class="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md border border-blue-100 font-bold" style="background-color: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 6px; font-weight: 700;">Lớp: {{ rescheduleClassObj.className }}</span>
+                <span class="bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md border border-emerald-100 font-bold" style="background-color: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 4px 10px; border-radius: 6px; font-weight: 700;">Môn: {{ rescheduleClassObj.courseName }}</span>
+              </div>
               <div v-if="rescheduleReason" class="italic text-on-surface-variant mt-1">"{{ rescheduleReason }}"</div>
             </div>
 
@@ -507,11 +511,13 @@
               <div v-else class="relative">
                 <select
                   v-model="selectedScheduleIdToReplace"
-                  class="w-full bg-white border border-outline-variant/60 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-on-surface cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  class="w-full bg-white border border-outline-variant/60 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-on-surface cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-semibold"
                 >
                   <option :value="null" disabled>-- Chọn buổi học --</option>
                   <option v-for="s in rescheduleSchedules" :key="s.scheduleId" :value="s.scheduleId">
-                    <span v-if="s.dayOfWeek !== 0">Thứ </span>{{ formatDayOfWeek(s.dayOfWeek) }} ({{ s.startTime }} - {{ s.endTime }})
+                    <span v-if="s.dayOfWeek !== 0">Thứ </span>{{ formatDayOfWeek(s.dayOfWeek) }}
+                    <span v-if="getRescheduleDateLabel(s.dayOfWeek)"> ngày {{ getRescheduleDateLabel(s.dayOfWeek) }}</span>
+                    ({{ s.startTime.substring(0, 5) }} - {{ s.endTime.substring(0, 5) }})
                   </option>
                 </select>
                 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
@@ -519,6 +525,23 @@
             </div>
 
             <div v-if="!isAddRequestState" class="border-t border-dashed border-outline-variant/40 my-4"></div>
+
+            <!-- Week Switcher inside Reschedule Modal -->
+            <div class="flex items-center justify-between bg-indigo-50/50 border border-indigo-100/50 rounded-xl p-3 my-2">
+              <span class="text-body-xs font-bold text-indigo-950 uppercase tracking-wide">Xem ngày áp dụng theo tuần:</span>
+              <div class="flex items-center bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm scale-90">
+                <button @click="prevRescheduleWeek" class="px-2.5 py-1 hover:bg-slate-50 transition-colors flex items-center justify-center border-r border-slate-200 cursor-pointer">
+                  <span class="material-symbols-outlined text-[16px] text-slate-600">chevron_left</span>
+                </button>
+                <div class="px-3 py-1 text-[11px] font-bold text-slate-700 bg-slate-50/50">
+                  {{ formattedRescheduleWeekRange }}
+                </div>
+                <button @click="nextRescheduleWeek" class="px-2.5 py-1 hover:bg-slate-50 transition-colors flex items-center justify-center border-l border-slate-200 cursor-pointer">
+                  <span class="material-symbols-outlined text-[16px] text-slate-600">chevron_right</span>
+                </button>
+              </div>
+            </div>
+
             <div class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wide">
               {{ isAddRequestState ? 'Chi tiết lịch học thêm mới:' : 'Cập nhật lịch học mới:' }}
             </div>
@@ -531,15 +554,15 @@
               <div class="relative">
                 <select
                   v-model="rescheduleProposedDay"
-                  class="w-full bg-white border border-outline-variant/60 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-on-surface cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  class="w-full bg-white border border-outline-variant/60 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-on-surface cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-semibold"
                 >
-                  <option :value="2">Thứ 2</option>
-                  <option :value="3">Thứ 3</option>
-                  <option :value="4">Thứ 4</option>
-                  <option :value="5">Thứ 5</option>
-                  <option :value="6">Thứ 6</option>
-                  <option :value="7">Thứ 7</option>
-                  <option :value="0">Chủ nhật</option>
+                  <option :value="2">Thứ 2 (ngày {{ getRescheduleDateLabel(2) }})</option>
+                  <option :value="3">Thứ 3 (ngày {{ getRescheduleDateLabel(3) }})</option>
+                  <option :value="4">Thứ 4 (ngày {{ getRescheduleDateLabel(4) }})</option>
+                  <option :value="5">Thứ 5 (ngày {{ getRescheduleDateLabel(5) }})</option>
+                  <option :value="6">Thứ 6 (ngày {{ getRescheduleDateLabel(6) }})</option>
+                  <option :value="7">Thứ 7 (ngày {{ getRescheduleDateLabel(7) }})</option>
+                  <option :value="0">Chủ nhật (ngày {{ getRescheduleDateLabel(0) }})</option>
                 </select>
                 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
               </div>
@@ -580,6 +603,46 @@
                 />
               </div>
             </div>
+
+            <!-- Select Classroom -->
+            <div class="space-y-1">
+              <label class="text-body-sm font-semibold text-on-surface">Phòng học *</label>
+              <div class="relative">
+                <select
+                  v-model="rescheduleProposedRoom"
+                  class="w-full bg-white border border-outline-variant/60 rounded-lg appearance-none px-4 py-2.5 text-body-sm text-on-surface cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-semibold"
+                >
+                  <option :value="null" disabled>-- Chọn phòng học --</option>
+                  <option 
+                    v-for="r in availableRooms" 
+                    :key="r.roomNumber" 
+                    :value="r.roomNumber" 
+                    :disabled="r.isMaintenance || isRoomOccupied(r.roomNumber, rescheduleProposedDay, rescheduleProposedStartTime, rescheduleProposedEndTime, rescheduleClassId)"
+                  >
+                    Phòng {{ r.roomNumber }}
+                    <template v-if="r.isMaintenance"> (Bảo trì)</template>
+                    <template v-else-if="isRoomOccupied(r.roomNumber, rescheduleProposedDay, rescheduleProposedStartTime, rescheduleProposedEndTime, rescheduleClassId)"> (Bận lịch lớp khác)</template>
+                  </option>
+                </select>
+                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+              </div>
+              
+              <!-- Room Conflict Warning -->
+              <div v-if="rescheduleProposedRoom && isRoomOccupied(rescheduleProposedRoom, rescheduleProposedDay, rescheduleProposedStartTime, rescheduleProposedEndTime, rescheduleClassId)"
+                   class="mt-1.5 text-red-600 text-xs font-semibold flex items-center gap-1.5 animate-pulse">
+                <span class="material-symbols-outlined text-[15px] text-red-500">warning</span>
+                <span>Phòng {{ rescheduleProposedRoom }} đang bận lịch học lớp khác vào khung giờ này!</span>
+              </div>
+            </div>
+
+            <!-- Teacher Conflict Warning -->
+            <div v-if="rescheduleClassObj && getTeacherConflictMessage(rescheduleClassObj.teacherId, rescheduleProposedDay, rescheduleProposedStartTime, rescheduleProposedEndTime, rescheduleClassId)" 
+                 class="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-semibold flex items-start gap-2 mt-3 shadow-sm animate-pulse">
+              <span class="material-symbols-outlined text-[16px] text-red-500 shrink-0 mt-0.5">warning</span>
+              <span class="leading-relaxed">
+                {{ getTeacherConflictMessage(rescheduleClassObj.teacherId, rescheduleProposedDay, rescheduleProposedStartTime, rescheduleProposedEndTime, rescheduleClassId) }}
+              </span>
+            </div>
           </div>
 
           <div class="px-6 py-4 border-t border-white/40 flex justify-end gap-3 bg-white/20">
@@ -591,7 +654,7 @@
             </button>
             <button
               @click="submitRescheduleApproval"
-              :disabled="submittingRescheduleApproval || (!isAddRequestState && !selectedScheduleIdToReplace)"
+              :disabled="submittingRescheduleApproval || (!isAddRequestState && !selectedScheduleIdToReplace) || (rescheduleClassObj && getTeacherConflictMessage(rescheduleClassObj.teacherId, rescheduleProposedDay, rescheduleProposedStartTime, rescheduleProposedEndTime, rescheduleClassId)) || (rescheduleProposedRoom && isRoomOccupied(rescheduleProposedRoom, rescheduleProposedDay, rescheduleProposedStartTime, rescheduleProposedEndTime, rescheduleClassId))"
               class="px-5 py-2.5 rounded-lg bg-primary-container text-white font-semibold text-body-sm hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer active:scale-95"
             >
               <span v-if="submittingRescheduleApproval" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
@@ -605,7 +668,7 @@
     <!-- Giant Interactive Timetable Dialog: Admin giải quyết yêu cầu -->
     <teleport to="body">
       <div v-if="resolveDialog" class="fixed inset-0 glass-backdrop z-[9999] flex items-center justify-center p-4">
-        <div class="bg-white/95 backdrop-blur-[24px] border border-white/50 shadow-2xl max-w-6xl w-full h-[90vh] rounded-2xl overflow-hidden animate-scale-in flex flex-col">
+        <div class="bg-white/95 backdrop-blur-[24px] border border-white/50 shadow-2xl max-w-[96vw] w-full h-[95vh] rounded-2xl overflow-hidden animate-scale-in flex flex-col" @dragover="handleGlobalDragOver">
           <!-- Modal Header -->
           <div class="px-6 py-4 border-b border-white/40 flex items-center justify-between shrink-0 bg-primary-container/[0.02]">
             <div class="flex items-center gap-2">
@@ -619,9 +682,24 @@
                 </p>
               </div>
             </div>
-            <button @click="resolveDialog = false" class="text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer w-8 h-8 rounded-full hover:bg-black/5 flex items-center justify-center">
-              <span class="material-symbols-outlined">close</span>
-            </button>
+            <div class="flex items-center gap-4">
+              <!-- Week Navigation -->
+              <div class="flex items-center bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
+                <button @click="prevWeek" class="px-3 py-1.5 hover:bg-slate-50 transition-colors flex items-center justify-center border-r border-slate-200 cursor-pointer">
+                  <span class="material-symbols-outlined text-[18px] text-slate-600">chevron_left</span>
+                </button>
+                <div class="px-4 py-1.5 text-xs font-bold text-slate-700 bg-slate-50/50">
+                  {{ weekLabel }}
+                </div>
+                <button @click="nextWeek" class="px-3 py-1.5 hover:bg-slate-50 transition-colors flex items-center justify-center border-l border-slate-200 cursor-pointer">
+                  <span class="material-symbols-outlined text-[18px] text-slate-600">chevron_right</span>
+                </button>
+              </div>
+
+              <button @click="resolveDialog = false" class="text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer w-8 h-8 rounded-full hover:bg-black/5 flex items-center justify-center">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
           </div>
 
           <!-- Modal Body Split Layout -->
@@ -632,7 +710,9 @@
               <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex gap-3 items-start animate-pulse-slow">
                 <span class="material-symbols-outlined text-amber-600 mt-0.5">warning</span>
                 <div>
-                  <div class="text-xs font-bold text-amber-800 uppercase tracking-wider">Yêu cầu từ học viên:</div>
+                  <div class="text-xs font-bold text-amber-800 uppercase tracking-wider">
+                    Yêu cầu từ {{ getRequesterRole({ message: resolveMessageText }) === 'Giảng viên' ? 'giảng viên' : 'học viên' }}:
+                  </div>
                   <div class="text-body-sm font-semibold text-amber-950 mt-0.5">
                     "{{ getDisplayMessage({ message: resolveMessageText }) }}"
                   </div>
@@ -640,13 +720,19 @@
               </div>
 
               <!-- Timetable Board Grid -->
-              <div class="border border-slate-200/80 rounded-xl overflow-x-auto shadow-sm bg-white min-w-[700px]">
-                <table class="w-full border-collapse text-center table-fixed">
+              <div 
+                class="border border-slate-200/80 rounded-xl overflow-x-auto shadow-sm bg-white min-w-[700px] custom-scrollbar"
+                ref="timetableContainer"
+              >
+                <table class="w-full min-w-[1200px] border-collapse text-center table-fixed">
                   <thead>
                     <tr class="bg-[#1a7380] text-white">
                       <th class="py-3 px-2 font-bold text-xs border-r border-[#15626d] w-[12%]">BUỔI</th>
-                      <th v-for="day in weekDays" :key="day.value" class="py-3 px-2 font-bold text-xs border-r border-[#15626d]">
-                        {{ day.label.toUpperCase() }}
+                      <th v-for="day in currentWeekDays" :key="day.value" class="py-3 px-2 font-bold text-xs border-r border-[#15626d]">
+                        <div class="flex flex-col items-center gap-0.5">
+                          <span>{{ day.label.toUpperCase() }}</span>
+                          <span class="text-[10px] text-white/80 font-mono">{{ day.dateStr }}</span>
+                        </div>
                       </th>
                     </tr>
                   </thead>
@@ -679,7 +765,7 @@
                       
                       <!-- Timetable Cells -->
                       <td 
-                        v-for="day in weekDays" 
+                        v-for="day in currentWeekDays" 
                         :key="day.value"
                         class="p-2 border-r border-slate-250 align-middle min-h-[90px] transition-colors"
                         @dragover.prevent
@@ -688,9 +774,9 @@
                         @dragenter="dragOverDay = day.value; dragOverSession = sess.value"
                         @dragleave="dragOverDay = null; dragOverSession = null"
                       >
-                        <div v-if="getResolveSchedulesForCell(day.value, sess.value).length > 0" class="space-y-2">
+                        <div v-if="getResolveSchedulesForCell(day.value, sess.value, day.date).length > 0" class="space-y-2">
                           <div
-                            v-for="s in getResolveSchedulesForCell(day.value, sess.value)"
+                            v-for="s in getResolveSchedulesForCell(day.value, sess.value, day.date)"
                             :key="s.scheduleId"
                             draggable="true"
                             @dragstart="handleDragStart($event, s)"
@@ -698,7 +784,7 @@
                             @click="selectSlotForEdit(s)"
                             class="p-2.5 rounded-lg border text-center transition-all cursor-pointer relative active:scale-[0.98] group"
                             :class="[
-                              hasConflict(s)
+                              hasConflict(s, day.date)
                                 ? 'border-rose-400 bg-rose-50/80 text-rose-950 ring-2 ring-rose-500/10' + (s.classId === resolveFromClassId ? ' blink-conflict' : '')
                                 : (s.classId === resolveFromClassId
                                     ? 'border-indigo-300 bg-indigo-50/70 text-indigo-950 target-pulse ring-2 ring-indigo-500/15'
@@ -706,7 +792,7 @@
                             ]"
                           >
                             <!-- Conflict warning badge -->
-                            <div v-if="hasConflict(s)" class="text-rose-600 font-bold text-[10px] flex items-center justify-center gap-0.5 mb-1.5 uppercase tracking-wide">
+                            <div v-if="hasConflict(s, day.date)" class="text-rose-600 font-bold text-[10px] flex items-center justify-center gap-0.5 mb-1.5 uppercase tracking-wide">
                               <span class="material-symbols-outlined text-[12px] text-rose-600">warning</span>
                               Trùng lịch!
                             </div>
@@ -929,6 +1015,24 @@ const rescheduleStudentName = ref('')
 const rescheduleStudentRole = ref('Học viên')
 const submittingRescheduleApproval = ref(false)
 const isAddRequestState = ref(false)
+const rescheduleClassObj = ref(null)
+const rescheduleProposedRoom = ref(null)
+const allSystemClasses = ref([])
+const rescheduleMessageDate = ref(null)
+
+// Tự động cập nhật giờ học khi đổi Buổi học (Sáng / Chiều / Tối)
+watch(rescheduleProposedSession, (newVal) => {
+  if (newVal === 'Sang') {
+    rescheduleProposedStartTime.value = '08:00'
+    rescheduleProposedEndTime.value = '10:00'
+  } else if (newVal === 'Chieu') {
+    rescheduleProposedStartTime.value = '14:00'
+    rescheduleProposedEndTime.value = '16:00'
+  } else if (newVal === 'Toi') {
+    rescheduleProposedStartTime.value = '18:00'
+    rescheduleProposedEndTime.value = '20:00'
+  }
+})
 
 function parseRescheduleRequest(message) {
   const result = {
@@ -1001,6 +1105,10 @@ function getRequesterName(msg) {
       }
       return sender
     }
+    const oldTeacherMatch = msg.message.match(/\(Gửi bởi Giảng viên:\s*([^)]+)\)/)
+    if (oldTeacherMatch && oldTeacherMatch[1]) {
+      return oldTeacherMatch[1]
+    }
   }
   return msg.studentName
 }
@@ -1017,8 +1125,174 @@ function getRequesterRole(msg) {
         return 'Học viên'
       }
     }
+    if (msg.message.includes('(Gửi bởi Giảng viên:')) {
+      return 'Giảng viên'
+    }
   }
   return 'Học viên'
+}
+
+function isDateRangeOverlapping(start1, end1, start2, end2) {
+  if (!start1 || !end1 || !start2 || !end2) return true
+  const s1 = new Date(start1).setHours(0,0,0,0)
+  const e1 = new Date(end1).setHours(0,0,0,0)
+  const s2 = new Date(start2).setHours(0,0,0,0)
+  const e2 = new Date(end2).setHours(0,0,0,0)
+  return !(s1 > e2 || s2 > e1)
+}
+
+function getRescheduleTargetDate(dayOfWeek) {
+  if (!rescheduleMessageDate.value) return null
+  const baseDate = new Date(rescheduleMessageDate.value)
+  const jsDay = baseDate.getDay()
+  const monday = new Date(baseDate)
+  const diffToMonday = jsDay === 0 ? -6 : 1 - jsDay
+  monday.setDate(baseDate.getDate() + diffToMonday)
+  
+  const dayVal = parseInt(dayOfWeek)
+  const offset = dayVal === 0 ? 6 : dayVal - 2
+  const targetDate = new Date(monday)
+  targetDate.setDate(monday.getDate() + offset)
+  targetDate.setHours(0,0,0,0)
+  return targetDate
+}
+
+function getTeacherConflictMessage(teacherId, dayOfWeek, startTime, endTime, excludeClassId) {
+  if (!teacherId || !startTime || !endTime) return null
+  const propStart = timeToMinutes(startTime)
+  const propEnd = timeToMinutes(endTime)
+  const targetExcludeId = excludeClassId && typeof excludeClassId === 'object' && 'value' in excludeClassId ? excludeClassId.value : excludeClassId
+  const currentTeacherName = rescheduleClassObj.value?.teacherName
+  const targetDate = getRescheduleTargetDate(dayOfWeek)
+  const compareDay = parseInt(dayOfWeek)
+  
+  for (const c of allSystemClasses.value) {
+    if (c.classId === targetExcludeId) continue
+    if (c.status !== 'Opened' && c.status !== 'InProgress') continue
+    if (c.teacherId !== teacherId && c.teacherId2 !== teacherId) continue
+    
+    // Tránh xung đột do trùng lặp ID trong dữ liệu mẫu (Seeded duplicates) bằng cách so khớp tên giảng viên
+    if (currentTeacherName && c.teacherName !== currentTeacherName && c.teacherName2 !== currentTeacherName) continue
+    
+    // Chỉ tính xung đột nếu ngày học cụ thể của buổi học được đề xuất nằm trong thời gian hoạt động của lớp c
+    if (targetDate && c.startDate && c.endDate) {
+      const start = new Date(c.startDate)
+      const end = new Date(c.endDate)
+      start.setHours(0,0,0,0)
+      end.setHours(0,0,0,0)
+      if (targetDate < start || targetDate > end) continue
+    }
+    
+    // Chỉ tính xung đột nếu hai lớp có khoảng thời gian vận hành (StartDate -> EndDate) giao thoa nhau
+    if (!isDateRangeOverlapping(rescheduleClassObj.value?.startDate, rescheduleClassObj.value?.endDate, c.startDate, c.endDate)) continue
+    
+    if (c.schedules) {
+      for (const s of c.schedules) {
+        if (parseInt(s.dayOfWeek) === compareDay) {
+          const sStart = timeToMinutes(s.startTime)
+          const sEnd = timeToMinutes(s.endTime)
+          if (propStart < sEnd && sStart < propEnd) {
+            return `Giảng viên đã có lịch dạy ở lớp ${c.className} (${s.startTime.substring(0,5)} - ${s.endTime.substring(0,5)})`
+          }
+        }
+      }
+    }
+  }
+  return null
+}
+
+function isRoomOccupied(roomNumber, dayOfWeek, startTime, endTime, excludeClassId) {
+  if (!roomNumber || !startTime || !endTime) return false
+  const propStart = timeToMinutes(startTime)
+  const propEnd = timeToMinutes(endTime)
+  const targetExcludeId = excludeClassId && typeof excludeClassId === 'object' && 'value' in excludeClassId ? excludeClassId.value : excludeClassId
+  const targetDate = getRescheduleTargetDate(dayOfWeek)
+  const compareDay = parseInt(dayOfWeek)
+  
+  for (const c of allSystemClasses.value) {
+    if (c.classId === targetExcludeId) continue
+    if (c.status !== 'Opened' && c.status !== 'InProgress') continue
+    if (c.room !== roomNumber) continue
+    
+    // Chỉ tính trùng phòng nếu ngày học cụ thể của buổi học được đề xuất nằm trong thời gian hoạt động của lớp c
+    if (targetDate && c.startDate && c.endDate) {
+      const start = new Date(c.startDate)
+      const end = new Date(c.endDate)
+      start.setHours(0,0,0,0)
+      end.setHours(0,0,0,0)
+      if (targetDate < start || targetDate > end) continue
+    }
+    
+    // Chỉ tính trùng phòng nếu hai lớp có khoảng thời gian vận hành (StartDate -> EndDate) giao thoa nhau
+    if (!isDateRangeOverlapping(rescheduleClassObj.value?.startDate, rescheduleClassObj.value?.endDate, c.startDate, c.endDate)) continue
+    
+    if (c.schedules) {
+      for (const s of c.schedules) {
+        if (parseInt(s.dayOfWeek) === compareDay) {
+          const sStart = timeToMinutes(s.startTime)
+          const sEnd = timeToMinutes(s.endTime)
+          if (propStart < sEnd && sStart < propEnd) {
+            return true
+          }
+        }
+      }
+    }
+  }
+  return false
+}
+
+async function fetchAllSystemClasses() {
+  try {
+    const res = await api.get('/api/v1/classes', { params: { pageSize: 250 } })
+    allSystemClasses.value = res.data?.items || res.data || []
+  } catch (err) {
+    console.error('Error fetching all system classes:', err)
+  }
+}
+
+const formattedRescheduleWeekRange = computed(() => {
+  if (!rescheduleMessageDate.value) return ''
+  const baseDate = new Date(rescheduleMessageDate.value)
+  const jsDay = baseDate.getDay()
+  const monday = new Date(baseDate)
+  const diffToMonday = jsDay === 0 ? -6 : 1 - jsDay
+  monday.setDate(baseDate.getDate() + diffToMonday)
+  
+  const sunday = new Date(monday)
+  sunday.setDate(monday.getDate() + 6)
+  
+  const formatNum = (num) => String(num).padStart(2, '0')
+  return `${formatNum(monday.getDate())}/${formatNum(monday.getMonth() + 1)} - ${formatNum(sunday.getDate())}/${formatNum(sunday.getMonth() + 1)}/${sunday.getFullYear()}`
+})
+
+function prevRescheduleWeek() {
+  if (!rescheduleMessageDate.value) return
+  const d = new Date(rescheduleMessageDate.value)
+  d.setDate(d.getDate() - 7)
+  rescheduleMessageDate.value = d
+}
+
+function nextRescheduleWeek() {
+  if (!rescheduleMessageDate.value) return
+  const d = new Date(rescheduleMessageDate.value)
+  d.setDate(d.getDate() + 7)
+  rescheduleMessageDate.value = d
+}
+
+function getRescheduleDateLabel(dayOfWeek) {
+  if (!rescheduleMessageDate.value) return ''
+  const baseDate = new Date(rescheduleMessageDate.value)
+  const jsDay = baseDate.getDay()
+  const monday = new Date(baseDate)
+  const diffToMonday = jsDay === 0 ? -6 : 1 - jsDay
+  monday.setDate(baseDate.getDate() + diffToMonday)
+  
+  const offset = dayOfWeek === 0 ? 6 : dayOfWeek - 2
+  const targetDate = new Date(monday)
+  targetDate.setDate(monday.getDate() + offset)
+  
+  const formatNum = (num) => String(num).padStart(2, '0')
+  return `${formatNum(targetDate.getDate())}/${formatNum(targetDate.getMonth() + 1)}`
 }
 
 async function openRescheduleApprovalModal(msg) {
@@ -1026,7 +1300,6 @@ async function openRescheduleApprovalModal(msg) {
   rescheduleMessageId.value = msg.id
   rescheduleStudentName.value = getRequesterName(msg)
   rescheduleStudentRole.value = getRequesterRole(msg)
-  rescheduleClassId.value = msg.fromClassId
   rescheduleReason.value = parsed.reason
   rescheduleProposedDay.value = parsed.proposedDay
   rescheduleProposedSession.value = parsed.proposedSession
@@ -1036,21 +1309,41 @@ async function openRescheduleApprovalModal(msg) {
   rescheduleSchedules.value = []
   isAddRequestState.value = parsed.isAddRequest
   
+  rescheduleMessageDate.value = msg.createdAt ? new Date(msg.createdAt) : new Date()
+  rescheduleClassObj.value = null
+  rescheduleProposedRoom.value = null
   rescheduleApprovalDialog.value = true
   
-  if (!parsed.isAddRequest && msg.fromClassId) {
+  // Load classroom occupancy data
+  await fetchAllSystemClasses()
+
+  rescheduleClassId.value = msg.fromClassId
+  if (!rescheduleClassId.value && parsed.className) {
+    const foundClass = allSystemClasses.value.find(c => c.className === parsed.className)
+    if (foundClass) {
+      rescheduleClassId.value = foundClass.classId
+    }
+  }
+  
+  if (rescheduleClassId.value) {
     loadingRescheduleSchedules.value = true
     try {
-      const res = await api.get(`/api/v1/classes/${msg.fromClassId}/schedules`)
-      rescheduleSchedules.value = res.data || []
+      const classRes = await api.get(`/api/v1/classes/${rescheduleClassId.value}`)
+      rescheduleClassObj.value = classRes.data
+      rescheduleProposedRoom.value = classRes.data?.room || null
       
-      // Auto-select a slot matching parsed.currentSlot if possible
-      if (rescheduleSchedules.value.length > 0) {
-        const matchingSlot = rescheduleSchedules.value.find(s => {
-          const formatted = `Thứ ${formatDayOfWeek(s.dayOfWeek)} (${s.startTime} - ${s.endTime})`.toLowerCase()
-          return formatted.includes(parsed.currentSlot.toLowerCase())
-        })
-        selectedScheduleIdToReplace.value = matchingSlot ? matchingSlot.scheduleId : rescheduleSchedules.value[0].scheduleId
+      if (!parsed.isAddRequest) {
+        const res = await api.get(`/api/v1/classes/${rescheduleClassId.value}/schedules`)
+        rescheduleSchedules.value = res.data || []
+        
+        // Auto-select a slot matching parsed.currentSlot if possible
+        if (rescheduleSchedules.value.length > 0) {
+          const matchingSlot = rescheduleSchedules.value.find(s => {
+            const formatted = `Thứ ${formatDayOfWeek(s.dayOfWeek)} (${s.startTime} - ${s.endTime})`.toLowerCase()
+            return formatted.includes(parsed.currentSlot.toLowerCase())
+          })
+          selectedScheduleIdToReplace.value = matchingSlot ? matchingSlot.scheduleId : rescheduleSchedules.value[0].scheduleId
+        }
       }
     } catch (e) {
       console.error('Lỗi khi tải lịch học hiện tại:', e)
@@ -1066,8 +1359,18 @@ async function submitRescheduleApproval() {
   submittingRescheduleApproval.value = true
   try {
     let logText = ''
+    const targetRoom = rescheduleProposedRoom.value
+    const originalRoom = rescheduleClassObj.value?.room
+
+    // 1. Tạm thời đưa phòng học về null để tránh xung đột lịch vòng lặp (vừa đổi giờ, vừa đổi phòng)
+    if (rescheduleClassObj.value) {
+      rescheduleClassObj.value.room = null
+      rescheduleClassObj.value.id = rescheduleClassId.value
+      await api.put(`/api/v1/classes/${rescheduleClassId.value}`, rescheduleClassObj.value)
+    }
+
+    // 2. Tiến hành cập nhật/thêm lịch học mới
     if (isAddRequestState.value) {
-      // 1. Create a new schedule slot in CourseService
       await api.post(`/api/v1/classes/${rescheduleClassId.value}/schedules`, {
         dayOfWeek: rescheduleProposedDay.value,
         session: rescheduleProposedSession.value,
@@ -1076,7 +1379,6 @@ async function submitRescheduleApproval() {
       })
       logText = `Thêm lịch học mới cho lớp: Thứ ${formatDayOfWeek(rescheduleProposedDay.value)} (${rescheduleProposedStartTime.value} - ${rescheduleProposedEndTime.value})`
     } else {
-      // 1. Update the existing schedule slot in CourseService
       await api.put(`/api/v1/classes/${rescheduleClassId.value}/schedules/${selectedScheduleIdToReplace.value}`, {
         dayOfWeek: rescheduleProposedDay.value,
         session: rescheduleProposedSession.value,
@@ -1087,8 +1389,17 @@ async function submitRescheduleApproval() {
       const oldSlotText = matchingSlot ? `Thứ ${formatDayOfWeek(matchingSlot.dayOfWeek)} (${matchingSlot.startTime.substring(0,5)} - ${matchingSlot.endTime.substring(0,5)})` : 'Chưa rõ'
       logText = `Đổi lịch học từ [${oldSlotText}] sang [Thứ ${formatDayOfWeek(rescheduleProposedDay.value)} (${rescheduleProposedStartTime.value} - ${rescheduleProposedEndTime.value})]`
     }
+
+    // 3. Gán phòng học mới (đã được kiểm tra trống ở khung giờ mới)
+    if (rescheduleClassObj.value && targetRoom) {
+      rescheduleClassObj.value.room = targetRoom
+      await api.put(`/api/v1/classes/${rescheduleClassId.value}`, rescheduleClassObj.value)
+      if (originalRoom !== targetRoom) {
+        logText += ` (Đồng thời đổi phòng từ "${originalRoom || 'Chưa xếp'}" sang "Phòng ${targetRoom}")`
+      }
+    }
     
-    // 2. Resolve the support request in StudentService with log
+    // 4. Resolve the support request in StudentService with log
     await api.post(`/api/v1/support-messages/${rescheduleMessageId.value}/resolve`, {
       adminResponse: `[Nhật ký thay đổi]\n• ${logText}`
     })
@@ -1100,7 +1411,15 @@ async function submitRescheduleApproval() {
   } catch (e) {
     console.error('Lỗi khi phê duyệt đổi lịch:', e)
     const errText = isAddRequestState.value ? 'Có lỗi xảy ra khi phê duyệt thêm lịch' : 'Có lỗi xảy ra khi phê duyệt đổi lịch'
-    showSnackbar(e.response?.data?.message || errText, 'error')
+    let errorMsg = errText
+    if (e.response?.data) {
+      if (typeof e.response.data === 'string') {
+        errorMsg = e.response.data
+      } else {
+        errorMsg = e.response.data.detail || e.response.data.message || e.response.data.title || errText
+      }
+    }
+    showSnackbar(errorMsg, 'error')
   } finally {
     submittingRescheduleApproval.value = false
   }
@@ -1151,6 +1470,9 @@ const draggedSchedule = ref(null)
 const dragOverDay = ref(null)
 const dragOverSession = ref(null)
 
+const timetableContainer = ref(null)
+const isDragging = ref(false)
+
 const selectedSlotEdit = ref(null)
 const selectedClassEdit = ref(null)
 const savingSlotTime = ref(false)
@@ -1178,6 +1500,46 @@ const weekDays = [
   { label: 'Thứ 7', value: 7 },
   { label: 'Chủ nhật', value: 0 },
 ]
+
+const currentWeekDate = ref(new Date())
+
+const currentWeekDays = computed(() => {
+  const curr = new Date(currentWeekDate.value)
+  const day = curr.getDay()
+  const diff = curr.getDate() - day + (day === 0 ? -6 : 1)
+  const monday = new Date(curr.setDate(diff))
+  
+  return weekDays.map((wd, idx) => {
+    const d = new Date(monday)
+    d.setDate(monday.getDate() + idx)
+    return {
+      ...wd,
+      date: d,
+      dateStr: `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`
+    }
+  })
+})
+
+const weekLabel = computed(() => {
+  if (currentWeekDays.value.length === 0) return ''
+  const start = currentWeekDays.value[0].date
+  const end = currentWeekDays.value[6].date
+  const d1 = `${String(start.getDate()).padStart(2,'0')}/${String(start.getMonth()+1).padStart(2,'0')}`
+  const d2 = `${String(end.getDate()).padStart(2,'0')}/${String(end.getMonth()+1).padStart(2,'0')}`
+  return `${d1} - ${d2}`
+})
+
+function prevWeek() {
+  const d = new Date(currentWeekDate.value)
+  d.setDate(d.getDate() - 7)
+  currentWeekDate.value = d
+}
+
+function nextWeek() {
+  const d = new Date(currentWeekDate.value)
+  d.setDate(d.getDate() + 7)
+  currentWeekDate.value = d
+}
 
 const sessionOptions = [
   { title: '🌅 Sáng', value: 'Sang' },
@@ -1244,10 +1606,14 @@ const filteredMessages = computed(() => {
     list = list.filter(m => m.status === filters.value.status)
   }
 
-  // Search filter (by studentName)
+  // Search filter (by studentName, requesterName, or message)
   const q = filters.value.search.trim().toLowerCase()
   if (q) {
-    list = list.filter(m => m.studentName.toLowerCase().includes(q))
+    list = list.filter(m => 
+      getRequesterName(m).toLowerCase().includes(q) || 
+      m.studentName.toLowerCase().includes(q) || 
+      (m.message && m.message.toLowerCase().includes(q))
+    )
   }
 
   return list
@@ -1478,7 +1844,7 @@ async function loadTimetableSchedules() {
         timetableClasses.value[resolveFromClassId.value] = classRes.data
         
         const schedRes = await api.get(`/api/v1/classes/${resolveFromClassId.value}/schedules`)
-        const schedules = (schedRes.data || []).map(s => ({ ...s, isTarget: true }))
+        const schedules = (schedRes.data || []).map(s => ({ ...s, isTarget: true, classId: resolveFromClassId.value }))
         list.push(...schedules)
       } catch (err) {
         console.error('Error loading resolveFromClass:', err)
@@ -1492,39 +1858,72 @@ async function loadTimetableSchedules() {
         timetableClasses.value[resolveToClassId.value] = classRes.data
         
         const schedRes = await api.get(`/api/v1/classes/${resolveToClassId.value}/schedules`)
-        const schedules = (schedRes.data || []).map(s => ({ ...s, isTarget: false }))
+        const schedules = (schedRes.data || []).map(s => ({ ...s, isTarget: false, classId: resolveToClassId.value }))
         list.push(...schedules)
       } catch (err) {
         console.error('Error loading resolveToClass:', err)
       }
     }
     
-    // 3. Fetch other student enrollments to check for conflict
+    // 3. Fetch other student enrollments or teacher classes to check for conflict
     const activeMsg = messages.value.find(m => m.id === resolveActiveMessageId.value)
-    if (activeMsg && activeMsg.studentId) {
-      try {
-        const enrollmentsRes = await api.get(`/api/v1/students/${activeMsg.studentId}/enrollments`)
-        const activeEnrollments = (enrollmentsRes.data || []).filter(
-          e => e.classId && 
-               e.classId !== resolveFromClassId.value && 
-               e.classId !== resolveToClassId.value && 
-               (e.status === 'Active' || e.status === 'DangHoc')
-        )
-        
-        for (const e of activeEnrollments) {
+    if (activeMsg) {
+      const isTeacherMsg = getRequesterRole(activeMsg) === 'Giảng viên'
+      if (isTeacherMsg) {
+        // Fetch teacher's schedules to check for teacher conflict
+        const targetClass = timetableClasses.value[resolveFromClassId.value]
+        const teacherId = targetClass?.teacherId || targetClass?.TeacherId
+        if (teacherId) {
           try {
-            const classRes = await api.get(`/api/v1/classes/${e.classId}`)
-            timetableClasses.value[e.classId] = classRes.data
+            const classesRes = await api.get('/api/v1/classes', { params: { teacherId: teacherId, pageSize: 100 } })
+            // API might return { items: [...] } or list directly
+            const rawClasses = classesRes.data?.items || classesRes.data || []
+            const teacherClasses = rawClasses.filter(
+              c => c.classId !== resolveFromClassId.value && 
+                   c.classId !== resolveToClassId.value && 
+                   (c.status === 'Opened' || c.status === 'InProgress')
+            )
             
-            const schedRes = await api.get(`/api/v1/classes/${e.classId}/schedules`)
-            const schedules = (schedRes.data || []).map(s => ({ ...s, isTarget: false }))
-            list.push(...schedules)
+            for (const c of teacherClasses) {
+              try {
+                timetableClasses.value[c.classId] = c
+                const schedRes = await api.get(`/api/v1/classes/${c.classId}/schedules`)
+                const schedules = (schedRes.data || []).map(s => ({ ...s, isTarget: false, classId: c.classId }))
+                list.push(...schedules)
+              } catch (err) {
+                console.error(`Error loading teacher class ${c.classId} schedules:`, err)
+              }
+            }
           } catch (err) {
-            console.error(`Error loading enrollment class ${e.classId}:`, err)
+            console.error('Error loading teacher classes:', err)
           }
         }
-      } catch (err) {
-        console.error('Error loading student enrollments:', err)
+      } else if (activeMsg.studentId) {
+        // Original logic for student enrollments
+        try {
+          const enrollmentsRes = await api.get(`/api/v1/students/${activeMsg.studentId}/enrollments`)
+          const activeEnrollments = (enrollmentsRes.data || []).filter(
+            e => e.classId && 
+                 e.classId !== resolveFromClassId.value && 
+                 e.classId !== resolveToClassId.value && 
+                 (e.status === 'Active' || e.status === 'DangHoc')
+          )
+          
+          for (const e of activeEnrollments) {
+            try {
+              const classRes = await api.get(`/api/v1/classes/${e.classId}`)
+              timetableClasses.value[e.classId] = classRes.data
+              
+              const schedRes = await api.get(`/api/v1/classes/${e.classId}/schedules`)
+              const schedules = (schedRes.data || []).map(s => ({ ...s, isTarget: false, classId: e.classId }))
+              list.push(...schedules)
+            } catch (err) {
+              console.error(`Error loading enrollment class ${e.classId}:`, err)
+            }
+          }
+        } catch (err) {
+          console.error('Error loading student enrollments:', err)
+        }
       }
     }
     
@@ -1557,9 +1956,9 @@ const timeToMinutes = (timeStr) => {
   return h * 60 + m
 }
 
-function hasConflict(s) {
+function hasConflict(s, cellDate) {
   return timetableSchedules.value.some(other => {
-    if (other.scheduleId === s.scheduleId) return false
+    if (other === s) return false
     if (other.dayOfWeek !== s.dayOfWeek || other.session !== s.session) return false
     
     // Check strict time overlap
@@ -1568,20 +1967,98 @@ function hasConflict(s) {
     const oStart = timeToMinutes(other.startTime)
     const oEnd = timeToMinutes(other.endTime)
     
-    return !(sEnd <= oStart || sStart >= oEnd)
+    if (sEnd <= oStart || sStart >= oEnd) return false
+    
+    // Check date overlap for other class
+    const otherCls = timetableClasses.value[other.classId]
+    if (otherCls) {
+      const cStart = new Date(otherCls.startDate)
+      cStart.setHours(0,0,0,0)
+      const cEnd = otherCls.endDate ? new Date(otherCls.endDate) : new Date(2100, 0, 1)
+      cEnd.setHours(23,59,59,999)
+      const d = new Date(cellDate)
+      d.setHours(12,0,0,0)
+      if (d < cStart || d > cEnd) return false
+    }
+    
+    return true
   })
 }
 
-function getResolveSchedulesForCell(dayValue, sessionValue) {
-  return timetableSchedules.value.filter(s => s.dayOfWeek === dayValue && s.session === sessionValue)
+function getResolveSchedulesForCell(dayValue, sessionValue, cellDate) {
+  return timetableSchedules.value.filter(s => {
+    if (s.dayOfWeek !== dayValue || s.session !== sessionValue) return false
+    
+    const cls = timetableClasses.value[s.classId]
+    if (!cls) return true
+    
+    const cStart = new Date(cls.startDate)
+    cStart.setHours(0,0,0,0)
+    const cEnd = cls.endDate ? new Date(cls.endDate) : new Date(2100, 0, 1)
+    cEnd.setHours(23,59,59,999)
+    
+    const d = new Date(cellDate)
+    d.setHours(12,0,0,0)
+    
+    return d >= cStart && d <= cEnd
+  })
+}
+
+let scrollAnimationId = null
+const mousePos = { x: 0, y: 0 }
+let lastWeekFlip = 0
+
+function startScrollLoop() {
+  if (scrollAnimationId) return
+  
+  function loop() {
+    if (!isDragging.value) {
+      cancelAnimationFrame(scrollAnimationId)
+      scrollAnimationId = null
+      return
+    }
+    
+    if (timetableContainer.value) {
+      const container = timetableContainer.value
+      const rect = container.getBoundingClientRect()
+      const edgeThresholdX = 120
+      const scrollSpeed = 15
+      const now = Date.now()
+      
+      if (mousePos.x - rect.left < edgeThresholdX) {
+        container.scrollLeft -= scrollSpeed
+        if (container.scrollLeft <= 0 && now - lastWeekFlip > 800) {
+          prevWeek()
+          lastWeekFlip = now
+        }
+      }
+      else if (rect.right - mousePos.x < edgeThresholdX) {
+        container.scrollLeft += scrollSpeed
+        if (container.scrollLeft >= container.scrollWidth - container.clientWidth - 10 && now - lastWeekFlip > 800) {
+          nextWeek()
+          lastWeekFlip = now
+        }
+      }
+    }
+    scrollAnimationId = requestAnimationFrame(loop)
+  }
+  scrollAnimationId = requestAnimationFrame(loop)
+}
+
+function handleGlobalDragOver(event) {
+  if (!isDragging.value) return
+  mousePos.x = event.clientX
+  mousePos.y = event.clientY
 }
 
 function handleDragStart(event, schedule) {
-  if (schedule.classId !== resolveFromClassId.value) {
+  if (resolveFromClassId.value && schedule.classId !== resolveFromClassId.value) {
     event.preventDefault()
     return
   }
   draggedSchedule.value = schedule
+  isDragging.value = true
+  startScrollLoop()
   event.dataTransfer.effectAllowed = 'move'
 }
 
@@ -1589,6 +2066,7 @@ function handleDragEnd() {
   draggedSchedule.value = null
   dragOverDay.value = null
   dragOverSession.value = null
+  isDragging.value = false
 }
 
 async function handleDrop(event, dayValue, sessionValue) {
@@ -1712,6 +2190,7 @@ async function saveClassDetails() {
     
     const origClass = timetableClasses.value[cls.classId] || {}
     
+    cls.id = cls.classId // Đồng bộ trường id cho backend binding (UpdateClassCommand)
     await api.put(`/api/v1/classes/${cls.classId}`, cls)
     showSnackbar('Đã cập nhật thông tin lớp học!', 'success')
     
@@ -1767,6 +2246,110 @@ async function openResolveModal(msg) {
   
   resolveDialog.value = true
   await loadTimetableSchedules()
+  
+  // Nhảy lịch tuần trực tiếp đến tuần mà yêu cầu hỗ trợ được gửi (msg.createdAt)
+  if (msg.createdAt) {
+    const d = new Date(msg.createdAt)
+    if (!isNaN(d.getTime())) {
+      currentWeekDate.value = d
+    } else {
+      currentWeekDate.value = new Date()
+    }
+  } else {
+    currentWeekDate.value = new Date()
+  }
+}
+
+function getFirstOccurrenceDate(start, end, dayOfWeek) {
+  const check = new Date(start)
+  for (let i = 0; i < 7; i++) {
+    const jsDay = check.getDay()
+    const targetDay = jsDay === 0 ? 0 : jsDay + 1
+    if (targetDay === dayOfWeek) {
+      if (check <= end) {
+        return new Date(check)
+      }
+      return null
+    }
+    check.setDate(check.getDate() + 1)
+  }
+  return null
+}
+
+function findConflictDate(targetClassId) {
+  const todayMs = new Date().getTime()
+  // First pass: prioritize conflicts involving the target class (the class being requested for transfer/reschedule)
+  if (targetClassId) {
+    for (const s of timetableSchedules.value) {
+      if (s.classId !== targetClassId) continue
+      
+      for (const other of timetableSchedules.value) {
+        if (other === s) continue
+        if (other.dayOfWeek !== s.dayOfWeek || other.session !== s.session) continue
+        
+        // Time overlap check
+        const sStart = timeToMinutes(s.startTime)
+        const sEnd = timeToMinutes(s.endTime)
+        const oStart = timeToMinutes(other.startTime)
+        const oEnd = timeToMinutes(other.endTime)
+        if (sEnd <= oStart || sStart >= oEnd) continue
+        
+        // Date overlap check
+        const clsS = timetableClasses.value[s.classId]
+        const clsO = timetableClasses.value[other.classId]
+        if (clsS && clsO) {
+          const sStartD = new Date(clsS.startDate)
+          const sEndD = clsS.endDate ? new Date(clsS.endDate) : new Date(2100, 0, 1)
+          const oStartD = new Date(clsO.startDate)
+          const oEndD = clsO.endDate ? new Date(clsO.endDate) : new Date(2100, 0, 1)
+          
+          // Find intersection starting from today onwards to prevent jumping to the past
+          const startIntersect = new Date(Math.max(sStartD.getTime(), oStartD.getTime(), todayMs))
+          const endIntersect = new Date(Math.min(sEndD.getTime(), oEndD.getTime()))
+          
+          if (startIntersect <= endIntersect) {
+            const actualDate = getFirstOccurrenceDate(startIntersect, endIntersect, s.dayOfWeek)
+            if (actualDate) return actualDate
+          }
+        }
+      }
+    }
+  }
+
+  // Second pass: fallback to any general conflict
+  for (const s of timetableSchedules.value) {
+    for (const other of timetableSchedules.value) {
+      if (other === s) continue
+      if (other.dayOfWeek !== s.dayOfWeek || other.session !== s.session) continue
+      
+      // Time overlap check
+      const sStart = timeToMinutes(s.startTime)
+      const sEnd = timeToMinutes(s.endTime)
+      const oStart = timeToMinutes(other.startTime)
+      const oEnd = timeToMinutes(other.endTime)
+      if (sEnd <= oStart || sStart >= oEnd) continue
+      
+      // Date overlap check
+      const clsS = timetableClasses.value[s.classId]
+      const clsO = timetableClasses.value[other.classId]
+      if (clsS && clsO) {
+        const sStartD = new Date(clsS.startDate)
+        const sEndD = clsS.endDate ? new Date(clsS.endDate) : new Date(2100, 0, 1)
+        const oStartD = new Date(clsO.startDate)
+        const oEndD = clsO.endDate ? new Date(clsO.endDate) : new Date(2100, 0, 1)
+        
+        // Find intersection starting from today onwards to prevent jumping to the past
+        const startIntersect = new Date(Math.max(sStartD.getTime(), oStartD.getTime(), todayMs))
+        const endIntersect = new Date(Math.min(sEndD.getTime(), oEndD.getTime()))
+        
+        if (startIntersect <= endIntersect) {
+          const actualDate = getFirstOccurrenceDate(startIntersect, endIntersect, s.dayOfWeek)
+          if (actualDate) return actualDate
+        }
+      }
+    }
+  }
+  return null
 }
 
 async function submitResolve() {
@@ -1804,16 +2387,16 @@ async function submitResolve() {
 
 function getSupportTypeBadge(msg) {
   if (!msg.message) return null
-  if (msg.message.startsWith('[Hỏi đáp học phí]')) {
+  if (msg.message.includes('[Hỏi đáp học phí') || msg.message.includes('[Học phí')) {
     return { label: 'Học phí', class: 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' }
   }
-  if (msg.message.startsWith('[Hỗ trợ kỹ thuật]')) {
+  if (msg.message.includes('[Hỗ trợ kỹ thuật') || msg.message.includes('[Kỹ thuật')) {
     return { label: 'Kỹ thuật', class: 'bg-blue-500/10 text-blue-600 border border-blue-500/20' }
   }
-  if (msg.message.startsWith('[Ý kiến khác]')) {
+  if (msg.message.includes('[Ý kiến khác') || msg.message.includes('[Ý kiến đóng góp') || msg.message.includes('[Ý kiến')) {
     return { label: 'Ý kiến khác', class: 'bg-purple-500/10 text-purple-600 border border-purple-500/20' }
   }
-  if (msg.message.includes('[Yêu cầu đổi lịch học') || msg.message.includes('[Yêu cầu thêm lịch học')) {
+  if (msg.message.includes('[Yêu cầu đổi lịch học') || msg.message.includes('[Yêu cầu thêm lịch học') || msg.message.includes('[Yêu cầu đổi lịch dạy') || msg.message.includes('[Yêu cầu hỗ trợ')) {
     return { label: 'Đổi lịch học', class: 'bg-amber-500/10 text-amber-600 border border-amber-500/20' }
   }
   if (msg.fromClassId) {
@@ -1825,9 +2408,15 @@ function getSupportTypeBadge(msg) {
 function getDisplayMessage(msg) {
   if (!msg.message) return ''
   return msg.message
-    .replace(/^\[Hỏi đáp học phí\]\s*/, '')
-    .replace(/^\[Hỗ trợ kỹ thuật\]\s*/, '')
-    .replace(/^\[Ý kiến khác\]\s*/, '')
+    .replace(/^\[Hỏi đáp học phí.*?\]\s*/, '')
+    .replace(/^\[Hỗ trợ kỹ thuật.*?\]\s*/, '')
+    .replace(/^\[Ý kiến khác.*?\]\s*/, '')
+    .replace(/^\[Ý kiến đóng góp.*?\]\s*/, '')
+    .replace(/^\[Yêu cầu đổi lịch học.*?\]\s*/, '')
+    .replace(/^\[Yêu cầu thêm lịch học.*?\]\s*/, '')
+    .replace(/^\[Yêu cầu đổi lịch dạy.*?\]\s*/, '')
+    .replace(/^\[Yêu cầu hỗ trợ.*?\]\s*/, '')
+    .replace(/^\(Gửi bởi Giảng viên:\s*[^)]+\)\s*-\s*/, '')
 }
 
 function getStatusClass(status) {
