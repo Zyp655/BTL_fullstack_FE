@@ -239,6 +239,11 @@
           </div>
         </div>
       </div>
+
+      <!-- Teacher Ranking section merged -->
+      <div class="border-t border-primary-container/10 pt-6 mt-8">
+        <TeacherRanking />
+      </div>
     </div>
 
     <!-- --------------------------------------------------------------------- -->
@@ -424,6 +429,7 @@ import { ref, computed, onMounted, nextTick } from 'vue'
 import { useAuthStore } from '../../stores'
 import api from '../../services/api'
 import { Chart, registerables } from 'chart.js'
+import TeacherRanking from '../teachers/TeacherRanking.vue'
 
 Chart.register(...registerables)
 

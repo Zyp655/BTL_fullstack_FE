@@ -496,7 +496,450 @@
           </div>
         </div>
       </div>
+
+      <!-- TAB 4: BÀI HỌC & ĐỀ THI -->
+      <div v-if="activeTab === 'lessons_exams'" class="space-y-gutter animate-fade-in">
+        <!-- Sub Tabs for Lessons and Quizzes -->
+        <div class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl p-4 shadow-[0_12px_24px_rgba(0,0,0,0.05)] flex items-center justify-between">
+          <div class="flex gap-2">
+            <button
+              @click="activeSubTab = 'lessons'"
+              :class="['px-4 py-2 rounded-lg font-bold text-body-sm transition-all', activeSubTab === 'lessons' ? 'bg-primary-container text-white' : 'text-on-surface-variant hover:bg-black/5']"
+            >
+              Nội dung bài học
+            </button>
+            <button
+              @click="activeSubTab = 'quizzes'"
+              :class="['px-4 py-2 rounded-lg font-bold text-body-sm transition-all', activeSubTab === 'quizzes' ? 'bg-primary-container text-white' : 'text-on-surface-variant hover:bg-black/5']"
+            >
+              Đề thi & Bài kiểm tra
+            </button>
+          </div>
+          <button
+            v-if="activeSubTab === 'lessons'"
+            @click="openAddLessonModal"
+            class="bg-primary-container text-white px-4 py-2 rounded-lg font-semibold text-body-sm hover:bg-primary transition-all flex items-center gap-1 active:scale-95 cursor-pointer"
+          >
+            <span class="material-symbols-outlined text-[18px]">add</span>
+            Thêm bài học
+          </button>
+          <button
+            v-if="activeSubTab === 'quizzes'"
+            @click="openAddQuizModal"
+            class="bg-primary-container text-white px-4 py-2 rounded-lg font-semibold text-body-sm hover:bg-primary transition-all flex items-center gap-1 active:scale-95 cursor-pointer"
+          >
+            <span class="material-symbols-outlined text-[18px]">add</span>
+            Tạo đề kiểm tra
+          </button>
+        </div>
+
+        <!-- SUB TAB 1: LESSONS -->
+        <div v-if="activeSubTab === 'lessons'" class="space-y-3">
+          <div v-if="loadingLessons" class="p-12 text-center bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl">
+            <div class="w-8 h-8 border-2 border-primary-container/30 border-t-primary-container rounded-full animate-spin mx-auto mb-2"></div>
+            Đang tải danh sách bài học...
+          </div>
+          <div v-else-if="lessons.length === 0" class="p-12 text-center bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl">
+            <span class="material-symbols-outlined text-outline/30 text-[64px] mb-2">book</span>
+            <p class="text-body-lg text-on-surface-variant">Lớp học này chưa có nội dung bài học nào được đăng tải.</p>
+          </div>
+          <div v-else class="grid grid-cols-1 gap-4">
+            <div v-for="lesson in lessons" :key="lesson.lessonId" class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl p-5 shadow-[0_4px_12px_rgba(0,0,0,0.02)] flex flex-col md:flex-row justify-between gap-4">
+              <div class="space-y-2 flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold text-body-xs">
+                    {{ formatDate(lesson.lessonDate) }}
+                  </span>
+                </div>
+                <h4 class="font-bold text-primary-container text-headline-sm mt-1">{{ lesson.title }}</h4>
+                <div v-if="lesson.fileName" class="mt-2">
+                  <button
+                    @click="downloadLessonFile(lesson)"
+                    :disabled="downloadingFileId === lesson.lessonId"
+                    class="inline-flex items-center gap-2 px-3 py-2 bg-primary-container/10 hover:bg-primary-container/20 text-primary-container rounded-lg text-body-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    <span v-if="downloadingFileId === lesson.lessonId" class="w-4 h-4 border-2 border-primary-container/30 border-t-primary-container rounded-full animate-spin"></span>
+                    <span v-else class="material-symbols-outlined text-[20px]">download</span>
+                    Tải file: {{ lesson.fileName }}
+                  </button>
+                </div>
+                <p v-else class="text-body-sm text-on-surface-variant whitespace-pre-line">{{ lesson.content }}</p>
+              </div>
+              <div class="flex items-center gap-2 self-end md:self-center shrink-0">
+                <button @click="openEditLessonModal(lesson)" class="p-2 rounded-lg hover:bg-black/5 text-primary-container cursor-pointer" title="Chỉnh sửa">
+                  <span class="material-symbols-outlined">edit</span>
+                </button>
+                <button @click="deleteLesson(lesson.lessonId)" class="p-2 rounded-lg hover:bg-black/5 text-rose-600 cursor-pointer" title="Xóa">
+                  <span class="material-symbols-outlined">delete</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB TAB 2: QUIZZES -->
+        <div v-if="activeSubTab === 'quizzes'" class="space-y-3">
+          <div v-if="loadingQuizzes" class="p-12 text-center bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl">
+            <div class="w-8 h-8 border-2 border-primary-container/30 border-t-primary-container rounded-full animate-spin mx-auto mb-2"></div>
+            Đang tải danh sách bài kiểm tra...
+          </div>
+          <div v-else-if="quizzes.length === 0" class="p-12 text-center bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl">
+            <span class="material-symbols-outlined text-outline/30 text-[64px] mb-2">assignment</span>
+            <p class="text-body-lg text-on-surface-variant">Lớp học này chưa có đề kiểm tra nào.</p>
+          </div>
+          <div v-else class="grid grid-cols-1 gap-4">
+            <div v-for="quiz in quizzes" :key="quiz.quizId" class="bg-white/70 backdrop-blur-[20px] border border-white/40 rounded-xl p-5 shadow-[0_4px_12px_rgba(0,0,0,0.02)] flex flex-col md:flex-row justify-between gap-4">
+              <div class="space-y-2 flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span :class="['px-2.5 py-0.5 rounded font-bold text-body-xs', quiz.quizType === 'TracNghiem' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800']">
+                    {{ quiz.quizType === 'TracNghiem' ? 'Trắc nghiệm' : 'Tự luận' }}
+                  </span>
+                  <span class="text-body-xs font-semibold text-on-surface-variant bg-slate-100 px-2 py-0.5 rounded" v-if="quiz.lessonDate">
+                    Ngày áp dụng: {{ formatDate(quiz.lessonDate) }}
+                  </span>
+                  <span class="text-body-xs font-semibold text-on-surface-variant bg-slate-100 px-2 py-0.5 rounded">
+                    Thời lượng: {{ quiz.durationMinutes }} phút
+                  </span>
+                </div>
+                <h4 class="font-bold text-primary-container text-headline-sm mt-1">{{ quiz.title }}</h4>
+              </div>
+              <div class="flex items-center gap-2 self-end md:self-center shrink-0">
+                <button @click="openSubmissionsModal(quiz)" class="px-3.5 py-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-body-sm flex items-center gap-1 cursor-pointer" title="Xem bài làm của học viên">
+                  <span class="material-symbols-outlined text-[18px]">visibility</span>
+                  Bài làm
+                </button>
+                <button @click="deleteQuiz(quiz.quizId)" class="p-2 rounded-lg hover:bg-black/5 text-rose-600 cursor-pointer" title="Xóa đề kiểm tra">
+                  <span class="material-symbols-outlined">delete</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- DIALOG: THÊM/SỬA BÀI HỌC -->
+    <teleport to="body">
+      <div v-if="lessonModal" class="fixed inset-0 glass-backdrop z-[9999] flex items-center justify-center p-4">
+        <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4 animate-scale-in">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+            <h3 class="font-title-md text-[18px] font-bold text-primary-container">
+              {{ isEditingLesson ? 'Chỉnh sửa bài giảng' : 'Thêm bài giảng mới' }}
+            </h3>
+            <button @click="lessonModal = false" class="text-on-surface-variant hover:text-primary-container cursor-pointer">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <div class="space-y-3 text-[14px]">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Ngày giảng dạy</label>
+              <input v-model="lessonForm.lessonDate" type="date" class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-3 py-2 text-body-sm" />
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Tiêu đề bài học</label>
+              <input v-model="lessonForm.title" type="text" placeholder="Nhập tiêu đề..." class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-3 py-2 text-body-sm" />
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Tài liệu học tập (File)</label>
+              <div class="relative border-2 border-dashed border-primary-container/20 hover:border-primary-container/50 rounded-xl p-4 bg-primary-container/[0.02] hover:bg-primary-container/[0.05] transition-all flex flex-col items-center justify-center text-center cursor-pointer group">
+                <input
+                  type="file"
+                  @change="onLessonFileUpload"
+                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  ref="lessonFileInput"
+                />
+                <span class="material-symbols-outlined text-[36px] text-primary-container/60 group-hover:text-primary-container group-hover:scale-110 transition-all duration-300">
+                  cloud_upload
+                </span>
+                <p class="mt-2 text-body-sm font-semibold text-primary">
+                  {{ lessonForm.fileName ? 'Thay đổi file tài liệu' : 'Kéo thả hoặc Click để tải file' }}
+                </p>
+                <p class="text-body-xs text-on-surface-variant mt-1">Hỗ trợ PDF, Word, Excel, Slide, Image, v.v. (tối đa 10MB)</p>
+              </div>
+              <div v-if="lessonForm.fileName" class="mt-3 p-3 bg-primary-container/5 rounded-lg flex items-center justify-between border border-primary-container/10">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="material-symbols-outlined text-primary-container shrink-0">description</span>
+                  <span class="text-body-sm font-medium text-slate-800 truncate" :title="lessonForm.fileName">
+                    {{ lessonForm.fileName }}
+                  </span>
+                </div>
+                <button @click="clearSelectedFile" type="button" class="text-rose-600 hover:text-rose-800 hover:bg-rose-50 p-1.5 rounded-full transition-colors cursor-pointer shrink-0 z-20">
+                  <span class="material-symbols-outlined text-[18px]">delete</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-end gap-2 pt-3 border-t border-slate-200">
+            <button :disabled="submittingLesson" @click="lessonModal = false" class="px-4 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 font-semibold text-body-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">Hủy</button>
+            <button :disabled="submittingLesson" @click="saveLesson" class="px-4 py-2 rounded-lg bg-primary-container hover:bg-primary text-white font-semibold text-body-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+              <span v-if="submittingLesson" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+              {{ submittingLesson ? 'Đang lưu...' : 'Lưu bài học' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
+
+    <!-- DIALOG: TẠO ĐỀ KIỂM TRA -->
+    <teleport to="body">
+      <div v-if="quizModal" class="fixed inset-0 glass-backdrop z-[9999] flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-2xl shadow-2xl max-w-2xl w-full p-6 space-y-4 my-8 animate-scale-in flex flex-col max-h-[85vh]">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-3 shrink-0">
+            <h3 class="font-title-md text-[18px] font-bold text-primary-container">Tạo đề kiểm tra mới</h3>
+            <button @click="quizModal = false" class="text-on-surface-variant hover:text-primary-container cursor-pointer">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <div class="space-y-4 overflow-y-auto flex-1 pr-2 text-[14px]">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Tiêu đề bài kiểm tra</label>
+                <input v-model="quizForm.title" type="text" placeholder="Ví dụ: Kiểm tra 15 phút - Bài 1" class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-3 py-2 text-body-sm" />
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Thời gian làm bài (phút)</label>
+                <input v-model.number="quizForm.durationMinutes" type="number" min="1" class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-3 py-2 text-body-sm" />
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Loại đề thi</label>
+                <select v-model="quizForm.quizType" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-body-sm focus:outline-none">
+                  <option value="TracNghiem">Trắc nghiệm</option>
+                  <option value="TuLuan">Tự luận</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Ngày áp dụng (tùy chọn)</label>
+                <input v-model="quizForm.lessonDate" type="date" class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-3 py-2 text-body-sm" />
+              </div>
+            </div>
+
+            <!-- AI Quiz Generator Panel -->
+            <div class="p-4 bg-purple-50/50 border border-purple-100 rounded-xl space-y-3 shrink-0">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-purple-800 flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[20px] animate-pulse">auto_awesome</span>
+                  Tạo câu hỏi bằng AI (Gemini)
+                </span>
+                <button 
+                  type="button"
+                  @click="showAiGeneratePanel = !showAiGeneratePanel" 
+                  class="text-[12px] bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                >
+                  {{ showAiGeneratePanel ? 'Đóng bảng AI' : 'Mở bảng AI' }}
+                </button>
+              </div>
+
+              <div v-if="showAiGeneratePanel" class="space-y-3 pt-2 border-t border-purple-100 text-[13px]">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Nguồn nội dung</label>
+                    <select v-model="aiContentSource" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-body-sm focus:outline-none focus:border-purple-500">
+                      <option value="lesson">Nội dung bài học ngày đã chọn</option>
+                      <option value="custom">Chủ đề tự chọn / Yêu cầu riêng</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Số lượng câu hỏi</label>
+                    <select v-model.number="aiQuestionCount" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-body-sm focus:outline-none focus:border-purple-500">
+                      <option :value="5">5 câu hỏi</option>
+                      <option :value="10">10 câu hỏi</option>
+                      <option :value="15">15 câu hỏi</option>
+                      <option :value="20">20 câu hỏi</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div v-if="aiContentSource === 'custom'">
+                  <label class="block font-semibold text-slate-700 mb-1">Chủ đề hoặc nội dung cần kiểm tra</label>
+                  <textarea 
+                    v-model="aiCustomTopic" 
+                    rows="3" 
+                    placeholder="Ví dụ: Lập trình hướng đối tượng C#, tính kế thừa và đa hình..." 
+                    class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-body-sm focus:outline-none focus:border-purple-500"
+                  ></textarea>
+                </div>
+
+                <div class="flex justify-end pt-1">
+                  <button 
+                    type="button"
+                    @click="generateAiQuestions" 
+                    :disabled="generatingAiQuiz"
+                    class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold text-body-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span v-if="generatingAiQuiz" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+                    <span class="material-symbols-outlined text-[16px]" v-else>auto_awesome</span>
+                    Tạo đề bằng AI
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Questions Editor -->
+            <div class="border-t border-dashed border-slate-200 pt-3 space-y-4">
+              <div class="flex justify-between items-center">
+                <span class="font-bold text-primary-container text-body-md">Danh sách câu hỏi ({{ quizForm.questions.length }})</span>
+                <button @click="addQuestion" class="text-indigo-600 font-bold hover:underline flex items-center gap-0.5 cursor-pointer text-body-xs">
+                  <span class="material-symbols-outlined text-[16px]">add_circle</span>
+                  Thêm câu hỏi
+                </button>
+              </div>
+              
+              <div v-for="(q, idx) in quizForm.questions" :key="idx" class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3 relative">
+                <button @click="removeQuestion(idx)" class="absolute right-3 top-3 text-rose-500 hover:bg-rose-50 w-7 h-7 rounded-full flex items-center justify-center cursor-pointer" title="Xóa câu hỏi">
+                  <span class="material-symbols-outlined text-[18px]">delete</span>
+                </button>
+                
+                <div class="font-bold text-slate-600 text-body-sm">Câu hỏi {{ idx + 1 }}</div>
+                <div>
+                  <label class="block font-medium text-slate-600 mb-1">Nội dung câu hỏi</label>
+                  <input v-model="q.questionText" type="text" placeholder="Nhập câu hỏi..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-body-sm" />
+                </div>
+                
+                <!-- Options for multiple choice -->
+                <div v-if="quizForm.quizType === 'TracNghiem'" class="space-y-2">
+                  <label class="block font-medium text-slate-600">Các phương án trả lời (Nhập mỗi phương án trên 1 dòng)</label>
+                  <textarea v-model="q.options" rows="4" placeholder="Ví dụ:&#13;A. Lựa chọn thứ nhất&#13;B. Lựa chọn thứ hai&#13;C. Lựa chọn thứ ba&#13;D. Lựa chọn thứ tư" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-body-sm"></textarea>
+                  
+                  <div class="w-1/2">
+                    <label class="block font-medium text-slate-600 mb-1">Đáp án đúng</label>
+                    <select v-model="q.correctAnswer" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-body-sm focus:outline-none">
+                      <option value="A">A</option>
+                      <option value="B">B</option>
+                      <option value="C">C</option>
+                      <option value="D">D</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Answer for essay -->
+                <div v-if="quizForm.quizType === 'TuLuan'">
+                  <label class="block font-medium text-slate-600 mb-1">Đáp án gợi ý / Hướng dẫn chấm bài</label>
+                  <textarea v-model="q.correctAnswer" rows="3" placeholder="Ghi chú hướng dẫn..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-body-sm"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex justify-end gap-2 pt-3 border-t border-slate-200 shrink-0">
+            <button @click="quizModal = false" class="px-4 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 font-semibold text-body-sm cursor-pointer">Hủy</button>
+            <button @click="saveQuiz" class="px-4 py-2 rounded-lg bg-primary-container hover:bg-primary text-white font-semibold text-body-sm cursor-pointer">Lưu đề thi</button>
+          </div>
+        </div>
+      </div>
+    </teleport>
+
+    <!-- DIALOG: DANH SÁCH BÀI LÀM CỦA HỌC VIÊN -->
+    <teleport to="body">
+      <div v-if="submissionsModal" class="fixed inset-0 glass-backdrop z-[9999] flex items-center justify-center p-4">
+        <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-2xl shadow-2xl max-w-2xl w-full p-6 space-y-4 animate-scale-in flex flex-col max-h-[80vh]">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-3 shrink-0">
+            <h3 class="font-title-md text-[18px] font-bold text-primary-container">
+              Bài làm của học viên - {{ activeQuiz?.title }}
+            </h3>
+            <button @click="submissionsModal = false" class="text-on-surface-variant hover:text-primary-container cursor-pointer">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <div class="overflow-y-auto flex-1 text-[14px]">
+            <div v-if="loadingSubmissions" class="p-12 text-center">
+              <div class="w-8 h-8 border-2 border-primary-container/30 border-t-primary-container rounded-full animate-spin mx-auto mb-2"></div>
+              Đang tải danh sách bài làm...
+            </div>
+            <div v-else-if="submissions.length === 0" class="p-12 text-center text-slate-500 italic">
+              Chưa có học viên nào nộp bài.
+            </div>
+            <table v-else class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200 text-[13px]">
+                  <th class="py-3 px-4">Tên học viên</th>
+                  <th class="py-3 px-4">Ngày nộp</th>
+                  <th class="py-3 px-4 text-center">Điểm số</th>
+                  <th class="py-3 px-4 text-center">Trạng thái</th>
+                  <th class="py-3 px-4 text-right">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="sub in submissions" :key="sub.submissionId" class="border-b border-slate-100 hover:bg-slate-50">
+                  <td class="py-3 px-4 font-semibold text-primary-container">{{ sub.studentName }}</td>
+                  <td class="py-3 px-4 text-slate-500">{{ formatDateTime(sub.submittedAt) }}</td>
+                  <td class="py-3 px-4 text-center font-bold">
+                    {{ sub.score !== null ? sub.score.toFixed(1) : '—' }}
+                  </td>
+                  <td class="py-3 px-4 text-center">
+                    <span :class="['px-2 py-0.5 rounded text-[11px] font-bold', sub.isGraded ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800']">
+                      {{ sub.isGraded ? 'Đã chấm' : 'Chờ chấm' }}
+                    </span>
+                  </td>
+                  <td class="py-3 px-4 text-right">
+                    <button @click="openGradingModal(sub)" class="px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white font-bold hover:bg-indigo-700 cursor-pointer text-body-xs">
+                      {{ sub.isGraded ? 'Sửa điểm' : 'Chấm điểm' }}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="flex justify-end pt-3 border-t border-slate-200 shrink-0">
+            <button @click="submissionsModal = false" class="px-4 py-2 rounded-lg bg-primary-container hover:bg-primary text-white font-semibold text-body-sm cursor-pointer">Đóng</button>
+          </div>
+        </div>
+      </div>
+    </teleport>
+
+    <!-- DIALOG: CHẤM ĐIỂM CHI TIẾT -->
+    <teleport to="body">
+      <div v-if="gradingSubmissionModal" class="fixed inset-0 glass-backdrop z-[10000] flex items-center justify-center p-4">
+        <div class="bg-white/90 backdrop-blur-[24px] border border-white/50 rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4 animate-scale-in flex flex-col max-h-[85vh]">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-3 shrink-0">
+            <h3 class="font-title-md text-[17px] font-bold text-primary-container">
+              Chấm điểm bài làm - {{ activeSubmission?.studentName }}
+            </h3>
+            <button @click="gradingSubmissionModal = false" class="text-on-surface-variant hover:text-primary-container cursor-pointer">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          
+          <div class="space-y-4 overflow-y-auto flex-1 text-[14px] pr-1">
+            <div class="font-bold text-slate-700">Câu trả lời của học viên:</div>
+            
+            <div v-for="(question, index) in activeQuiz?.questions" :key="question.questionId" class="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
+              <div class="font-bold text-slate-700">Câu {{ index + 1 }}: {{ question.questionText }}</div>
+              <div v-if="question.options" class="text-body-sm text-slate-500 whitespace-pre-wrap ml-2">
+                {{ question.options.replace(/\|/g, '\n') }}
+              </div>
+              <div class="text-body-sm font-semibold text-indigo-700 ml-2 mt-1">
+                Học viên chọn/trả lời: 
+                <span class="text-slate-800 font-bold bg-white px-2 py-0.5 border border-slate-200 rounded">
+                  {{ activeSubmission?.answers[question.questionId.toString()] || activeSubmission?.answers[String(question.questionId)] || 'Chưa trả lời' }}
+                </span>
+              </div>
+              <div class="text-body-xs text-emerald-600 font-semibold ml-2" v-if="question.correctAnswer">
+                Đáp án đúng/Gợi ý: <span class="font-bold">{{ question.correctAnswer }}</span>
+              </div>
+            </div>
+
+            <!-- Grade inputs -->
+            <div class="border-t border-slate-200 pt-3 space-y-3">
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Điểm số (thang điểm 10)</label>
+                <input v-model.number="gradeForm.score" type="number" min="0" max="10" step="0.1" placeholder="Nhập điểm..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-body-sm font-bold" />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Nhận xét của giáo viên</label>
+                <textarea v-model="gradeForm.teacherNote" rows="3" placeholder="Nhập nhận xét..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-body-sm"></textarea>
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex justify-end gap-2 pt-3 border-t border-slate-200 shrink-0">
+            <button @click="gradingSubmissionModal = false" class="px-4 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 font-semibold text-body-sm cursor-pointer">Hủy</button>
+            <button @click="submitGrade" class="px-4 py-2 rounded-lg bg-primary-container hover:bg-primary text-white font-semibold text-body-sm cursor-pointer">Lưu kết quả</button>
+          </div>
+        </div>
+      </div>
+    </teleport>
 
     <!-- DIALOG 1: XẾP HỌC VIÊN VÀO LỚP -->
     <teleport to="body">
@@ -1382,6 +1825,411 @@ function formatDayOfWeek(day) {
   return map[day] || day
 }
 
+// ==========================================
+// TÍNH NĂNG BÀI HỌC & ĐỀ KIỂM TRA
+// ==========================================
+const lessons = ref([])
+const quizzes = ref([])
+const loadingLessons = ref(false)
+const loadingQuizzes = ref(false)
+const activeSubTab = ref('lessons')
+
+const lessonModal = ref(false)
+const isEditingLesson = ref(false)
+const submittingLesson = ref(false)
+const lessonFileInput = ref(null)
+const lessonForm = ref({
+  lessonId: null,
+  title: '',
+  content: '',
+  fileName: '',
+  lessonDate: new Date().toLocaleDateString('en-CA')
+})
+
+const quizModal = ref(false)
+const quizForm = ref({
+  title: '',
+  durationMinutes: 15,
+  quizType: 'TracNghiem',
+  lessonDate: '',
+  questions: [
+    { questionText: '', options: '', correctAnswer: 'A' }
+  ]
+})
+
+// AI Quiz generation state
+const showAiGeneratePanel = ref(false)
+const aiContentSource = ref('lesson')
+const aiCustomTopic = ref('')
+const aiQuestionCount = ref(5)
+const generatingAiQuiz = ref(false)
+
+const submissionsModal = ref(false)
+const activeQuiz = ref(null)
+const submissions = ref([])
+const loadingSubmissions = ref(false)
+
+const gradingSubmissionModal = ref(false)
+const activeSubmission = ref(null)
+const gradeForm = ref({
+  score: '',
+  teacherNote: ''
+})
+
+async function fetchLessons() {
+  loadingLessons.value = true
+  try {
+    const res = await api.get(`/api/v1/lessons/class/${classId}`)
+    lessons.value = res.data || []
+  } catch (e) {
+    showSnackbar('Lỗi tải danh sách bài học', 'error')
+  } finally {
+    loadingLessons.value = false
+  }
+}
+
+async function fetchQuizzes() {
+  loadingQuizzes.value = true
+  try {
+    const res = await api.get(`/api/v1/quizzes/class/${classId}`)
+    quizzes.value = res.data || []
+  } catch (e) {
+    showSnackbar('Lỗi tải danh sách đề thi', 'error')
+  } finally {
+    loadingQuizzes.value = false
+  }
+}
+
+function openAddLessonModal() {
+  isEditingLesson.value = false
+  lessonForm.value = {
+    lessonId: null,
+    title: '',
+    content: '',
+    fileName: '',
+    lessonDate: new Date().toLocaleDateString('en-CA')
+  }
+  if (lessonFileInput.value) {
+    lessonFileInput.value.value = ''
+  }
+  lessonModal.value = true
+}
+
+function openEditLessonModal(lesson) {
+  isEditingLesson.value = true
+  const dateObj = new Date(lesson.lessonDate)
+  const yyyy = dateObj.getFullYear()
+  const mm = String(dateObj.getMonth() + 1).padStart(2, '0')
+  const dd = String(dateObj.getDate()).padStart(2, '0')
+  lessonForm.value = {
+    lessonId: lesson.lessonId,
+    title: lesson.title,
+    content: lesson.content,
+    fileName: lesson.fileName || '',
+    lessonDate: `${yyyy}-${mm}-${dd}`
+  }
+  if (lessonFileInput.value) {
+    lessonFileInput.value.value = ''
+  }
+  lessonModal.value = true
+}
+
+async function onLessonFileUpload(e) {
+  const files = Array.from(e.target.files)
+  if (files.length === 0) return
+  const file = files[0]
+  if (file.size > 10 * 1024 * 1024) {
+    showSnackbar(`File "${file.name}" quá lớn, dung lượng tối đa là 10MB`, 'error')
+    if (lessonFileInput.value) lessonFileInput.value.value = ''
+    return
+  }
+  const reader = new FileReader()
+  const promise = new Promise((resolve) => {
+    reader.onload = () => resolve(reader.result)
+  })
+  reader.readAsDataURL(file)
+  const base64 = await promise
+  lessonForm.value.content = base64
+  lessonForm.value.fileName = file.name
+}
+
+function clearSelectedFile() {
+  lessonForm.value.content = ''
+  lessonForm.value.fileName = ''
+  if (lessonFileInput.value) {
+    lessonFileInput.value.value = ''
+  }
+}
+
+async function saveLesson() {
+  if (submittingLesson.value) return
+
+  console.log("saveLesson trigger", {
+    title: lessonForm.value.title,
+    hasContent: !!lessonForm.value.content,
+    fileName: lessonForm.value.fileName,
+    lessonDate: lessonForm.value.lessonDate
+  })
+
+  const titleVal = lessonForm.value.title ? String(lessonForm.value.title).trim() : ''
+  if (!titleVal) {
+    if (typeof showSnackbar === 'function') {
+      showSnackbar('Vui lòng nhập tiêu đề bài học', 'warning')
+    } else {
+      alert('Vui lòng nhập tiêu đề bài học')
+    }
+    return
+  }
+  if (!lessonForm.value.content) {
+    if (typeof showSnackbar === 'function') {
+      showSnackbar('Vui lòng chọn file tài liệu bài học', 'warning')
+    } else {
+      alert('Vui lòng chọn file tài liệu bài học')
+    }
+    return
+  }
+
+  submittingLesson.value = true
+  try {
+    const payload = {
+      classId: classId,
+      lessonDate: lessonForm.value.lessonDate,
+      title: titleVal,
+      content: lessonForm.value.content,
+      fileName: lessonForm.value.fileName
+    }
+    console.log("Sending save lesson payload", { ...payload, content: payload.content.substring(0, 100) + '...' })
+    
+    const res = await api.post('/api/v1/lessons', payload, {
+      timeout: 120000 // 2 minutes timeout for file uploads
+    })
+    console.log("Save lesson response", res.data)
+    
+    if (typeof showSnackbar === 'function') {
+      showSnackbar('Lưu bài học thành công', 'success')
+    } else {
+      alert('Lưu bài học thành công')
+    }
+    lessonModal.value = false
+    fetchLessons()
+  } catch (e) {
+    console.error("Save lesson error detail:", e)
+    const serverMsg = e.response?.data?.message || e.message || 'Lỗi lưu bài học'
+    if (typeof showSnackbar === 'function') {
+      showSnackbar(`Lỗi lưu bài học: ${serverMsg}`, 'error')
+    } else {
+      alert(`Lỗi lưu bài học: ${serverMsg}`)
+    }
+  } finally {
+    submittingLesson.value = false
+  }
+}
+
+async function deleteLesson(id) {
+  if (!confirm('Bạn có chắc muốn xóa bài học này?')) return
+  try {
+    await api.delete(`/api/v1/lessons/${id}`)
+    showSnackbar('Xóa bài học thành công', 'success')
+    fetchLessons()
+  } catch (e) {
+    showSnackbar('Lỗi xóa bài học', 'error')
+  }
+}
+
+const downloadingFileId = ref(null)
+
+async function downloadLessonFile(lesson) {
+  if (downloadingFileId.value) return
+  downloadingFileId.value = lesson.lessonId
+  try {
+    const res = await api.get(`/api/v1/lessons/${lesson.lessonId}`)
+    const fullLesson = res.data
+    if (!fullLesson || !fullLesson.content) {
+      showSnackbar('Không tìm thấy tài liệu bài học', 'error')
+      return
+    }
+    const link = document.createElement('a')
+    link.href = fullLesson.content
+    link.download = fullLesson.fileName || 'download'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  } catch (e) {
+    showSnackbar('Lỗi tải tài liệu bài học', 'error')
+  } finally {
+    downloadingFileId.value = null
+  }
+}
+
+function openAddQuizModal() {
+  quizForm.value = {
+    title: '',
+    durationMinutes: 15,
+    quizType: 'TracNghiem',
+    lessonDate: '',
+    questions: [
+      { questionText: '', options: '', correctAnswer: 'A' }
+    ]
+  }
+  showAiGeneratePanel.value = false
+  aiCustomTopic.value = ''
+  aiContentSource.value = 'lesson'
+  aiQuestionCount.value = 5
+  quizModal.value = true
+}
+
+function addQuestion() {
+  quizForm.value.questions.push({
+    questionText: '',
+    options: '',
+    correctAnswer: 'A'
+  })
+}
+
+function removeQuestion(index) {
+  quizForm.value.questions.splice(index, 1)
+}
+
+async function generateAiQuestions() {
+  if (aiContentSource.value === 'custom' && !aiCustomTopic.value.trim()) {
+    showSnackbar('Vui lòng nhập chủ đề sinh câu hỏi', 'error')
+    return
+  }
+  
+  generatingAiQuiz.value = true
+  try {
+    const payload = {
+      classId: classId,
+      lessonDate: aiContentSource.value === 'lesson' ? (quizForm.value.lessonDate || null) : null,
+      customTopic: aiContentSource.value === 'custom' ? aiCustomTopic.value : null,
+      questionCount: aiQuestionCount.value,
+      quizType: quizForm.value.quizType
+    }
+    
+    const res = await api.post('/api/v1/quizzes/generate-ai', payload, {
+      timeout: 120000 // 2 minutes timeout for Gemini AI generation
+    })
+    const questions = res.data || []
+    
+    if (questions.length === 0) {
+      showSnackbar('AI không trả về câu hỏi nào. Vui lòng thử lại.', 'error')
+      return
+    }
+    
+    quizForm.value.questions = questions.map(q => {
+      let formattedOptions = ''
+      if (quizForm.value.quizType === 'TracNghiem' && q.options) {
+        formattedOptions = q.options.replace(/\|/g, '\n')
+      }
+      return {
+        questionText: q.questionText || '',
+        options: formattedOptions,
+        correctAnswer: q.correctAnswer || 'A'
+      }
+    })
+    
+    showSnackbar(`Đã tạo thành công ${questions.length} câu hỏi bằng AI!`, 'success')
+    showAiGeneratePanel.value = false
+  } catch (e) {
+    console.error('Error generating AI quiz:', e)
+    showSnackbar(e.response?.data?.message || 'Lỗi xảy ra khi sinh đề bằng AI.', 'error')
+  } finally {
+    generatingAiQuiz.value = false
+  }
+}
+
+async function saveQuiz() {
+  if (!quizForm.value.title.trim()) {
+    showSnackbar('Vui lòng nhập tiêu đề bài kiểm tra', 'error')
+    return
+  }
+  if (quizForm.value.questions.length === 0) {
+    showSnackbar('Vui lòng thêm ít nhất một câu hỏi', 'error')
+    return
+  }
+  
+  const formattedQuestions = quizForm.value.questions.map(q => {
+    let optStr = null
+    if (quizForm.value.quizType === 'TracNghiem') {
+      optStr = (q.options || '').replace(/\r?\n/g, '|')
+    }
+    return {
+      questionText: q.questionText,
+      options: optStr,
+      correctAnswer: q.correctAnswer
+    }
+  })
+  
+  try {
+    await api.post('/api/v1/quizzes', {
+      classId: classId,
+      title: quizForm.value.title,
+      durationMinutes: quizForm.value.durationMinutes,
+      quizType: quizForm.value.quizType,
+      lessonDate: quizForm.value.lessonDate || null,
+      questions: formattedQuestions
+    })
+    showSnackbar('Tạo đề kiểm tra thành công', 'success')
+    quizModal.value = false
+    fetchQuizzes()
+  } catch (e) {
+    showSnackbar('Lỗi khi lưu đề thi', 'error')
+  }
+}
+
+async function deleteQuiz(id) {
+  if (!confirm('Bạn có chắc muốn xóa đề thi này?')) return
+  try {
+    await api.delete(`/api/v1/quizzes/${id}`)
+    showSnackbar('Xóa đề thi thành công', 'success')
+    fetchQuizzes()
+  } catch (e) {
+    showSnackbar('Lỗi xóa đề thi', 'error')
+  }
+}
+
+async function openSubmissionsModal(quiz) {
+  activeQuiz.value = quiz
+  submissionsModal.value = true
+  loadingSubmissions.value = true
+  try {
+    const res = await api.get(`/api/v1/quizzes/${quiz.quizId}/submissions`)
+    submissions.value = res.data || []
+  } catch (e) {
+    showSnackbar('Lỗi tải danh sách bài nộp', 'error')
+  } finally {
+    loadingSubmissions.value = false
+  }
+}
+
+function openGradingModal(sub) {
+  activeSubmission.value = sub
+  gradeForm.value = {
+    score: sub.score !== null ? sub.score : '',
+    teacherNote: sub.teacherNote || ''
+  }
+  gradingSubmissionModal.value = true
+}
+
+async function submitGrade() {
+  if (gradeForm.value.score === '') {
+    showSnackbar('Vui lòng nhập điểm', 'error')
+    return
+  }
+  try {
+    await api.post(`/api/v1/quizzes/submissions/${activeSubmission.value.submissionId}/grade`, {
+      score: parseFloat(gradeForm.value.score),
+      teacherNote: gradeForm.value.teacherNote
+    })
+    showSnackbar('Chấm điểm thành công', 'success')
+    gradingSubmissionModal.value = false
+    openSubmissionsModal(activeQuiz.value)
+    fetchGrades()
+  } catch (e) {
+    showSnackbar('Lỗi khi chấm điểm', 'error')
+  }
+}
+
 // Watch active tabs to load respective data
 watch(activeTab, (tab) => {
   if (tab === 'roster') {
@@ -1390,6 +2238,9 @@ watch(activeTab, (tab) => {
     fetchAttendanceForDate()
   } else if (tab === 'grades') {
     fetchGrades()
+  } else if (tab === 'lessons_exams') {
+    fetchLessons()
+    fetchQuizzes()
   }
 })
 
