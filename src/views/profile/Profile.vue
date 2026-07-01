@@ -263,11 +263,85 @@
         </div>
       </div>
     </div>
+
+    <!-- My Courses Section -->
+    <div v-if="authStore.isStudent" class="glass-panel p-6 rounded-2xl space-y-6">
+      <h3 class="font-title-md text-[18px] font-bold text-primary flex items-center justify-between border-b border-white/40 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-on-tertiary-container">school</span>
+          Danh sách khóa học của tôi
+        </div>
+        <div class="text-body-sm font-semibold bg-primary-container/10 text-primary-container px-3 py-1 rounded-full">
+          {{ enrollments.length }} khóa học
+        </div>
+      </h3>
+
+      <!-- Filters -->
+      <div class="flex flex-col sm:flex-row gap-4">
+        <div class="flex-1 relative">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/50">search</span>
+          <input v-model="searchQuery" type="text" placeholder="Tìm theo tên khóa hoặc lớp học..." class="w-full glass-input pl-10 pr-4 py-2.5 rounded-lg text-body-sm text-primary" />
+        </div>
+        <div class="w-full sm:w-48">
+          <select v-model="statusFilter" class="w-full bg-primary-container/[0.05] border border-primary-container/10 rounded-lg px-4 py-2.5 text-body-sm text-primary focus:outline-none focus:border-on-tertiary-container cursor-pointer transition-all">
+            <option value="">Tất cả trạng thái</option>
+            <option value="ChoDuyet">Chờ duyệt</option>
+            <option value="DangHoc">Đang học</option>
+            <option value="HoanThanh">Đã hoàn thành</option>
+            <option value="HuyBo">Đã hủy</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div v-if="loadingEnrollments" class="py-12 flex justify-center">
+        <div class="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+      </div>
+
+      <!-- Empty State -->
+      <div v-else-if="filteredEnrollments.length === 0" class="py-12 text-center bg-primary-container/[0.02] border border-dashed border-primary-container/15 rounded-xl flex flex-col items-center justify-center">
+        <span class="material-symbols-outlined text-primary-container/40 text-[48px] mb-2">school</span>
+        <p class="text-body-sm font-semibold text-on-surface-variant/70">Không tìm thấy khóa học nào phù hợp.</p>
+      </div>
+
+      <!-- Data List -->
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div v-for="e in filteredEnrollments" :key="e.enrollmentId" class="p-5 rounded-xl border border-outline-variant/30 hover:border-primary-container/40 bg-white/50 transition-all flex flex-col gap-3 group relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          
+          <div class="flex justify-between items-start gap-2">
+            <h4 class="font-bold text-body-lg text-primary line-clamp-2" :title="e.courseName">{{ e.courseName }}</h4>
+            <span :class="['px-2 py-1 rounded text-[10px] font-extrabold uppercase shrink-0 border', getStatusColor(e.status)]">
+              {{ getStatusLabel(e.status) }}
+            </span>
+          </div>
+
+          <div class="space-y-1.5 flex-1">
+            <div class="flex items-center gap-2 text-body-xs text-on-surface-variant">
+              <span class="material-symbols-outlined text-[14px]">class</span>
+              <span class="font-semibold text-primary truncate" :title="e.className">{{ e.className }}</span>
+            </div>
+            <div v-if="e.teacherName" class="flex items-center gap-2 text-body-xs text-on-surface-variant">
+              <span class="material-symbols-outlined text-[14px]">person</span>
+              <span>GV: {{ e.teacherName }}</span>
+            </div>
+            <div v-if="e.startDate" class="flex items-center gap-2 text-body-xs text-on-surface-variant">
+              <span class="material-symbols-outlined text-[14px]">calendar_month</span>
+              <span>Từ: {{ formatDate(e.startDate) }}</span>
+            </div>
+          </div>
+          
+          <div class="pt-2 border-t border-outline-variant/20 flex justify-between items-center">
+            <span class="text-[11px] text-on-surface-variant/70">Đăng ký lúc: {{ formatDate(e.enrolledAt) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, inject } from 'vue'
+import { ref, computed, onMounted, inject } from 'vue'
 import { useAuthStore } from '../../stores'
 import api from '../../services/api'
 
@@ -350,6 +424,64 @@ const setDefaultBankAccount = (id) => {
 }
 
 const studentProfileId = ref(null)
+
+// --- Thêm: Quản lý khóa học của học viên ---
+const enrollments = ref([])
+const loadingEnrollments = ref(false)
+const searchQuery = ref('')
+const statusFilter = ref('')
+
+const fetchEnrollments = async (studentId) => {
+  loadingEnrollments.value = true
+  try {
+    const res = await api.get('/api/v1/enrollments', {
+      params: { studentId: studentId, pageSize: 100 }
+    })
+    if (res.data && res.data.items) {
+      enrollments.value = res.data.items
+    }
+  } catch (err) {
+    console.error('Error fetching enrollments:', err)
+  } finally {
+    loadingEnrollments.value = false
+  }
+}
+
+const filteredEnrollments = computed(() => {
+  return enrollments.value.filter(e => {
+    const query = searchQuery.value.toLowerCase()
+    const matchesSearch = !query || 
+      (e.courseName && e.courseName.toLowerCase().includes(query)) ||
+      (e.className && e.className.toLowerCase().includes(query))
+      
+    const matchesStatus = !statusFilter.value || e.status === statusFilter.value
+    
+    return matchesSearch && matchesStatus
+  })
+})
+
+const getStatusLabel = (status) => {
+  const map = {
+    ChoDuyet: 'Chờ duyệt',
+    DangHoc: 'Đang học',
+    HoanThanh: 'Hoàn thành',
+    HuyBo: 'Đã hủy',
+    ChoThanhToan: 'Chờ T.Toán'
+  }
+  return map[status] || status
+}
+
+const getStatusColor = (status) => {
+  switch(status) {
+    case 'DangHoc': return 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+    case 'HoanThanh': return 'bg-blue-500/10 text-blue-600 border-blue-500/20'
+    case 'ChoDuyet': return 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+    case 'ChoThanhToan': return 'bg-purple-500/10 text-purple-600 border-purple-500/20'
+    case 'HuyBo': return 'bg-rose-500/10 text-rose-600 border-rose-500/20'
+    default: return 'bg-gray-500/10 text-gray-600 border-gray-500/20'
+  }
+}
+// ------------------------------------------
 
 const getRoleLabel = (role) => {
   const map = { Admin: 'Quản trị viên', GiaoVien: 'Giáo viên', HocVien: 'Học viên' }
@@ -446,6 +578,9 @@ const loadProfile = async () => {
             const dob = new Date(data.dateOfBirth)
             profileForm.value.dateOfBirth = dob.toISOString().substring(0, 10)
           }
+          
+          // Tải danh sách khóa học
+          fetchEnrollments(data.studentId)
         }
       } catch (studentErr) {
         console.warn('Student profile not yet linked or not found:', studentErr)
